@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BFBMX.Service", "BFBMX.Service\BFBMX.Service.csproj", "{98928A0A-4F49-4683-8E40-C074C0662960}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BFBMX.Service.Test", "BFBMX.Service.Test\BFBMX.Service.Test.csproj", "{785746C4-CA37-4012-83A0-28CD956FB6FA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{98928A0A-4F49-4683-8E40-C074C0662960}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98928A0A-4F49-4683-8E40-C074C0662960}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98928A0A-4F49-4683-8E40-C074C0662960}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98928A0A-4F49-4683-8E40-C074C0662960}.Release|Any CPU.Build.0 = Release|Any CPU
+		{785746C4-CA37-4012-83A0-28CD956FB6FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{785746C4-CA37-4012-83A0-28CD956FB6FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{785746C4-CA37-4012-83A0-28CD956FB6FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{785746C4-CA37-4012-83A0-28CD956FB6FA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
