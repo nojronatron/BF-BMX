@@ -1,4 +1,5 @@
 using BFBMX.Service.Models;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace BFBMX.Service.Helpers
@@ -49,6 +50,7 @@ namespace BFBMX.Service.Helpers
       catch (Exception ex)
       {
         // log an error message: an unexpected error occurred
+        Debug.WriteLine($"An unexpected error occurred in FileProcessor: {ex.Message}");
         // throw;
         return new List<BibRecordModel>();
       }
