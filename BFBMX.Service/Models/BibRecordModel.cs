@@ -9,6 +9,7 @@ public class BibRecordModel
   public string? BibTimeOfDay { get; set; }
   public int DayOfMonth { get; set; }
   public string? Location { get; set; }
+  public bool DataWarning { get; set; } = true;
   public string ToJson()
   {
     return JsonSerializer.Serialize<BibRecordModel>(this);
