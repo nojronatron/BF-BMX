@@ -1,4 +1,5 @@
 using BFBMX.Service.Helpers;
+using BFBMX.Service.Models;
 using Moq;
 
 namespace BFBMX.Service.Test;
@@ -35,7 +36,7 @@ public class HelpersTest
       "196	OUT	2009	11	WR"
      });
 
-    List<Models.BibRecordModel> actualResult = new();
+    List<BibMessageModel> actualResult = new();
     try
     {
       string? bfBmxTestFilesPath = Environment.GetEnvironmentVariable("BFBMX_TEST_FILES_PATH");

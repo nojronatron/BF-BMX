@@ -26,20 +26,20 @@ namespace BFBMX.Service.Helpers
       _fileReader = fileReader;
     }
 
-    public List<BibRecordModel> ProcessFile(string fullFileName)
+    public List<BibMessageModel> ProcessFile(string fullFileName)
     {
       // check if fullFileName exists
       if (string.IsNullOrWhiteSpace(fullFileName))
       {
         // log an informational message: fullFileName null or empty
         // throw new ArgumentException("File name cannot be null or whitespace.", nameof(fullFileName));
-        return new List<BibRecordModel>();
+        return new List<BibMessageModel>();
       }
       if (!File.Exists(fullFileName))
       {
         // log an informational message: file does not exist
         //throw new FileNotFoundException("File does not exist.", fullFileName);
-        return new List<BibRecordModel>();
+        return new List<BibMessageModel>();
       }
       try
       {
@@ -52,18 +52,18 @@ namespace BFBMX.Service.Helpers
         // log an error message: an unexpected error occurred
         Debug.WriteLine($"An unexpected error occurred in FileProcessor: {ex.Message}");
         // throw;
-        return new List<BibRecordModel>();
+        return new List<BibMessageModel>();
       }
     }
 
-    private List<BibRecordModel> ProcessLines(string[] lines)
+    private List<BibMessageModel> ProcessLines(string[] lines)
     {
       if (lines is null)
       {
         throw new ArgumentNullException(nameof(lines));
       }
 
-      List<BibRecordModel> bibRecords = new();
+      List<BibMessageModel> bibRecords = new();
 
       foreach (var line in lines)
       {
@@ -81,14 +81,14 @@ namespace BFBMX.Service.Helpers
       return bibRecords;
     }
 
-    private BibRecordModel CreateBibRecord(string[] fields)
+    private BibMessageModel CreateBibRecord(string[] fields)
     {
       if (fields.Length < 5 || !int.TryParse(fields[0], out int bibNum) || !int.TryParse(fields[3], out int dayOfMonth))
       {
         // log this error condition and return null
-        return new BibRecordModel();
+        return new BibMessageModel();
       }
-      return new BibRecordModel
+      return new BibMessageModel
       {
         BibNumber = bibNum,
         Action = fields[1].Trim(),
