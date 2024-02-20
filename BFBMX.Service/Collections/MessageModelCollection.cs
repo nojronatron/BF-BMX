@@ -3,9 +3,9 @@ using BFBMX.Service.Models;
 
 namespace BFBMX.Service.Collections;
 
-public class MessageModelCollection : ObservableCollection<BibMessageModel>
+public class MessageModelCollection : ObservableCollection<WinlinkMessageModel>
 {
-  public List<BibMessageModel> MessageRecords { get; set; } = new List<BibMessageModel>();
+  public List<WinlinkMessageModel> MessageRecords { get; set; } = new List<WinlinkMessageModel>();
 
   public MessageModelCollection() { }
 }
