@@ -11,6 +11,13 @@ The overarching goal of this project is to create a synchronization tool that wi
 
 ## Project Status
 
+20-Feb-2024:
+
+- Refactored data models for relational database storage and streamlined data transfer between client and server.
+- Updated unit tests for new data models.
+- Refactored bib data Regex matching to enable strict matching of bib data, and loose matching of possible bib data.
+- Refactored file processing for enhance code testability and readability.
+
 06-Feb-2024:
 
 - Project design drawings underway.
@@ -56,6 +63,10 @@ At a very high level:
 ## How To Use
 
 This section will be written as the project enters the Beta Testing phase.
+
+## Notes and Limitations
+
+- Messages can be forwarded by intermediary stations. This is different than an RMS _relay_ where message content is not changed. When an intermediary operator clicks "Forward" the original message body is not changed but new headers are added: Date-Time, From, Message-ID, etc, and the Subject line is modified - prefixed with "FW: ". The Message ID that this program tracks is the one that is attached to the outermost message header, not any attachments or forwarded headers. This should make it easier to sift through Winlink Message IDs at the receiving station to find a message with possible data problems.
 
 ## Timeline
 
