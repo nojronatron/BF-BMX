@@ -5,10 +5,10 @@ namespace BFBMX.Service.Models
     public class BibRecordModel
     {
         public int BibNumber { get; set; } = -1; // max len 15
-        public string? @Action { get; set; } // IN, OUT, DROP
+        public string? @Action { get; set; } = "MISSING"; // IN, OUT, DROP
         public string? BibTimeOfDay { get; set; } // format: HHMM
         public int DayOfMonth { get; set; } = -1; // digit count range(1-31)
-        public string? Location { get; set; } // max len 26 (as defined by select element in form)
+        public string? Location { get; set; } = "MISSING"; // max len 26 (as defined by select element in form)
         public bool DataWarning { get; set; } = true;
 
         public string BibDataToString()

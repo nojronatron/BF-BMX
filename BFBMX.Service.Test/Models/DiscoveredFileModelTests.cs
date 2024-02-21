@@ -102,5 +102,63 @@ namespace BFBMX.Service.Test.Models
             Assert.Equal(middle, discoveredFileModels[2]);
             Assert.Equal(right, discoveredFileModels[3]);
         }
+
+        [Fact]
+        public void VerifyGetHashCodeConsistency()
+        {
+            // ensure that GetHashCode returns consistent results for the same
+            // instance or for different instances with the same FullFilePath
+            var left = new DiscoveredFileModel("left-file.txt");
+            var right = new DiscoveredFileModel("right-file.txt");
+
+            Assert.Equal(left.GetHashCode(), left.GetHashCode());
+            Assert.Equal(right.GetHashCode(), right.GetHashCode());
+            Assert.NotEqual(left.GetHashCode(), right.GetHashCode());
+        }
+
+        [Fact]
+        public void VerifyEqeqConsistency()
+        {
+            // Test the == operator overload
+            var left = new DiscoveredFileModel("left-file.txt");
+            var right = new DiscoveredFileModel("right-file.txt");
+            var center = new DiscoveredFileModel("left-file.txt");
+
+            Assert.True(left == center);
+            Assert.False(right == center);
+        }
+
+        [Fact]
+        public void NeqNeqConsistency()
+        {
+            // Test the != operator overload
+            var left = new DiscoveredFileModel("left-file.txt");
+            var right = new DiscoveredFileModel("right-file.txt");
+            var center = new DiscoveredFileModel("left-file.txt");
+
+            Assert.True(left !=right);
+            Assert.False(left != center);
+        }
+
+        [Fact]
+        public void EqualsAndEqeqReturnFalseOnNullInstance()
+        {
+            // Test Equals() and == operator overload return false when compared to null
+            var left = new DiscoveredFileModel("left-file.txt");
+
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+            Assert.False(left.Equals(null));
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+            Assert.False(left == null);
+        }
+
+        [Fact]
+        public void DiscoveredFileModelIsEqualsToItself()
+        {
+            // Test that an instance of DiscoveredFileModel is equal to itself
+            var left = new DiscoveredFileModel("left-file.txt");
+
+            Assert.True(left.Equals(left));
+        }
     }
 }

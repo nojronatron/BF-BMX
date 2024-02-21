@@ -66,9 +66,9 @@ public class WinlinkMessageModelTests
         Assert.Null(sut.ClientHostname);
         Assert.True(sut.BibRecords.Count > 0);
 
-        Assert.Null(sut.BibRecords[0].Action);
+        Assert.Equal("MISSING", sut.BibRecords[0].Action);
         Assert.Null(sut.BibRecords[0].BibTimeOfDay);
-        Assert.Null(sut.BibRecords[0].Location);
+        Assert.Equal("MISSING", sut.BibRecords[0].Location);
 
         // tests NON-nullable fields
         Assert.Equal(bibNum, sut.BibRecords[0].BibNumber);
