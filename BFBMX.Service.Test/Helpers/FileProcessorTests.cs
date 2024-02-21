@@ -2,7 +2,7 @@ using BFBMX.Service.Helpers;
 using BFBMX.Service.Models;
 using BFBMX.Service.Test.TestData;
 
-namespace BFBMX.Service.Test;
+namespace BFBMX.Service.Test.Helpers;
 
 public class FileProcessorTests
 {

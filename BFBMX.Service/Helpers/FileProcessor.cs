@@ -4,98 +4,176 @@ using System.Text.RegularExpressions;
 
 namespace BFBMX.Service.Helpers
 {
-  public interface IFileReader
-  {
-    bool Exists(string path);
-    string[] ReadAllLines(string path);
-  }
-  public class FileReader : IFileReader
-  {
-    public bool Exists(string path) => File.Exists(path);
-    public string[] ReadAllLines(string path) => File.ReadAllLines(path);
-  }
-  public class FileProcessor
-  {
-    private readonly IFileReader _fileReader;
-    private static readonly string pattern = @"\d{1,3}\t(OUT|IN|DROP)\t\d{4}\t\d{1,2}\t\w{2}";
-    // todo: add singleton fields e.g. Collections, logger, etc
-    // todo: add instance fields for common properties
-
-    public FileProcessor(IFileReader fileReader)
+    public interface IFileReader
     {
-      _fileReader = fileReader;
+        bool Exists(string path);
+        string[] ReadAllLines(string path);
     }
 
-    public List<BibMessageModel> ProcessFile(string fullFileName)
+    public class FileReader : IFileReader
     {
-      // check if fullFileName exists
-      if (string.IsNullOrWhiteSpace(fullFileName))
-      {
-        // log an informational message: fullFileName null or empty
-        // throw new ArgumentException("File name cannot be null or whitespace.", nameof(fullFileName));
-        return new List<BibMessageModel>();
-      }
-      if (!File.Exists(fullFileName))
-      {
-        // log an informational message: file does not exist
-        //throw new FileNotFoundException("File does not exist.", fullFileName);
-        return new List<BibMessageModel>();
-      }
-      try
-      {
-        // open file and read contents
-        string[] lines = File.ReadAllLines(fullFileName);
-        return ProcessLines(lines);
-      }
-      catch (Exception ex)
-      {
-        // log an error message: an unexpected error occurred
-        Debug.WriteLine($"An unexpected error occurred in FileProcessor: {ex.Message}");
-        // throw;
-        return new List<BibMessageModel>();
-      }
+        public bool Exists(string path) => File.Exists(path);
+        public string[] ReadAllLines(string path) => File.ReadAllLines(path);
     }
 
-    private List<BibMessageModel> ProcessLines(string[] lines)
+    public class FileProcessor
     {
-      if (lines is null)
-      {
-        throw new ArgumentNullException(nameof(lines));
-      }
+        private static readonly string messageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
+        private static readonly string strictBibPattern = @"\b\d{1,3}\t(OUT|IN|DROP)\t\d{4}\t\d{1,2}\t\w{2}\b";
+        private static readonly string sloppyBibPattern = @"\b\w{1,15}\t\w{1,5}\t\w{1,5}\t\w{1,3}\t\w{1,26}\b";
+        // todo: add singleton fields e.g. Collections, logger, etc
+        // todo: add instance fields for common properties
 
-      List<BibMessageModel> bibRecords = new();
-
-      foreach (var line in lines)
-      {
-        if (Regex.IsMatch(line, pattern))
+        public static string[] GetFileData(string fullFilePath)
         {
-          var fields = line.Split('\t');
+            if (!string.IsNullOrWhiteSpace(fullFilePath) && File.Exists(fullFilePath))
+            {
 
-          var bibRecord = CreateBibRecord(fields);
-          if (bibRecord is not null)
-          {
-            bibRecords.Add(bibRecord);
-          }
+                try
+                {
+                    string[] lines = File.ReadAllLines(fullFilePath);
+                    return lines;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"An unexpected error occurred reading {fullFilePath}: {ex.Message}");
+                }
+            }
+
+            return Array.Empty<string>();
         }
-      }
-      return bibRecords;
-    }
 
-    private BibMessageModel CreateBibRecord(string[] fields)
-    {
-      if (fields.Length < 5 || !int.TryParse(fields[0], out int bibNum) || !int.TryParse(fields[3], out int dayOfMonth))
-      {
-        // log this error condition and return null
-        return new BibMessageModel();
-      }
-      return new BibMessageModel
-      {
-        BibNumber = bibNum,
-        Action = fields[1].Trim(),
-        BibTimeOfDay = fields[2].Trim(),
-        DayOfMonth = dayOfMonth,
-        Location = fields[4].Trim()
-      };
+        public static string GetMessageId(string fileData)
+        {
+            if (string.IsNullOrWhiteSpace(fileData))
+            {
+                return string.Empty;
+            }
+
+            Regex match = new(messageIdPattern);
+            MatchCollection matches = match.Matches(fileData);
+
+            if (matches.Count > 0)
+            {
+                return matches[0].Groups["msgid"].Value;
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Matches strictBibPattern and sloppyBibPattern and adds matches to a list of BibRecordModel.
+        /// </summary>
+        /// <param name="bibRecords">Empty List of type BibRecordModel</param>
+        /// <param name="lines">Array of string data to check for bib records</param>
+        /// <returns>True if strict and sloppy match counts are same, otherwise False.</returns>
+        public static bool ProcessBibs(List<BibRecordModel> bibRecords, string[] lines)
+        {
+            if (lines is null || lines.Length < 1)
+            {
+                Debug.WriteLine($"Input {nameof(lines)}. Returning and empty list.");
+            }
+            else
+            {
+                List<BibRecordModel> strictMatches = GetStrictMatches(lines);
+                List<BibRecordModel> sloppyMatches = GetSloppyMatches(lines);
+
+                if (strictMatches.Count == sloppyMatches.Count)
+                {
+                    bibRecords.AddRange(strictMatches);
+                    return true;
+                }
+
+                if (strictMatches.Count < sloppyMatches.Count)
+                {
+                    bibRecords.AddRange(sloppyMatches);
+                }
+            }
+
+            return false;
+        }
+
+        public static List<BibRecordModel> GetSloppyMatches(string[] lines)
+        {
+            var sloppyBibRecords = new List<BibRecordModel>();
+
+            if (lines is null || lines.Length < 1)
+            {
+                Debug.WriteLine($"GetSloppyMatches input {nameof(lines)} was empty. Returning and empty list.");
+                return sloppyBibRecords;
+            }
+
+            bool result = GetBibMatches(sloppyBibRecords, lines, sloppyBibPattern);
+            string didOrNotFind = result ? "found" : "did not find";
+            Debug.WriteLine($"GetSloppyMatches {didOrNotFind} bib data.");
+            return sloppyBibRecords;
+        }
+
+        public static List<BibRecordModel> GetStrictMatches(string[] lines)
+        {
+            var strictBibRecords = new List<BibRecordModel>();
+
+            if (lines is null || lines.Length < 1)
+            {
+                Debug.WriteLine($"GetStrictMatches input {nameof(lines)} was empty. Returning and empty list.");
+                return strictBibRecords;
+            }
+
+            bool result = GetBibMatches(strictBibRecords, lines, strictBibPattern);
+            string didOrNotFind = result ? "found" : "did not find";
+            Debug.WriteLine($"GetStrictMatches {didOrNotFind} bib data.");
+            return strictBibRecords;
+        }
+
+        public static bool GetBibMatches(List<BibRecordModel> emptyBibList, string[] fileDataLines, string pattern)
+        {
+            if (
+                emptyBibList is null || emptyBibList.Count > 0
+                || fileDataLines is null || fileDataLines.Length < 1
+                || string.IsNullOrWhiteSpace(pattern)
+                )
+            {
+                return false;
+            }
+            else
+            {
+                foreach (var line in fileDataLines)
+                {
+                    if (Regex.IsMatch(line, pattern, RegexOptions.IgnoreCase, new TimeSpan(0, 0, 2)))
+                    {
+                        var fields = line.Split('\t');
+                        var bibRecord = CreateBibRecord(fields);
+
+                        if (bibRecord is not null)
+                        {
+                            emptyBibList.Add(bibRecord);
+                        }
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        public static BibRecordModel CreateBibRecord(string[] fields)
+        {
+            if (fields.Length < 5 || !int.TryParse(fields[0], out int bibNum)
+                || !int.TryParse(fields[3], out int dayOfMonth))
+            {
+                // log this error condition and return null
+                return new BibRecordModel();
+            }
+
+            return new BibRecordModel
+            {
+                BibNumber = bibNum,
+                Action = fields[1].Trim(),
+                BibTimeOfDay = fields[2].Trim(),
+                DayOfMonth = dayOfMonth,
+                Location = fields[4].Trim()
+            };
+        }
     }
-  }
 }

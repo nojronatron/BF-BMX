@@ -1,6 +1,6 @@
 using BFBMX.Service.Models;
 
-namespace BFBMX.Service.Test;
+namespace BFBMX.Service.Test.Models;
 
 public class WinlinkMessageModelTests
 {
