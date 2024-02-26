@@ -6,9 +6,9 @@ namespace BFBMX.Service.Models;
 public class WinlinkMessageModel
 {
     public string? WinlinkMessageId { get; set; } // max len appears to be 12
-    public DateTime ClientDateTime { get; set; } // datetime file date was scraped
-    public string? ClientHostname { get; set; } // env:COMPUTERNAME
-    public List<BibRecordModel> BibRecords { get; set; } = new List<BibRecordModel>();
+    public DateTime MessageDateTime { get; set; } // datetime from Winlink message
+    public string? ClientHostname { get; set; } // env:COMPUTERNAME (might not be necessary)
+    public List<FlaggedBibRecordModel> BibRecords { get; set; } = new List<FlaggedBibRecordModel>();
 
     public bool HasDataWarning()
     {
@@ -19,11 +19,11 @@ public class WinlinkMessageModel
     {
         // learn.microsoft.com: 2009-06-15T13:45:30 (DateTimeKind.Local) -> 2009-06-15T13:45:30
         // string sortableFormatPattern = ClientDateTime.ToString("s");
-        string customFormatPattern = ClientDateTime.ToString("yyyy-MM-ddTHH-mm-ss");
+        string customFormatPattern = MessageDateTime.ToString("yyyy-MM-ddTHH-mm-ss");
         return $"{ClientHostname}-{customFormatPattern}.txt";
     }
 
-    public string ToJson()
+    public string ToJsonString()
     {
         // for sending data over the wire
         return JsonSerializer.Serialize<WinlinkMessageModel>(this);
@@ -31,18 +31,17 @@ public class WinlinkMessageModel
 
     public override string ToString()
     {
-        // for logging
+        // override ToString to get data and collection out of this instance
         StringBuilder sb = new StringBuilder();
-        sb.Append(WinlinkMessageId).Append('\t');
-        sb.Append(ToFilename()).Append('\t');
-        sb.Append("Bibs: [ ");
+        sb.Append("Message-ID: ").Append(WinlinkMessageId).Append(" in ");
+        sb.Append(ToFilename()).AppendLine(" contains bib records: [");
 
         foreach (var record in BibRecords)
         {
-            sb.Append(record.BibDataToString()).Append('\t');
+            sb.AppendLine(record.ToTabbedString());
         }
 
-        sb.Append(" ]").Append('\t');
+        sb.AppendLine("]");
         return sb.ToString();
     }
 }
