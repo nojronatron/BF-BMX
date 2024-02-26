@@ -69,7 +69,7 @@ namespace BFBMX.Service.Helpers
         /// <param name="bibRecords">Empty List of type BibRecordModel</param>
         /// <param name="lines">Array of string data to check for bib records</param>
         /// <returns>True if strict and sloppy match counts are same, otherwise False.</returns>
-        public static bool ProcessBibs(List<BibRecordModel> bibRecords, string[] lines)
+        public static bool ProcessBibs(List<FlaggedBibRecordModel> bibRecords, string[] lines)
         {
             if (lines is null || lines.Length < 1)
             {
@@ -77,8 +77,8 @@ namespace BFBMX.Service.Helpers
             }
             else
             {
-                List<BibRecordModel> strictMatches = GetStrictMatches(lines);
-                List<BibRecordModel> sloppyMatches = GetSloppyMatches(lines);
+                List<FlaggedBibRecordModel> strictMatches = GetStrictMatches(lines);
+                List<FlaggedBibRecordModel> sloppyMatches = GetSloppyMatches(lines);
 
                 if (strictMatches.Count == sloppyMatches.Count)
                 {
@@ -95,9 +95,9 @@ namespace BFBMX.Service.Helpers
             return false;
         }
 
-        public static List<BibRecordModel> GetSloppyMatches(string[] lines)
+        public static List<FlaggedBibRecordModel> GetSloppyMatches(string[] lines)
         {
-            var sloppyBibRecords = new List<BibRecordModel>();
+            var sloppyBibRecords = new List<FlaggedBibRecordModel>();
 
             if (lines is null || lines.Length < 1)
             {
@@ -111,9 +111,9 @@ namespace BFBMX.Service.Helpers
             return sloppyBibRecords;
         }
 
-        public static List<BibRecordModel> GetStrictMatches(string[] lines)
+        public static List<FlaggedBibRecordModel> GetStrictMatches(string[] lines)
         {
-            var strictBibRecords = new List<BibRecordModel>();
+            var strictBibRecords = new List<FlaggedBibRecordModel>();
 
             if (lines is null || lines.Length < 1)
             {
@@ -127,7 +127,7 @@ namespace BFBMX.Service.Helpers
             return strictBibRecords;
         }
 
-        public static bool GetBibMatches(List<BibRecordModel> emptyBibList, string[] fileDataLines, string pattern)
+        public static bool GetBibMatches(List<FlaggedBibRecordModel> emptyBibList, string[] fileDataLines, string pattern)
         {
             if (
                 emptyBibList is null || emptyBibList.Count > 0
@@ -157,16 +157,16 @@ namespace BFBMX.Service.Helpers
             }
         }
 
-        public static BibRecordModel CreateBibRecord(string[] fields)
+        public static FlaggedBibRecordModel CreateBibRecord(string[] fields)
         {
             if (fields.Length < 5 || !int.TryParse(fields[0], out int bibNum)
                 || !int.TryParse(fields[3], out int dayOfMonth))
             {
                 // log this error condition and return null
-                return new BibRecordModel();
+                return new FlaggedBibRecordModel();
             }
 
-            return new BibRecordModel
+            return new FlaggedBibRecordModel
             {
                 BibNumber = bibNum,
                 Action = fields[1].Trim(),

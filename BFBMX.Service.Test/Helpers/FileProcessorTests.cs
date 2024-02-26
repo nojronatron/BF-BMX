@@ -25,7 +25,7 @@ public class FileProcessorTests
       "196	OUT	2009	11	WR"
      };
 
-        List<BibRecordModel> actualResult = new();
+        List<FlaggedBibRecordModel> actualResult = new();
         bool strictMatches = FileProcessor.ProcessBibs(actualResult, bibList);
         Assert.True(strictMatches);
         Assert.NotNull(actualResult);
@@ -43,7 +43,7 @@ public class FileProcessorTests
       "196	OUT	2009	11	WR"
      };
 
-        List<BibRecordModel> actualResult = new();
+        List<FlaggedBibRecordModel> actualResult = new();
         bool strictMatches = FileProcessor.ProcessBibs(actualResult, bibList);
         Assert.False(strictMatches);
         Assert.NotNull(actualResult);
