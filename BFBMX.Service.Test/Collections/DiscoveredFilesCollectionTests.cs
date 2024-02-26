@@ -5,15 +5,47 @@ namespace BFBMX.Service.Test.Collections;
 
 public class DiscoveredFilesCollectionTests
 {
+    private DiscoveredFileModel testFileAlpha = new DiscoveredFileModel("a-test-file.mime");
+    private DiscoveredFileModel testFileBravo = new DiscoveredFileModel("b-test-file.mime");
+    private DiscoveredFileModel testFileCharlie = new DiscoveredFileModel("c-test-file.mime");
+    private DiscoveredFileModel testFileDelta = new DiscoveredFileModel("d-test-file.mime");
+    private DiscoveredFileModel testFileEcho = new DiscoveredFileModel("e-test-file.mime");
+    private DiscoveredFileModel testFileFoxtrot = new DiscoveredFileModel("f-test-file.mime");
+    private DiscoveredFileModel testFileGolf = new DiscoveredFileModel("g-test-file.mime");
+    private DiscoveredFileModel testFileHotel = new DiscoveredFileModel("h-test-file.mime");
+
+    [Fact]
+    public void MaximumItemsCountIsHonored()
+    {
+        var sut = new DiscoveredFilesCollection();
+
+        var expectedMaxItems = sut.MaxItems;
+
+        Assert.True(sut.IsEmpty);
+        sut.Enqueue(testFileAlpha);
+        Assert.True(sut.Count <= expectedMaxItems);
+        sut.Enqueue(testFileBravo);
+        Assert.True(sut.Count <= expectedMaxItems);
+        sut.Enqueue(testFileCharlie);
+        Assert.True(sut.Count <= expectedMaxItems);
+        sut.Enqueue(testFileDelta);
+        Assert.True(sut.Count <= expectedMaxItems);
+        sut.Enqueue(testFileEcho);
+        Assert.True(sut.Count <= expectedMaxItems);
+        sut.Enqueue(testFileFoxtrot);
+        Assert.True(sut.Count <= expectedMaxItems);
+        sut.Enqueue(testFileGolf);
+        Assert.True(sut.Count <= expectedMaxItems);
+        sut.Enqueue(testFileHotel);
+        Assert.True(sut.Count <= expectedMaxItems);
+        sut.Clear();
+        Assert.True(sut.Count == 0);
+    }
+
     [Fact]
     public void AddRemoveCountCollectionItems()
     {
-        var testFileAlpha = new DiscoveredFileModel("a-test-file.mime");
-        var testFileBravo = new DiscoveredFileModel("b-test-file.mime");
-        var testFileCharlie = new DiscoveredFileModel("c-test-file.mime");
-        var testFileDelta = new DiscoveredFileModel("d-test-file.mime");
         var sut = new DiscoveredFilesCollection();
-
         Assert.True(sut.IsEmpty);
         
         sut.Enqueue(testFileAlpha);
