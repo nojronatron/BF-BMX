@@ -10,11 +10,11 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = "ABCDEFGHIJKL",
-            ClientDateTime = new DateTime(2024, 01, 02, 12, 11, 10),
+            MessageDateTime = new DateTime(2024, 01, 02, 12, 11, 10),
             ClientHostname = "test-hostname",
-            BibRecords = new List<BibRecordModel>
+            BibRecords = new List<FlaggedBibRecordModel>
       {
-          new BibRecordModel
+          new FlaggedBibRecordModel
           {
           BibNumber = 1,
           @Action = "IN",
@@ -52,11 +52,11 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = null,
-            ClientDateTime = new DateTime(),
+            MessageDateTime = new DateTime(),
             ClientHostname = null,
-            BibRecords = new List<BibRecordModel>
+            BibRecords = new List<FlaggedBibRecordModel>
       {
-            new BibRecordModel()
+            new FlaggedBibRecordModel()
       }
         };
 
@@ -82,11 +82,11 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = "ABCDEFGHIJKL",
-            ClientDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
+            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
-            BibRecords = new List<BibRecordModel>
+            BibRecords = new List<FlaggedBibRecordModel>
       {
-            new BibRecordModel
+            new FlaggedBibRecordModel
             {
             BibNumber = 1,
             @Action = "IN",
@@ -108,11 +108,11 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = "ABCDEFGHIJKL",
-            ClientDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
+            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
-            BibRecords = new List<BibRecordModel>
+            BibRecords = new List<FlaggedBibRecordModel>
             {
-                new BibRecordModel
+                new FlaggedBibRecordModel
                 {
                     BibNumber = 1,
                     @Action = "IN",
@@ -124,8 +124,8 @@ public class WinlinkMessageModelTests
             }
         };
 
-        var expected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"ClientDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":false}]}";
-        var actual = sut.ToJson();
+        var expected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":false}]}";
+        var actual = sut.ToJsonString();
         Assert.Equal(expected, actual);
     }
 
@@ -135,11 +135,11 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = "ABCDEFGHIJKL",
-            ClientDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
+            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
-            BibRecords = new List<BibRecordModel>
+            BibRecords = new List<FlaggedBibRecordModel>
             {
-                new BibRecordModel
+                new FlaggedBibRecordModel
                 {
                     BibNumber = 1,
                     @Action = "IN",
@@ -151,8 +151,8 @@ public class WinlinkMessageModelTests
             }
         };
 
-        var expected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"ClientDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"13145\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":true}]}";
-        var actual = sut.ToJson();
+        var expected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"13145\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":true}]}";
+        var actual = sut.ToJsonString();
         Assert.Equal(expected, actual);
     }
 
@@ -162,11 +162,11 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = "ABCDEFGHIJKL",
-            ClientDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
+            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
-            BibRecords = new List<BibRecordModel>
+            BibRecords = new List<FlaggedBibRecordModel>
             {
-                new BibRecordModel
+                new FlaggedBibRecordModel
                 {
                     BibNumber = 1,
                     @Action = "IN",
@@ -179,14 +179,14 @@ public class WinlinkMessageModelTests
         };
 
         var expected = "1\tIN\t1314\t2\ttest-location";
-        var actual = sut.BibRecords[0].BibDataToString();
+        var actual = sut.BibRecords[0].ToTabbedString();
         Assert.Equal(expected, actual);
     }
 
     [Fact]
     public void MessageToString()
     {
-        var bibEntry = new BibRecordModel
+        var bibEntry = new FlaggedBibRecordModel
         {
             BibNumber = 1,
             @Action = "IN",
@@ -199,15 +199,15 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = "ABCDEFGHIJKL",
-            ClientDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
+            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
-            BibRecords = new List<BibRecordModel>
+            BibRecords = new List<FlaggedBibRecordModel>
             {
                 bibEntry
             }
         };
 
-        var expected = "ABCDEFGHIJKL\ttest-hostname-2024-01-02T13-12-11.txt\tBibs: [ 1\tIN\t1314\t2\ttest-location\t ]\t";//\tOK\t";
+        var expected = "Message-ID: ABCDEFGHIJKL in test-hostname-2024-01-02T13-12-11.txt contains bib records: [\r\n1\tIN\t1314\t2\ttest-location\r\n]\r\n";
         var actual = sut.ToString();
         Assert.Equal(expected, actual);
     }
@@ -215,7 +215,7 @@ public class WinlinkMessageModelTests
     [Fact]
     public void MessageToStringWithWarning()
     {
-        var bibEntry = new BibRecordModel
+        var bibEntry = new FlaggedBibRecordModel
         {
             BibNumber = 1,
             @Action = "IN",
@@ -228,15 +228,15 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = "ABCDEFGHIJKL",
-            ClientDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
+            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
-            BibRecords = new List<BibRecordModel>
+            BibRecords = new List<FlaggedBibRecordModel>
             {
                 bibEntry
             }
         };
 
-        var expected = "ABCDEFGHIJKL\ttest-hostname-2024-01-02T13-12-11.txt\tBibs: [ 1\tIN\t1314\t2\ttest-location\tWarning!\t ]\t";
+        var expected = "Message-ID: ABCDEFGHIJKL in test-hostname-2024-01-02T13-12-11.txt contains bib records: [\r\n1\tIN\t1314\t2\ttest-location\tWarning\r\n]\r\n";
         var actual = sut.ToString();
         Assert.Equal(expected, actual);
     }
