@@ -1,4 +1,5 @@
 using BFBMX.Service.Models;
+using System.Diagnostics;
 
 namespace BFBMX.Service.Test.Models;
 
@@ -55,9 +56,9 @@ public class WinlinkMessageModelTests
             MessageDateTime = new DateTime(),
             ClientHostname = null,
             BibRecords = new List<FlaggedBibRecordModel>
-      {
-            new FlaggedBibRecordModel()
-      }
+            {
+                new FlaggedBibRecordModel()
+            }
         };
 
         // test nullable fields
@@ -97,7 +98,7 @@ public class WinlinkMessageModelTests
             }
         }
         };
-        var expected = "test-hostname-2024-01-02T13-12-11.txt";
+        var expected = "ABCDEFGHIJKL-2024-01-02T13-12-11.txt";
         var actual = sut.ToFilename();
         Assert.Equal(expected, actual);
     }
@@ -124,9 +125,34 @@ public class WinlinkMessageModelTests
             }
         };
 
-        var expected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":false}]}";
-        var actual = sut.ToJsonString();
-        Assert.Equal(expected, actual);
+        var singleBibExpected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[" +
+            "{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":false}]}";
+        var singleBibActual = sut.ToJsonString();
+        
+        Debug.WriteLine($"singleBibExpected:\r\n{singleBibExpected}");
+        Debug.WriteLine($"singleBibActual:\r\n{singleBibActual}");
+        Assert.Equal(singleBibExpected, singleBibActual);
+
+        var newRecord = new FlaggedBibRecordModel
+        {
+            BibNumber = 1,
+            @Action = "OUTT",
+            BibTimeOfDay = "2014",
+            DayOfMonth = 2,
+            Location = "test-location",
+            DataWarning = true
+        };
+
+        sut.BibRecords.Add(newRecord);
+
+        var twoBibsExpected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[" +
+            "{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":false}," +
+            "{\"BibNumber\":1,\"Action\":\"OUTT\",\"BibTimeOfDay\":\"2014\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":true}]}";
+        var twoBibsActual = sut.ToJsonString();
+
+        Debug.WriteLine($"twobibsExpected:\r\n{twoBibsExpected}");
+        Debug.WriteLine($"twoBibsActual:\r\n{twoBibsActual}");
+        Assert.Equal(twoBibsExpected, twoBibsActual);
     }
 
     [Fact]
@@ -184,7 +210,7 @@ public class WinlinkMessageModelTests
     }
 
     [Fact]
-    public void MessageToString()
+    public void MessageToServerAuditTabbedString()
     {
         var bibEntry = new FlaggedBibRecordModel
         {
@@ -207,9 +233,18 @@ public class WinlinkMessageModelTests
             }
         };
 
-        var expected = "Message-ID: ABCDEFGHIJKL in test-hostname-2024-01-02T13-12-11.txt contains bib records: [\r\n1\tIN\t1314\t2\ttest-location\r\n]\r\n";
-        var actual = sut.ToString();
-        Assert.Equal(expected, actual);
+        var oneLineExpected = "ABCDEFGHIJKL\ttest-hostname\t1\tIN\t1314\t2\ttest-location\r\n";
+        var oneLineActual = sut.ToServerAuditTabbedString();
+        Debug.WriteLine($"Expected:\r\n{oneLineExpected}\r\nActual:\r\n{oneLineActual}");
+        Assert.Equal(oneLineExpected, oneLineActual);
+
+        var newRecord = FlaggedBibRecordModel.GetBibRecordModel(1, "OUTT", "2014", 2, "test-location", true);
+        sut.BibRecords.Add(newRecord);
+
+        var twoLinesExpected = "ABCDEFGHIJKL\ttest-hostname\t1\tIN\t1314\t2\ttest-location\r\nABCDEFGHIJKL\ttest-hostname\t1\tOUTT\t2014\t2\ttest-location\tWarning\r\n";
+        string twoLinesActual = sut.ToServerAuditTabbedString();
+        Debug.WriteLine($"Expected:\r\n{twoLinesExpected}\r\nActual:\r\n{twoLinesActual}");
+        Assert.Equal(twoLinesExpected, twoLinesActual);
     }
 
     [Fact]
@@ -236,8 +271,56 @@ public class WinlinkMessageModelTests
             }
         };
 
-        var expected = "Message-ID: ABCDEFGHIJKL in test-hostname-2024-01-02T13-12-11.txt contains bib records: [\r\n1\tIN\t1314\t2\ttest-location\tWarning\r\n]\r\n";
-        var actual = sut.ToString();
-        Assert.Equal(expected, actual);
+        var expected = "ABCDEFGHIJKL\ttest-hostname\t1\tIN\t1314\t2\ttest-location\tWarning\r\n";
+        var oneLIneActual = sut.ToServerAuditTabbedString();
+        Debug.WriteLine($"Expected:\r\n{expected}\r\nActual:\r\n{oneLIneActual}");
+        Assert.Equal(expected, oneLIneActual);
+    }
+
+
+    [Fact]
+    public void MessageToAccessDatabaseTabbedString()
+    {
+        var bibEntry = new FlaggedBibRecordModel
+        {
+            BibNumber = 1,
+            @Action = "IN",
+            BibTimeOfDay = "1314",
+            DayOfMonth = 2,
+            Location = "test-location",
+            DataWarning = false,
+        };
+
+        var sut = new WinlinkMessageModel
+        {
+            WinlinkMessageId = "ABCDEFGHIJKL",
+            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
+            ClientHostname = "test-hostname",
+            BibRecords = new List<FlaggedBibRecordModel>
+            {
+                bibEntry
+            }
+        };
+
+        var oneLineExpected = "ABCDEFGHIJKL\t2024-01-02T13-12-11\t1\tIN\t1314\t2\ttest-location\r\n";
+        var oneLineActual = sut.ToAccessDatabaseTabbedString();
+        Debug.WriteLine($"Expected:\r\n{oneLineExpected}\r\nActual:\r\n{oneLineActual}");
+        Assert.Equal(oneLineExpected, oneLineActual);
+
+        var newRecord = new FlaggedBibRecordModel
+        {
+            BibNumber = 1,
+            @Action = "OUTT",
+            BibTimeOfDay = "2014",
+            DayOfMonth = 2,
+            Location = "test-location",
+            DataWarning = true
+        };
+        sut.BibRecords.Add(newRecord);
+
+        var twoLinesExpected = "ABCDEFGHIJKL\t2024-01-02T13-12-11\t1\tIN\t1314\t2\ttest-location\r\nABCDEFGHIJKL\t2024-01-02T13-12-11\t1\tOUTT\t2014\t2\ttest-location\tWarning\r\n";
+        string twoLinesActual = sut.ToAccessDatabaseTabbedString();
+        Debug.WriteLine($"Expected:\r\n{twoLinesExpected}\r\nActual:\r\n{twoLinesActual}");
+        Assert.Equal(twoLinesExpected, twoLinesActual);
     }
 }

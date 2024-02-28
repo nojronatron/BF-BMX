@@ -5,14 +5,14 @@ namespace BFBMX.Service.Test.Collections;
 
 public class DiscoveredFilesCollectionTests
 {
-    private DiscoveredFileModel testFileAlpha = new DiscoveredFileModel("a-test-file.mime");
-    private DiscoveredFileModel testFileBravo = new DiscoveredFileModel("b-test-file.mime");
-    private DiscoveredFileModel testFileCharlie = new DiscoveredFileModel("c-test-file.mime");
-    private DiscoveredFileModel testFileDelta = new DiscoveredFileModel("d-test-file.mime");
-    private DiscoveredFileModel testFileEcho = new DiscoveredFileModel("e-test-file.mime");
-    private DiscoveredFileModel testFileFoxtrot = new DiscoveredFileModel("f-test-file.mime");
-    private DiscoveredFileModel testFileGolf = new DiscoveredFileModel("g-test-file.mime");
-    private DiscoveredFileModel testFileHotel = new DiscoveredFileModel("h-test-file.mime");
+    private readonly DiscoveredFileModel testFileAlpha = new("a-test-file.mime");
+    private readonly DiscoveredFileModel testFileBravo = new("b-test-file.mime");
+    private readonly DiscoveredFileModel testFileCharlie = new("c-test-file.mime");
+    private readonly DiscoveredFileModel testFileDelta = new("d-test-file.mime");
+    private readonly DiscoveredFileModel testFileEcho = new("e-test-file.mime");
+    private readonly DiscoveredFileModel testFileFoxtrot = new("f-test-file.mime");
+    private readonly DiscoveredFileModel testFileGolf = new("g-test-file.mime");
+    private readonly DiscoveredFileModel testFileHotel = new("h-test-file.mime");
 
     [Fact]
     public void MaximumItemsCountIsHonored()
