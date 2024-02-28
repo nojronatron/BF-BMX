@@ -8,8 +8,7 @@ namespace BFBMX.Service.Collections
     /// </summary>
     public class DiscoveredFilesCollection : ConcurrentQueue<DiscoveredFileModel>
     {
-        private int maxItems = 6;
-        public int MaxItems { get { return maxItems; } }
+        public int MaxItems { get; } = 6;
 
         public DiscoveredFilesCollection()
         {
@@ -19,7 +18,7 @@ namespace BFBMX.Service.Collections
         {
             base.Enqueue(item);
 
-            while (base.Count > this.maxItems)
+            while (base.Count > this.MaxItems)
             {
                 base.TryDequeue(out DiscoveredFileModel? _);
             }
