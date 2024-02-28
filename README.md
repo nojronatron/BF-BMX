@@ -11,6 +11,19 @@ The overarching goal of this project is to create a synchronization tool that wi
 
 ## Project Status
 
+28-Feb-2024:
+
+- Implemented early version of the server services (services in following bullet points).
+- Implements use of Environment Variables for logging configuration.
+- Server service logs server operations including error events, data or service warnings, and informational notes.
+- Server service attempts to load a backup file to allow quickly resuming operations after a server restart or other failover requirements.
+- POST Route receives data payload from client.
+- GET Route enables anytime server data backup to a local JSON file.
+- Logging manager logs incoming data to an auditing file.
+- Logging manager stores bib data in expected format to a tab-delimited plain text file.
+- Updated existing unit tests.
+- Added unit tests for server-side implementations.
+
 20-Feb-2024:
 
 - Refactored data models for relational database storage and streamlined data transfer between client and server.
