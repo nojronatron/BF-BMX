@@ -21,9 +21,12 @@ namespace BFBMX.Service.Helpers
         private static readonly string messageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
         private static readonly string strictBibPattern = @"\b\d{1,3}\t(OUT|IN|DROP)\t\d{4}\t\d{1,2}\t\w{2}\b";
         private static readonly string sloppyBibPattern = @"\b\w{1,15}\t\w{1,5}\t\w{1,5}\t\w{1,3}\t\w{1,26}\b";
-        // todo: add singleton fields e.g. Collections, logger, etc
-        // todo: add instance fields for common properties
-
+        
+        /// <summary>
+        /// Resuable wrapper method to get file data without throwing an IO and other Exceptions.
+        /// </summary>
+        /// <param name="fullFilePath"></param>
+        /// <returns></returns>
         public static string[] GetFileData(string fullFilePath)
         {
             if (!string.IsNullOrWhiteSpace(fullFilePath) && File.Exists(fullFilePath))
@@ -36,13 +39,18 @@ namespace BFBMX.Service.Helpers
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"An unexpected error occurred reading {fullFilePath}: {ex.Message}");
+                    Debug.WriteLine($"Unable to read data from {fullFilePath}: {ex.Message}");
                 }
             }
 
             return Array.Empty<string>();
         }
 
+        /// <summary>
+        /// Finds the first instance of a Winlink message Message-ID.
+        /// </summary>
+        /// <param name="fileData"></param>
+        /// <returns>Message-ID value or an empty string if none found.</returns>
         public static string GetMessageId(string fileData)
         {
             if (string.IsNullOrWhiteSpace(fileData))
@@ -50,7 +58,7 @@ namespace BFBMX.Service.Helpers
                 return string.Empty;
             }
 
-            Regex match = new(messageIdPattern);
+            Regex match = new(messageIdPattern, RegexOptions.IgnoreCase, new TimeSpan(0, 0,  2));
             MatchCollection matches = match.Matches(fileData);
 
             if (matches.Count > 0)
@@ -95,13 +103,18 @@ namespace BFBMX.Service.Helpers
             return false;
         }
 
+        /// <summary>
+        /// Attempts to find potential matches in bib data. Returns a list of FlaggedBibRecordModel with DataWarnings set as appropriate.
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <returns></returns>
         public static List<FlaggedBibRecordModel> GetSloppyMatches(string[] lines)
         {
             var sloppyBibRecords = new List<FlaggedBibRecordModel>();
 
             if (lines is null || lines.Length < 1)
             {
-                Debug.WriteLine($"GetSloppyMatches input {nameof(lines)} was empty. Returning and empty list.");
+                Debug.WriteLine($"GetSloppyMatches input {nameof(lines)} was empty. Returning an empty list.");
                 return sloppyBibRecords;
             }
 
@@ -127,7 +140,17 @@ namespace BFBMX.Service.Helpers
             return strictBibRecords;
         }
 
-        public static bool GetBibMatches(List<FlaggedBibRecordModel> emptyBibList, string[] fileDataLines, string pattern)
+        /// <summary>
+        /// Identifies data matches in array of potential bib records usinga RegEx pattern.
+        /// Data Warning flags could be set on any FlaggedBibRecordModel that cannot be fully parsed.
+        /// </summary>
+        /// <param name="emptyBibList"></param>
+        /// <param name="fileDataLines"></param>
+        /// <param name="pattern"></param>
+        /// <returns>true if any matches are found, false in any other case.</returns>
+        public static bool GetBibMatches(List<FlaggedBibRecordModel> emptyBibList,
+                                         string[] fileDataLines,
+                                         string pattern)
         {
             if (
                 emptyBibList is null || emptyBibList.Count > 0
@@ -141,39 +164,29 @@ namespace BFBMX.Service.Helpers
             {
                 foreach (var line in fileDataLines)
                 {
-                    if (Regex.IsMatch(line, pattern, RegexOptions.IgnoreCase, new TimeSpan(0, 0, 2)))
+                    try
                     {
-                        var fields = line.Split('\t');
-                        var bibRecord = CreateBibRecord(fields);
-
-                        if (bibRecord is not null)
+                        if (Regex.IsMatch(line, pattern, RegexOptions.IgnoreCase, new TimeSpan(0, 0, 2)))
                         {
-                            emptyBibList.Add(bibRecord);
+                            var fields = line.Split('\t');
+                            FlaggedBibRecordModel bibRecord = FlaggedBibRecordModel.GetBibRecordInstance(fields);
+
+                            if (bibRecord is not null)
+                            {
+                                emptyBibList.Add(bibRecord);
+                            }
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"GetBibMatches RegEx operation could not match \"{pattern}\" to \"{line}\"!" +
+                            $"Data should be audited carefully! Exception message: {ex.Message}." +
+                            $"FileProcessor operations will continue.");
                     }
                 }
 
-                return true;
+                return emptyBibList.Count > 0;
             }
-        }
-
-        public static FlaggedBibRecordModel CreateBibRecord(string[] fields)
-        {
-            if (fields.Length < 5 || !int.TryParse(fields[0], out int bibNum)
-                || !int.TryParse(fields[3], out int dayOfMonth))
-            {
-                // log this error condition and return null
-                return new FlaggedBibRecordModel();
-            }
-
-            return new FlaggedBibRecordModel
-            {
-                BibNumber = bibNum,
-                Action = fields[1].Trim(),
-                BibTimeOfDay = fields[2].Trim(),
-                DayOfMonth = dayOfMonth,
-                Location = fields[4].Trim()
-            };
         }
     }
 }
