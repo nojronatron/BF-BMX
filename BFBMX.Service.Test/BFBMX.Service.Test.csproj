@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BFBMX.ServerApi\BFBMX.ServerApi.csproj" />
     <ProjectReference Include="..\BFBMX.Service\BFBMX.Service.csproj" />
   </ItemGroup>
 
