@@ -1,4 +1,5 @@
 ﻿using BFBMX.Service.Helpers;
+using System.Diagnostics;
 
 namespace BFBMX.Service.Test.Helpers
 {
@@ -44,10 +45,14 @@ namespace BFBMX.Service.Test.Helpers
         [Fact]
         public void StartStopDestroyFileSystemWatcher()
         {
+            Debug.WriteLine($"Temp file found? {FwmTempfileFound}");
+            Debug.WriteLine($"Error reported? {FwmErrorCallbackMessage}");
             Assert.NotNull(tempPath);
             var expectedPath = tempPath;
 
             // capture the watcher object and ensure automatic disposal if a test fails
+            //using var actualWatcher =
+            //    FSWatcherFactory.Create(HandleFileCreated, HandleFileWatherError, expectedPath!);
             using var actualWatcher =
                 FSWatcherFactory.Create(HandleFileCreated, HandleFileWatherError, expectedPath!);
 
@@ -64,6 +69,12 @@ namespace BFBMX.Service.Test.Helpers
             string fileContent = "test file content";
             CancellationToken cancelToken = new CancellationTokenSource().Token;
 
+            // if file exists already, delete it otherwise create callback will not fire
+            if (File.Exists(testFile))
+            {
+                File.Delete(testFile);
+            }
+
             var swTask = Task.Run(() =>
             {
                 using (StreamWriter sw = File.CreateText(testFile))
@@ -72,7 +83,11 @@ namespace BFBMX.Service.Test.Helpers
                     Console.WriteLine("Writing file...");
                 }
             }, cancelToken);
-            swTask.Wait();
+            var delayTask = Task.Delay(250, cancelToken);
+            Task.WaitAll(swTask, delayTask);
+
+            Debug.WriteLine($"Temp file found? {FwmTempfileFound}");
+            Debug.WriteLine($"Error reported? {FwmErrorCallbackMessage}");
 
             // FwmTempfileFound should be set to the newly created file name
             Assert.True(File.Exists(testFile));
@@ -99,6 +114,9 @@ namespace BFBMX.Service.Test.Helpers
             }
 
             Assert.True(File.Exists(testFile2));
+
+            Debug.WriteLine($"Temp file found? {FwmTempfileFound}");
+            Debug.WriteLine($"Error reported? {FwmErrorCallbackMessage}");
 
             // test if Created Event was NOT raised
             Assert.True(string.IsNullOrWhiteSpace(FwmTempfileFound));
