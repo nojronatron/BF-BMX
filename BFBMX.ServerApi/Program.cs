@@ -26,7 +26,7 @@ builder.Services.AddScoped<IBibRecordLogger, BibRecordLogger>();
 var app = builder.Build();
 
 // log server startup
-app.Logger.LogInformation("API Server stated up.");
+app.Logger.LogInformation("API Server starting up.");
 
 // make registered services available for use in this codepage
 var scope = app.Services.CreateScope();
