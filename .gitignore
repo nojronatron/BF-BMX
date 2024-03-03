@@ -1,2 +1,36 @@
-**\obj
-**\bin
+# Visual Studio 2020 or newer
+**/[Oo]bj
+**/[Bb]in
+**/[Dd]ebug*/
+**/[Rr]elease*/
+**/[Tt]est[Rr]esults
+**/.vs
+**/.nuget
+*.user
+*.suo
+*.userosscache
+*.dbmdl
+*.jfm
+*.pfx
+*.publishsettings
+*.psess
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Others
+*.log
+*.sqldb
+*.sqlite3
+*.bak
+*.cache
+*.swp
+*.swo
+**/node_modules/
+**/bower_components/
+*.DS_Store
