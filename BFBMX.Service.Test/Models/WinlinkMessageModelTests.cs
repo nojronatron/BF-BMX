@@ -238,7 +238,15 @@ public class WinlinkMessageModelTests
         Debug.WriteLine($"Expected:\r\n{oneLineExpected}\r\nActual:\r\n{oneLineActual}");
         Assert.Equal(oneLineExpected, oneLineActual);
 
-        var newRecord = FlaggedBibRecordModel.GetBibRecordModel(1, "OUTT", "2014", 2, "test-location", true);
+        var newRecord = new FlaggedBibRecordModel()
+        {
+            BibNumber = 1,
+            Action = "OUTT",
+            BibTimeOfDay = "2014",
+            DayOfMonth = 2,
+            Location = "test-location",
+            DataWarning = true
+        };
         sut.BibRecords.Add(newRecord);
 
         var twoLinesExpected = "ABCDEFGHIJKL\ttest-hostname\t1\tIN\t1314\t2\ttest-location\r\nABCDEFGHIJKL\ttest-hostname\t1\tOUTT\t2014\t2\ttest-location\tWarning\r\n";
