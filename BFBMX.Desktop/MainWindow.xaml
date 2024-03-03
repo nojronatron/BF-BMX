@@ -1,0 +1,182 @@
+﻿<Window x:Class="BFBMX.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BFBMX.Desktop"
+        mc:Ignorable="d"
+        MinHeight="376" MinWidth="592"
+        Title="Bigfoot BMX Desktop">
+    
+    <Grid Background="Azure">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="34"/>
+            <RowDefinition Height="34"/>
+            <RowDefinition Height="34"/>
+            <RowDefinition Height="38"/>
+            <RowDefinition Height="180"/>
+            <RowDefinition Height="8"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
+    <ColumnDefinition Width="8"/>
+    </Grid.ColumnDefinitions>
+
+    <StackPanel Orientation="Horizontal"
+                    Grid.Row="1"
+                    Grid.Column="1">
+        <TextBox x:Name="AlphaMonitorPath"
+                     Height="24"
+                     Width="320"
+                     Margin="4"
+                     VerticalAlignment="Center"
+                     Validation.ErrorTemplate="{StaticResource errorTemplate}">
+                <TextBox.Text>"Placeholder: Directory path binding and Validation Rules"
+                <!--<Binding Path="AlphaPath" 
+                             ValidatesOnDataErrors="True" 
+                             UpdateSourceTrigger="PropertyChanged">
+                    <Binding.ValidationRules>
+                        <local:TextboxRule MinimumCharacters="4"/>
+                    </Binding.ValidationRules>
+                </Binding>-->
+            </TextBox.Text>
+        </TextBox>
+        <Button x:Name="InitAlphaMonitorButton"
+                Command="{Binding InitAlphaMonitorCommand}"
+                Content="Initialize"
+                Padding="4"
+                Margin="4" />
+        <Button x:Name="LaunchAlphaMonitorButton"
+                Command="{Binding StartAlphaMonitorCommand}"
+                Content="Launch"
+                Padding="4"
+                Margin="4"
+                IsEnabled="false" />
+        <Button x:Name="StopAlphaMonitorButton"
+                Command="{Binding StopAlphaMonitorCommand}"
+                Content="Stop" 
+                Padding="4"
+                Margin="4" 
+                IsEnabled="False" />
+        <Button x:Name="DestroyAlphaMonitorButton"
+                Command="{Binding DestroyAlphaMonitorCommand}"
+                Content="Destroy"
+                Padding="4"
+                Margin="4"
+                IsEnabled="False" />
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal"
+                    Grid.Row="2"
+                    Grid.Column="1">
+        <TextBox x:Name="BravoMonitorPath"
+                     Height="24"
+                     Width="320"
+                     Margin="4"
+                     VerticalAlignment="Center">
+                <TextBox.Text>"Placeholder: Directory path binding and Validation Rules"
+                    <!--<Binding Path="BravoPath" 
+                             ValidatesOnDataErrors="True" 
+                             UpdateSourceTrigger="PropertyChanged">
+                    <Binding.ValidationRules>
+                        <local:TextboxRule MinimumCharacters="4"/>
+                    </Binding.ValidationRules>
+                </Binding>-->
+            </TextBox.Text>
+        </TextBox>
+        <Button x:Name="InitBravoMonitorButton"
+                Command="{Binding InitAlphaMonitorCommand}"
+                    Content="Initialize"
+                    Padding="4"
+                    Margin="4" />
+        <Button x:Name="LaunchBravoMonitorButton"
+                Command="{Binding InitAlphaMonitorCommand}"
+                    Content="Launch"
+                    Padding="4"
+                    Margin="4"
+                    IsEnabled="false" />
+        <Button x:Name="StopBravoMonitorButton"
+                Command="{Binding InitAlphaMonitorCommand}"
+                    Content="Stop" 
+                    Padding="4"
+                    Margin="4"
+                    IsEnabled="False" />
+        <Button x:Name="DestroyBravoMonitorButton"
+                Command="{Binding InitAlphaMonitorCommand}"
+                    Content="Destroy"
+                    Padding="4"
+                    Margin="4"
+                    IsEnabled="False" />
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal"
+                    Grid.Row="3"
+                    Grid.Column="1">
+        <TextBox x:Name="CharlieMonitorPath"
+                     Height="24"
+                     Width="320"
+                     Margin="4"
+                     VerticalAlignment="Center">
+                <TextBox.Text>"Placeholder: Directory path binding and Validation Rules"
+                    <!--<Binding Path="CharliePath" 
+                             ValidatesOnDataErrors="True" 
+                             UpdateSourceTrigger="PropertyChanged">
+                    <Binding.ValidationRules>
+                        <local:TextboxRule MinimumCharacters="4"/>
+                    </Binding.ValidationRules>
+                </Binding>-->
+            </TextBox.Text>
+        </TextBox>
+        <Button x:Name="InitCharlieMonitorButton"
+                Command="{Binding InitAlphaMonitorCommand}"
+                    Content="Initialize"
+                    Padding="4"
+                    Margin="4" />
+        <Button x:Name="LaunchCharlieMonitorButton"
+                Command="{Binding InitAlphaMonitorCommand}"
+                    Content="Launch"
+                    Padding="4"
+                    Margin="4"
+                    IsEnabled="False" />
+        <Button x:Name="StopCharlieMonitorButton"
+                Command="{Binding InitAlphaMonitorCommand}"
+                    Content="Stop" 
+                    Padding="4"
+                    Margin="4" 
+                    IsEnabled="False"/>
+        <Button x:Name="DestroyCharlieMonitorButton"
+                Command="{Binding InitAlphaMonitorCommand}"
+                    Content="Destroy"
+                    Padding="4"
+                    Margin="4"
+                    IsEnabled="False" />
+    </StackPanel>
+
+    <StackPanel Orientation="Vertical"
+                    Grid.Row="4"
+                    Grid.Column="1">
+        <Label x:Name="StatusMessages" 
+                   VerticalAlignment="Center"
+                   HorizontalContentAlignment="Left"
+                   Height="30"
+                   Width="540"
+                   Background="AntiqueWhite"
+                   Margin="4"
+                   Content="Binding StatusMessageLabel" />
+    </StackPanel>
+
+    <StackPanel Orientation="Vertical"
+                    Grid.Row="5"
+                    Grid.Column="1">
+        <Label x:Name="DiscoveredFilesListView"
+                      Height="178"
+                      ScrollViewer.VerticalScrollBarVisibility="Visible"
+                      ScrollViewer.CanContentScroll="True"
+               Content="DiscoveredFilesListView Placeholder" />
+    </StackPanel>
+
+    </Grid>
+
+</Window>
