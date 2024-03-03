@@ -11,6 +11,12 @@ The overarching goal of this project is to create a synchronization tool that wi
 
 ## Project Status
 
+3-Mar-2024:
+
+- Implemented tests and squashed bugs.
+- Includes an exploratory models for later use in returning data from library to calling code.
+- Includes exploratory ConcurrentQueue for possible use in displaying files found progress to the UI.
+
 28-Feb-2024:
 
 - Implemented early version of the server services (services in following bullet points).
