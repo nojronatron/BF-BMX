@@ -3,10 +3,17 @@ using System.Collections.Concurrent;
 
 namespace BFBMX.Service.Collections
 {
+    public interface IDiscoveredFilesCollection
+    {
+        int MaxItems { get; }
+
+        void Enqueue(DiscoveredFileModel item);
+    }
+
     /// <summary>
     /// Concurrent Queue datastructure with a maximum item limit.
     /// </summary>
-    public class DiscoveredFilesCollection : ConcurrentQueue<DiscoveredFileModel>
+    public class DiscoveredFilesCollection : ConcurrentQueue<DiscoveredFileModel>, IDiscoveredFilesCollection
     {
         public int MaxItems { get; } = 6;
 

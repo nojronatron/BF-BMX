@@ -22,7 +22,7 @@ namespace BFBMX.ServerApi.Helpers
         /// </summary>
         /// <param name="bfBmxLogPath"></param>
         /// <returns></returns>
-        public bool ValidateVariables(out string? bfBmxLogPath)
+        public bool ValidateServerVariables(out string? bfBmxLogPath)
         {
             string? userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
 
@@ -63,7 +63,7 @@ namespace BFBMX.ServerApi.Helpers
             try
             {
                 // boolean return ensures bfBmxLogPath is not null before continuing
-                if (ValidateVariables(out string? bfBmxLogPath))
+                if (ValidateServerVariables(out string? bfBmxLogPath))
                 {
                     string bfBmxLogFilePath = Path.Combine(bfBmxLogPath!, wlMessagePayload.ToFilename());
 
@@ -112,7 +112,7 @@ namespace BFBMX.ServerApi.Helpers
             try
             {
                 // boolean return ensures bfBmxLogPath is not null before continuing
-                if (ValidateVariables(out string? bfBmxLogPath))
+                if (ValidateServerVariables(out string? bfBmxLogPath))
                 {
                     string bfBmxLogFilePath = Path.Combine(bfBmxLogPath!, LogFilename);
                     //int counter = 0;
