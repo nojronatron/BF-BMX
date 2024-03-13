@@ -60,19 +60,19 @@
                 Content="Launch"
                 Padding="4"
                 Margin="4"
-                IsEnabled="false" />
+                IsEnabled="{Binding AlphaMonitorInitialized}" />
         <Button x:Name="StopAlphaMonitorButton"
                 Command="{Binding StopAlphaMonitorCommand}"
                 Content="Stop" 
                 Padding="4"
                 Margin="4" 
-                IsEnabled="False" />
+                IsEnabled="{Binding AlphaMonitorStarted}" />
         <Button x:Name="DestroyAlphaMonitorButton"
                 Command="{Binding DestroyAlphaMonitorCommand}"
                 Content="Destroy"
                 Padding="4"
                 Margin="4"
-                IsEnabled="False" />
+                IsEnabled="{Binding AlphaMonitorInitialized}" />
     </StackPanel>
 
     <StackPanel Orientation="Horizontal"
