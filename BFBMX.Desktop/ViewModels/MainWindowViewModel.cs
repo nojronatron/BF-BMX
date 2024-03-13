@@ -4,7 +4,11 @@ using BFBMX.Service.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.IO;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace BFBMX.Desktop.ViewModels
 {
@@ -38,6 +42,44 @@ namespace BFBMX.Desktop.ViewModels
                     DiscoveredFileModel newFile = new(discoveredFilepath);
                     DiscoveredFiles!.Enqueue(newFile);
                     _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
+                    // get data from file
+                    var fileData = FileProcessor.GetFileData(discoveredFilepath);
+
+                    // get winlink id from file
+                    StringBuilder sb = new();
+                    foreach(var fd in fileData)
+                    {
+                        sb.Append(fd).Append('\n');
+                    }
+
+                    // todo: fix FileProcessor so ViewModel doesnt have to do it
+                    var wlID = FileProcessor.GetMessageId(sb.ToString());
+
+                    // process bib data
+                    List<FlaggedBibRecordModel> processedBibs = new();
+                    bool resultSucceeded = FileProcessor.ProcessBibs(processedBibs, fileData);
+
+                    // write winilnk message to logfile
+                    if (resultSucceeded && processedBibs.Count > 0)
+                    {
+                        WinlinkMessageModel wlRecord = WinlinkMessageModel.GetWinlinkMessageInstance(wlID, DateTime.Now,
+                                                                                                     Environment.MachineName,
+                                                                                                     processedBibs);
+
+                        var options = new JsonSerializerOptions()
+                        {
+                            NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                            PropertyNameCaseInsensitive = true,
+                            WriteIndented = true
+                        };
+
+                        var wlrJsonPretty = JsonSerializer.Serialize < WinlinkMessageModel > (wlRecord, options);
+                        _logger.LogInformation("***** Winlink Message *****\n{msgData}\n***** End Winlink Message *****", wlrJsonPretty);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("No bib records found in message Winlink ID {wlId}.", wlID);
+                    }
                 }
                 catch (Exception ex)
                 {
