@@ -19,9 +19,12 @@ namespace BFBMX.Desktop.ViewModels
 {
     public partial class MainWindowViewModel : ObservableValidator
     {
-#pragma warning disable CS8601 // Possible null reference assignment.
-        private ILogger<DesktopLogger> _logger = App.Current.Services.GetService<ILogger<DesktopLogger>>();
-#pragma warning restore CS8601 // Possible null reference assignment.
+        private ILogger<MainWindowViewModel> _logger;
+
+        public MainWindowViewModel(ILogger<MainWindowViewModel> logger)
+        {
+            _logger = logger;
+        }
 
         [ObservableProperty]
         public string? _statusMessageLabel;
@@ -31,6 +34,8 @@ namespace BFBMX.Desktop.ViewModels
         /***** Global Monitor Functions *****/
         public async void HandleFileCreatedAsync(object sender, FileSystemEventArgs e)
         {
+            _logger.LogInformation("HandleFileCreatedAsync called.");
+
             await Task.Run(() =>
             {
                 string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
@@ -39,12 +44,12 @@ namespace BFBMX.Desktop.ViewModels
                 {
                     DiscoveredFileModel newFile = new(discoveredFilepath);
                     DiscoveredFiles!.Enqueue(newFile);
-                    _logger.LogInformation($"Enqueued path {discoveredFilepath}", discoveredFilepath);
+                    _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Error enqueuing path {0}", discoveredFilepath);
-                    _logger.LogError($"Error enqueuing path continued: {0}", ex.Message);
+                    _logger.LogInformation("Error enqueuing path {discPath}", discoveredFilepath);
+                    _logger.LogInformation("Error enqueuing path continued: {msg}", ex.Message);
                 }
             });
         }
@@ -54,8 +59,9 @@ namespace BFBMX.Desktop.ViewModels
             string? errorMessage = e.GetException().Message;
             string msg = $"HandleError: {errorMessage}";
             StatusMessageLabel = msg;
-            _logger.LogWarning($"HandleError called: {0}", errorMessage);
+            _logger.LogInformation("HandleError called: {errMsg}", errorMessage);
         }
+
         /***** End Global Monitor Functions *****/
 
         /***** Alpha Monitor Configuration *****/
@@ -66,25 +72,31 @@ namespace BFBMX.Desktop.ViewModels
         public bool? _alphaMonitorPathEnabled = true;
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(InitAlphaMonitorCommand))]
         public string? _alphaMonitorPath;
 
         [RelayCommand(CanExecute = nameof(CanInitAlphaMonitor))]
         public void InitAlphaMonitor()
         {
+            _logger.LogInformation("Initialize Alpha Monitor button pressed.");
             if (_alphaMonitor is not null)
             {
                 _alphaMonitor.EnableRaisingEvents = false;
                 _alphaMonitor.Dispose();
+                _logger.LogInformation("An existing Alpha Monitor was disposed.");
             }
 
             try
             {
                 _alphaMonitor = FSWatcherFactory.Create(HandleFileCreatedAsync, HandleError, AlphaMonitorPath!);
                 AlphaMonitorPathEnabled = false;
+                CanStartAlphaMonitor();
+                CanDestroyAlphaMonitor();
+                _logger.LogInformation("Alpha Monitor initialized for {0}", AlphaMonitorPath);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Alpha Monitor unable to initialize for {0}, exception msg: {1}", 
+                _logger.LogInformation("Alpha Monitor unable to initialize for {0}, exception msg: {1}", 
                     AlphaMonitorPath, ex.Message);
                 AlphaMonitorPathEnabled = true;
             }
@@ -93,7 +105,7 @@ namespace BFBMX.Desktop.ViewModels
         public bool CanInitAlphaMonitor()
         {
             // so long as path is valid, a new or existing monitor can be initialized
-            return !string.IsNullOrWhiteSpace(AlphaMonitorPath) && File.Exists(AlphaMonitorPath);
+            return !string.IsNullOrWhiteSpace(AlphaMonitorPath) && Directory.Exists(AlphaMonitorPath);
         }
 
         [RelayCommand(CanExecute = nameof(CanStartAlphaMonitor))]
@@ -102,17 +114,18 @@ namespace BFBMX.Desktop.ViewModels
             try
             {
                 _alphaMonitor!.EnableRaisingEvents = true;
-                _logger.LogInformation($"Alpha Monitor started for {0}", AlphaMonitorPath);
+                _logger.LogInformation("Alpha Monitor started for {0}", AlphaMonitorPath);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Alpha Monitor unable to enable raising events for {0}, exception msg: {1}",
+                _logger.LogInformation("Alpha Monitor unable to enable raising events for {0}, exception msg: {1}",
                                  AlphaMonitorPath, ex.Message);
             }
         }
 
         public bool CanStartAlphaMonitor()
         {
+            _logger.LogInformation("CanStartAlphaMonitor called.");
             return _alphaMonitor is not null 
                     && _alphaMonitor.EnableRaisingEvents == false 
                     && _alphaMonitor.Path == AlphaMonitorPath;
@@ -121,11 +134,13 @@ namespace BFBMX.Desktop.ViewModels
         [RelayCommand(CanExecute = nameof(CanStopAlphaMonitor))]
         public void StopAlphaMonitor()
         {
+            _logger.LogInformation("Stop Alpha Monitor button pressed.");
 
         }
 
         public bool CanStopAlphaMonitor()
         {
+            _logger.LogInformation("CanStopAlphaMonitor called.");
             return _alphaMonitor is not null 
                 && _alphaMonitor.EnableRaisingEvents == true 
                 && _alphaMonitor.Path == AlphaMonitorPath;
@@ -134,11 +149,13 @@ namespace BFBMX.Desktop.ViewModels
         [RelayCommand(CanExecute = nameof(CanDestroyAlphaMonitor))]
         public void DestroyAlphaMonitor()
         {
+            _logger.LogInformation("Destroy Alpha Monitor button pressed.");
 
         }
 
         public bool CanDestroyAlphaMonitor()
         {
+            _logger.LogInformation("CanDestroyAlphaMonitor called.");
             return (_alphaMonitor is not null)
                     && (_alphaMonitor.EnableRaisingEvents == false)
                     && (_alphaMonitor.Path == AlphaMonitorPath);

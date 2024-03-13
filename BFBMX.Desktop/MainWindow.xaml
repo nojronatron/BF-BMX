@@ -41,7 +41,7 @@
                      Validation.ErrorTemplate="{StaticResource errorTemplate}"
                      IsEnabled="{Binding AlphaMonitorPathEnabled}">
                 <TextBox.Text>
-                <Binding Path="AlphaPath" 
+                <Binding Path="AlphaMonitorPath" 
                              ValidatesOnDataErrors="True" 
                              UpdateSourceTrigger="PropertyChanged">
                     <Binding.ValidationRules>

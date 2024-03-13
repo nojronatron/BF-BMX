@@ -1,29 +1,113 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Runtime.Versioning;
 
 namespace BFBMX.Desktop.Helpers
 {
-    public partial class DesktopLogger
+    public partial class DesktopLogger : ILogger
     {
-        private readonly static string DesktopLogFilename = "bfbmx-desktop.log";
-        private ILogger<DesktopLogger> _logger;
+        private readonly Func<DesktopLoggerConfiguration> getCurrentConfig;
+        private readonly string? name;
 
-        public DesktopLogger(ILogger<DesktopLogger> logger)
+        public DesktopLogger(string name, Func<DesktopLoggerConfiguration> getCurrentConfig)
         {
-            _logger = logger;
-        }
-        public string HandleRequest()
-        {
-            LogHandleRequest(_logger);
-            return "Handled request";
+            this.name = name;
+            this.getCurrentConfig = getCurrentConfig;
         }
 
-        [LoggerMessage(LogLevel.Information, "DesktopLogger.HandleRequest was called")]
-        public static partial void LogHandleRequest(ILogger logger);
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+        {
+            return default!;
+        }
+
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            return getCurrentConfig().LogLevelToTextOutputMap.ContainsKey(logLevel);
+        }
+
+        public void Log<TState>(LogLevel logLevel,
+                                EventId eventId,
+                                TState state,
+                                Exception? exception,
+                                Func<TState, Exception?, string> formatter)
+        {
+            if (!IsEnabled(logLevel))
+            {
+                return;
+            }
+
+            DesktopLoggerConfiguration config = getCurrentConfig();
+
+            if (config.EventId == 0 || config.EventId == eventId.Id)
+            {
+                string logLevelText = config.LogLevelToTextOutputMap[logLevel];
+
+                if (formatter != null)
+                {
+                    string message = formatter(state, exception);
+                    DateTime timeStamp = DateTime.Now;
+                    string concatMessage = $"{timeStamp.ToString("dd-MM-yy-HH:mm:ss")} {logLevelText}: {message}";
+                    string filePath = config.LogfilePath!;
+
+                    using (StreamWriter file = File.AppendText(filePath))
+                    {
+                        file.WriteLine(concatMessage);
+                    }
+                }
+            }
+        }
+    }
+
+    public sealed class DesktopLoggerConfiguration
+    {
+        public int EventId { get; set; }
+        public string? LogfilePath { get; set; }
+
+        public Dictionary<LogLevel, string> LogLevelToTextOutputMap { get; set; } = new()
+        {
+            [LogLevel.Information] = "INFO",
+            [LogLevel.Debug] = "DEBUG",
+            [LogLevel.Warning] = "WARN",
+            [LogLevel.Critical] = "CRITICAL"
+        };
+    }
+
+    /// <summary>
+    /// An ILoggerProvider that generates a new DesktopLogger based on the current configuration.
+    /// If using IConfiguration (JSON) then alias will be "DesktopLogger" to set LogLevelToTextOutputMap configuration.
+    /// </summary>
+    [UnsupportedOSPlatform("browser")]
+    [ProviderAlias("DesktopLogger")]
+    public class DesktopLoggerProvider : ILoggerProvider
+    {
+        private readonly IDisposable? _onChangeToken;
+        private DesktopLoggerConfiguration _currentConfig;
+        private readonly ConcurrentDictionary<string, DesktopLogger> _loggers = new(StringComparer.OrdinalIgnoreCase);
+
+        public DesktopLoggerProvider(IOptionsMonitor<DesktopLoggerConfiguration> config)
+        {
+            _currentConfig = config.CurrentValue;
+            _onChangeToken = config.OnChange(updatedConfig => _currentConfig = updatedConfig);
+        }
+
+        public ILogger CreateLogger(string categoryName)
+        {
+            return _loggers.GetOrAdd(
+                categoryName,
+                name => new DesktopLogger(categoryName, GetCurrentConfig));
+        }
+
+        private DesktopLoggerConfiguration GetCurrentConfig()
+        {
+            return _currentConfig;
+        }
+
+        public void Dispose()
+        {
+            _loggers.Clear();
+            _onChangeToken?.Dispose();
+        }
     }
 }
