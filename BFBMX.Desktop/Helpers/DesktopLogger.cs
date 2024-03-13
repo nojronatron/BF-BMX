@@ -48,7 +48,7 @@ namespace BFBMX.Desktop.Helpers
                 {
                     string message = formatter(state, exception);
                     DateTime timeStamp = DateTime.Now;
-                    string concatMessage = $"{timeStamp.ToString("dd-MM-yy-HH:mm:ss")} {logLevelText}: {message}";
+                    string concatMessage = $"{timeStamp:dd-MM-yy-HH:mm:ss} {logLevelText}: {message}";
                     string filePath = config.LogfilePath!;
 
                     using (StreamWriter file = File.AppendText(filePath))
