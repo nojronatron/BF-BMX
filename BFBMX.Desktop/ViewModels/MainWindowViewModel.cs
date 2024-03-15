@@ -1,14 +1,10 @@
-﻿using BFBMX.Service.Collections;
+﻿using BFBMX.Desktop.Collections;
 using BFBMX.Service.Helpers;
 using BFBMX.Service.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.IO;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace BFBMX.Desktop.ViewModels
 {
@@ -32,61 +28,47 @@ namespace BFBMX.Desktop.ViewModels
         {
             _logger.LogInformation("HandleFileCreatedAsync called.");
 
-            await Task.Run(() =>
-            {
-                string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
-                string msg = $"HandleFileCreatedAsync: Discovered file at {discoveredFilepath}";
+            //await Task.Run(() =>
+            //{
+            string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
+            //string msg = $"HandleFileCreatedAsync: Discovered file at {discoveredFilepath}";
 
-                try
-                {
-                    DiscoveredFileModel newFile = new(discoveredFilepath);
-                    DiscoveredFiles!.Enqueue(newFile);
-                    _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
-                    // get data from file
-                    var fileData = FileProcessor.GetFileData(discoveredFilepath);
+            // put the discovered filepath info into the queue and be done
+            DiscoveredFileModel newFile = new(discoveredFilepath);
+            DiscoveredFiles!.Enqueue(newFile);
+            _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
 
-                    // get winlink id from file
-                    StringBuilder sb = new();
-                    foreach(var fd in fileData)
-                    {
-                        sb.Append(fd).Append('\n');
-                    }
+            //var dateTimeStamp = DateTime.Now;
+            //string machineName = Environment.MachineName;
+            //WinlinkMessageModel winlinkMessage = new();
+            //winlinkMessage = FileProcessor.ProcessWinlinkMessageFile(dateTimeStamp, machineName, discoveredFilepath);
 
-                    // todo: fix FileProcessor so ViewModel doesnt have to do it
-                    var wlID = FileProcessor.GetMessageId(sb.ToString());
+            //if (winlinkMessage.BibRecords.Count < 1)
+            //{
+            //    _logger.LogInformation("Error capturing data from {discoveredPath}, skipping file!", discoveredFilepath);
+            //    return;
+            //}
 
-                    // process bib data
-                    List<FlaggedBibRecordModel> processedBibs = new();
-                    bool resultSucceeded = FileProcessor.ProcessBibs(processedBibs, fileData);
+            //string wlID = winlinkMessage.WinlinkMessageId ?? "unknown";
 
-                    // write winilnk message to logfile
-                    if (resultSucceeded && processedBibs.Count > 0)
-                    {
-                        WinlinkMessageModel wlRecord = WinlinkMessageModel.GetWinlinkMessageInstance(wlID, DateTime.Now,
-                                                                                                     Environment.MachineName,
-                                                                                                     processedBibs);
+            //// write winilnk message to logfile
+            //if (winlinkMessage.BibRecords.Count > 0)
+            //{
+            //    var options = new JsonSerializerOptions()
+            //    {
+            //        NumberHandling = JsonNumberHandling.AllowReadingFromString,
+            //        PropertyNameCaseInsensitive = true,
+            //        WriteIndented = true
+            //    };
 
-                        var options = new JsonSerializerOptions()
-                        {
-                            NumberHandling = JsonNumberHandling.AllowReadingFromString,
-                            PropertyNameCaseInsensitive = true,
-                            WriteIndented = true
-                        };
-
-                        var wlrJsonPretty = JsonSerializer.Serialize < WinlinkMessageModel > (wlRecord, options);
-                        _logger.LogInformation("***** Winlink Message *****\n{msgData}\n***** End Winlink Message *****", wlrJsonPretty);
-                    }
-                    else
-                    {
-                        _logger.LogInformation("No bib records found in message Winlink ID {wlId}.", wlID);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogInformation("Error enqueuing path {discoveredPath}", discoveredFilepath);
-                    _logger.LogInformation("Error enqueuing path continued: {exceptionMsg}", ex.Message);
-                }
-            });
+            //    var wlrJsonPretty = JsonSerializer.Serialize<WinlinkMessageModel>(winlinkMessage, options);
+            //    _logger.LogInformation("***** Winlink Message *****\n{msgData}\n***** End Winlink Message *****", wlrJsonPretty);
+            //}
+            //else
+            //{
+            //    _logger.LogInformation("No bib records found in message Winlink ID {wlId}.", wlID);
+            //}
+            //});
         }
 
         public void HandleError(object sender, ErrorEventArgs e)

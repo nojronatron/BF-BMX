@@ -1,5 +1,8 @@
 using BFBMX.Service.Models;
 using System.Diagnostics;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace BFBMX.Service.Helpers
@@ -21,7 +24,84 @@ namespace BFBMX.Service.Helpers
         private static readonly string messageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
         private static readonly string strictBibPattern = @"\b\d{1,3}\t(OUT|IN|DROP)\t\d{4}\t\d{1,2}\t\w{2}\b";
         private static readonly string sloppyBibPattern = @"\b\w{1,15}\t\w{1,5}\t\w{1,5}\t\w{1,3}\t\w{1,26}\b";
-        
+
+        public static async Task<bool> WriteWinlinkMessageToFile(WinlinkMessageModel msg, string filepath)
+        {
+            if (msg is null || msg.BibRecords.Count < 1 || string.IsNullOrWhiteSpace(filepath))
+            {
+                return false;
+            }
+            else
+            {
+                JsonSerializerOptions options = new()
+                {
+                    WriteIndented = true,
+                    NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
+                    PropertyNameCaseInsensitive = true
+                };
+
+                string json = JsonSerializer.Serialize<WinlinkMessageModel>(msg, options);
+
+                return await Task.Run(async () =>
+                {
+                    for (int tries = 3; tries > 0; tries--)
+                    {
+                        try
+                        {
+                            File.AppendAllText(filepath, $"{json}\n");
+                            return true;
+                        }
+                        catch (Exception)
+                        {
+                            Debug.WriteLine($"WriteWinlinkMessageToFile: Attempt number {tries} - Could not write to {filepath}.");
+                        }
+
+                        await Task.Delay(125);
+                    }
+
+                    return false;
+                });
+            }
+        }
+
+        // method converts string[] to List<FlaggedBibRecordModel>
+        public static string RecordsArrayToString(string[] fileData)
+        {
+            StringBuilder sb = new();
+            foreach (var fd in fileData)
+            {
+                sb.Append(fd).Append('\n');
+            }
+            return sb.ToString();
+        }
+
+        // method gets WInlinkMessageId and processed bibs and returns them as a WinlinkMessageModel
+        public static WinlinkMessageModel ProcessWinlinkMessageFile(DateTime timestamp, string machineName, string filePath)
+        {
+            var fileData = GetFileData(filePath);
+
+            if (fileData.Length < 1)
+            {
+                // could not read or understand file data
+                return new WinlinkMessageModel();
+            }
+
+            string winlinkMessageId = GetMessageId(RecordsArrayToString(fileData));
+            List<FlaggedBibRecordModel> bibRecords = new();
+
+            if (ProcessBibs(bibRecords, fileData))
+            {
+                // no errors processing file
+                if (bibRecords.Count > 0)
+                {
+                    // bib data was found so return a concrete object
+                    return WinlinkMessageModel.GetWinlinkMessageInstance(winlinkMessageId, timestamp, machineName, bibRecords);
+                }
+            }
+
+            return new WinlinkMessageModel();
+        }
+
         /// <summary>
         /// Resuable wrapper method to get file data without throwing an IO and other Exceptions.
         /// </summary>
@@ -31,15 +111,20 @@ namespace BFBMX.Service.Helpers
         {
             if (!string.IsNullOrWhiteSpace(fullFilePath) && File.Exists(fullFilePath))
             {
+                for (int tries = 1; tries < 4; tries++)
+                {
+                    Thread.Sleep(100);
 
-                try
-                {
-                    string[] lines = File.ReadAllLines(fullFilePath);
-                    return lines;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Unable to read data from {fullFilePath}: {ex.Message}");
+                    try
+                    {
+                        string[] lines = File.ReadAllLines(fullFilePath);
+                        Debug.WriteLine($"GetFileData: Successfully read data from {fullFilePath}.");
+                        return lines;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"GetFileData: Attempt number {tries} - Unable to read data from {fullFilePath}: {ex.Message}");
+                    }
                 }
             }
 
@@ -97,6 +182,7 @@ namespace BFBMX.Service.Helpers
                 if (strictMatches.Count < sloppyMatches.Count)
                 {
                     bibRecords.AddRange(sloppyMatches);
+                    return true;
                 }
             }
 
