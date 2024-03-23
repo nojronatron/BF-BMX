@@ -21,6 +21,7 @@ namespace BFBMX.Service.Helpers
 
     public class FileProcessor
     {
+        private static readonly object _lock = new object();
         private static readonly string messageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
         private static readonly string strictBibPattern = @"\b\d{1,3}\t(OUT|IN|DROP)\t\d{4}\t\d{1,2}\t\w{2}\b";
         private static readonly string sloppyBibPattern = @"\b\w{1,15}\t\w{1,5}\t\w{1,5}\t\w{1,3}\t\w{1,26}\b";
@@ -48,7 +49,17 @@ namespace BFBMX.Service.Helpers
                     {
                         try
                         {
-                            File.AppendAllText(filepath, $"{json}\n");
+                            lock (_lock)
+                            {
+                                //File.AppendAllText(filepath, $"{json}\n");
+#pragma warning disable IDE0063 // Use simple 'using' statement
+                                using (StreamWriter file = File.AppendText(filepath))
+                                {
+                                    file.WriteLine(json);
+                                }
+#pragma warning restore IDE0063 // Use simple 'using' statement
+                            }
+
                             return true;
                         }
                         catch (Exception)

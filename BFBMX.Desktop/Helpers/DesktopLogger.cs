@@ -8,6 +8,7 @@ namespace BFBMX.Desktop.Helpers
 {
     public partial class DesktopLogger : ILogger
     {
+        private static readonly object _lock = new object();
         private readonly Func<DesktopLoggerConfiguration> getCurrentConfig;
         private readonly string? name;
 
@@ -51,12 +52,15 @@ namespace BFBMX.Desktop.Helpers
                     string concatMessage = $"{timeStamp:dd-MM-yy-HH:mm:ss} {logLevelText}: {message}";
                     string filePath = config.LogfilePath!;
 
-#pragma warning disable IDE0063 // Use simple 'using' statement
-                    using (StreamWriter file = File.AppendText(filePath))
+                    lock (_lock)
                     {
-                        file.WriteLine(concatMessage);
-                    }
+#pragma warning disable IDE0063 // Use simple 'using' statement
+                        using (StreamWriter file = File.AppendText(filePath))
+                        {
+                            file.WriteLine(concatMessage);
+                        }
 #pragma warning restore IDE0063 // Use simple 'using' statement
+                    }
                 }
             }
         }
