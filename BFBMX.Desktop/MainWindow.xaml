@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:BFBMX.Desktop"
         xmlns:validators="clr-namespace:BFBMX.Desktop.XamlValidators"
         mc:Ignorable="d"
-        MinHeight="400" Height="400"
+        MinHeight="400" Height="440"
         MinWidth="680" Width="680"
         Title="Bigfoot BMX Desktop">
     
@@ -16,8 +16,11 @@
             <RowDefinition Height="34"/>
             <RowDefinition Height="34"/>
             <RowDefinition Height="34"/>
-            <RowDefinition Height="38"/>
+            <RowDefinition Height="34"/>
+            <RowDefinition Height="34"/>
+            <RowDefinition Height="34"/>
             <RowDefinition Height="180"/>
+            <RowDefinition Height="34"/>
             <RowDefinition Height="8"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -76,7 +79,7 @@
     </StackPanel>
 
     <StackPanel Orientation="Horizontal"
-                    Grid.Row="2"
+                    Grid.Row="3"
                     Grid.Column="1">
             <Label Content="Monitor 2 Path:"
                    VerticalAlignment="Center"
@@ -123,7 +126,7 @@
     </StackPanel>
 
     <StackPanel Orientation="Horizontal"
-                    Grid.Row="3"
+                    Grid.Row="5"
                     Grid.Column="1">
             <Label Content="Monitor 2 Path:"
                    VerticalAlignment="Center"
@@ -146,50 +149,72 @@
         </TextBox>
         <Button x:Name="InitCharlieMonitorButton"
                 Command="{Binding InitAlphaMonitorCommand}"
-                    Content="Initialize"
-                    Padding="4"
-                    Margin="4" />
+                Content="Initialize"
+                Padding="4"
+                Margin="4" />
         <Button x:Name="LaunchCharlieMonitorButton"
                 Command="{Binding InitAlphaMonitorCommand}"
-                    Content="Launch"
-                    Padding="4"
-                    Margin="4"
-                    IsEnabled="False" />
+                Content="Launch"
+                Padding="4"
+                Margin="4"
+                IsEnabled="False" />
         <Button x:Name="StopCharlieMonitorButton"
                 Command="{Binding InitAlphaMonitorCommand}"
-                    Content="Stop" 
-                    Padding="4"
-                    Margin="4" 
-                    IsEnabled="False"/>
+                Content="Stop" 
+                Padding="4"
+                Margin="4" 
+                IsEnabled="False"/>
         <Button x:Name="DestroyCharlieMonitorButton"
                 Command="{Binding InitAlphaMonitorCommand}"
-                    Content="Destroy"
-                    Padding="4"
-                    Margin="4"
-                    IsEnabled="False" />
+                Content="Destroy"
+                Padding="4"
+                Margin="4"
+                IsEnabled="False" />
     </StackPanel>
 
     <StackPanel Orientation="Vertical"
-                    Grid.Row="4"
-                    Grid.Column="1">
-        <Label x:Name="StatusMessages" 
-                   VerticalAlignment="Center"
-                   HorizontalContentAlignment="Left"
-                   Height="30"
-                   Width="540"
-                   Background="AntiqueWhite"
-                   Margin="4"
-                   Content="{Binding StatusMessageLabel}" />
+                Grid.Row="2"
+                Grid.Column="1">
+        <Label HorizontalContentAlignment="Left"
+               Height="30"
+               Width="540"
+               Margin="2"
+               Background="AntiqueWhite"
+               Content="{Binding AlphaStatusMessage}" />
     </StackPanel>
 
     <StackPanel Orientation="Vertical"
-                    Grid.Row="5"
-                    Grid.Column="1">
-        <Label x:Name="DiscoveredFilesListView"
-                      Height="178"
-                      ScrollViewer.VerticalScrollBarVisibility="Visible"
-                      ScrollViewer.CanContentScroll="True"
-               Content="DiscoveredFilesListView Placeholder" />
+                Grid.Row="4"
+                Grid.Column="1">
+        <Label HorizontalContentAlignment="Left"
+                Height="30"
+                Width="540"
+                Margin="2"
+                Background="AntiqueWhite"
+                Content="{Binding BravoStatusMessage}" />
+    </StackPanel>
+
+
+    <StackPanel Orientation="Vertical"
+                Grid.Row="6"
+                Grid.Column="1">
+        <Label x:Name="CharlieStatusMessageLabel" 
+            HorizontalContentAlignment="Left"
+            Height="30"
+            Width="540"
+            Margin="2"
+            Background="AntiqueWhite"
+            Content="{Binding CharlieStatusMessage}" />
+    </StackPanel>
+
+    <StackPanel Orientation="Vertical"
+                Grid.Row="7"
+                Grid.Column="1">
+    <Label x:Name="DiscoveredFilesListView"
+           Height="178"
+           ScrollViewer.VerticalScrollBarVisibility="Visible"
+           ScrollViewer.CanContentScroll="True"
+           Content="DiscoveredFilesListView Placeholder" />
     </StackPanel>
 
     </Grid>

@@ -18,7 +18,11 @@ namespace BFBMX.Desktop.ViewModels
         }
 
         [ObservableProperty]
-        public string? _statusMessageLabel;
+        public string? _alphaStatusMessage;
+        [ObservableProperty]
+        public string? _bravoStatusMessage = "Monitor #2 placeholder message.";
+        [ObservableProperty]
+        public string? _charlieStatusMessage = "Monitor #3 placeholder message.";
 
         [ObservableProperty]
         public DiscoveredFilesCollection? _discoveredFiles = new();
@@ -27,55 +31,18 @@ namespace BFBMX.Desktop.ViewModels
         public async void HandleFileCreatedAsync(object sender, FileSystemEventArgs e)
         {
             _logger.LogInformation("HandleFileCreatedAsync called.");
-
-            //await Task.Run(() =>
-            //{
             string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
-            //string msg = $"HandleFileCreatedAsync: Discovered file at {discoveredFilepath}";
-
             // put the discovered filepath info into the queue and be done
             DiscoveredFileModel newFile = new(discoveredFilepath);
             DiscoveredFiles!.Enqueue(newFile);
             _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
-
-            //var dateTimeStamp = DateTime.Now;
-            //string machineName = Environment.MachineName;
-            //WinlinkMessageModel winlinkMessage = new();
-            //winlinkMessage = FileProcessor.ProcessWinlinkMessageFile(dateTimeStamp, machineName, discoveredFilepath);
-
-            //if (winlinkMessage.BibRecords.Count < 1)
-            //{
-            //    _logger.LogInformation("Error capturing data from {discoveredPath}, skipping file!", discoveredFilepath);
-            //    return;
-            //}
-
-            //string wlID = winlinkMessage.WinlinkMessageId ?? "unknown";
-
-            //// write winilnk message to logfile
-            //if (winlinkMessage.BibRecords.Count > 0)
-            //{
-            //    var options = new JsonSerializerOptions()
-            //    {
-            //        NumberHandling = JsonNumberHandling.AllowReadingFromString,
-            //        PropertyNameCaseInsensitive = true,
-            //        WriteIndented = true
-            //    };
-
-            //    var wlrJsonPretty = JsonSerializer.Serialize<WinlinkMessageModel>(winlinkMessage, options);
-            //    _logger.LogInformation("***** Winlink Message *****\n{msgData}\n***** End Winlink Message *****", wlrJsonPretty);
-            //}
-            //else
-            //{
-            //    _logger.LogInformation("No bib records found in message Winlink ID {wlId}.", wlID);
-            //}
-            //});
         }
 
         public void HandleError(object sender, ErrorEventArgs e)
         {
             string? errorMessage = e.GetException().Message;
             string msg = $"HandleError: {errorMessage}";
-            StatusMessageLabel = msg;
+            AlphaStatusMessage = msg;
             _logger.LogInformation("HandleError called: {errMsg}", errorMessage);
         }
 
@@ -112,11 +79,15 @@ namespace BFBMX.Desktop.ViewModels
             {
                 monitor.EnableRaisingEvents = false;
                 monitor.Dispose();
+                //AlphaStatusMessage = "Rest Monitor called and Monitor has been destroyed.";
                 _logger.LogInformation("ResetMonitor: An existing Alpha Monitor was disposed.");
+                AlphaMonitorStarted = false;
+                AlphaMonitorInitialized = false;
             }
             else
             {
-                _logger.LogInformation("ResetMonitor: No existing Alpha Monitor to dispose.");
+                //AlphaStatusMessage = "Reset Monitor called but Monitor is not initialized or started.";
+                _logger.LogInformation("ResetMonitor: No existing Alpha Monitor to dispose, nothing to do!");
             }
         }
 
@@ -137,10 +108,12 @@ namespace BFBMX.Desktop.ViewModels
                 AlphaMonitorPathEnabled = false;
                 AlphaMonitorInitialized = _alphaMonitor!.IsInitialized;
                 string isOrNotInitialized = AlphaMonitorInitialized ? "successfully" : "not";
-                _logger.LogInformation("Alpha Monitor {isOrNotInit} initialized, for path: {monitorPath}", isOrNotInitialized, AlphaMonitorPath);
+                AlphaStatusMessage = "Monitor initialized.";
+                _logger.LogInformation("Alpha Monitor {isOrNotInit} initialized for path: {monitorPath}", isOrNotInitialized, AlphaMonitorPath);
             }
             catch (Exception ex)
             {
+                AlphaStatusMessage = "Unable to initialize! Try the Destroy button, then input the path again.";
                 _logger.LogInformation("Alpha Monitor unable to initialize for {monitorPath}, exception msg: {exceptionMsg}",
                                       AlphaMonitorPath, ex.Message);
                 AlphaMonitorPathEnabled = true;
@@ -151,11 +124,13 @@ namespace BFBMX.Desktop.ViewModels
         {
             if (string.IsNullOrWhiteSpace(AlphaMonitorPath))
             {
+                //AlphaStatusMessage = "Enter a valid path to monitor before initializing.";
                 _logger.LogInformation("CanInitAlphaMonitor: Alpha Monitor path is null or empty, cannot initialize.");
                 return false;
             }
             else
             {
+                //AlphaStatusMessage = "Monitor initialized.";
                 _logger.LogInformation("CanInitAlphaMonitor: Returning true for path {alphaMonPath}", AlphaMonitorPath);
                 return true;
             }
@@ -169,10 +144,12 @@ namespace BFBMX.Desktop.ViewModels
                 _alphaMonitor!.EnableRaisingEvents = true;
                 AlphaMonitorStarted = _alphaMonitor!.IsStarted;
                 string startOrNot = AlphaMonitorStarted ? "successfully" : "not";
+                AlphaStatusMessage = $"Monitor {startOrNot} started for path.";
                 _logger.LogInformation("StartAlphaMonitor: Monitor {startOrNot} started for path {monitorPath}", startOrNot, AlphaMonitorPath);
             }
             catch (Exception ex)
             {
+                AlphaStatusMessage = "Unable to start monitor! Check the logs and re-try initializing";
                 _logger.LogInformation("StartAlphaMonitor: Unable to enable raising events for {monitorPath}, exception msg: {exceptionMsg}",
                                  AlphaMonitorPath, ex.Message);
             }
@@ -212,10 +189,12 @@ namespace BFBMX.Desktop.ViewModels
                 _alphaMonitor!.EnableRaisingEvents = false;
                 AlphaMonitorStarted = _alphaMonitor!.IsStarted;
                 string stopOrNot = AlphaMonitorStarted ? "not" : "successfully";
+                AlphaStatusMessage = "Monitor stopped successfully.";
                 _logger.LogInformation("StartAlphaMonitor: Monitor {stopOrNot} started for path {monitorPath}", stopOrNot, AlphaMonitorPath);
             }
             catch (Exception ex)
             {
+                AlphaStatusMessage = "Something bad happened, check the logs to diagnose.";
                 _logger.LogInformation("StopAlphaMonitor: Unable to disable raising events for {monitorPath}, exception msg: {exceptionMsg}",
                                       AlphaMonitorPath,
                                       ex.Message);
@@ -253,6 +232,7 @@ namespace BFBMX.Desktop.ViewModels
         {
             _logger.LogInformation("DestroyAlphaMonitor: Button pressed.");
             ResetMonitor(_alphaMonitor);
+            AlphaStatusMessage = "Monitor has been reset.";
             AlphaMonitorPathEnabled = true;
         }
 
