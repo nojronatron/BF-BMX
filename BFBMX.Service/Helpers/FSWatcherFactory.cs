@@ -12,10 +12,12 @@ namespace BFBMX.Service.Helpers
         /// <param name="asyncCreatedCallback">A method/delegate handler for when a created file is detected.</param>
         /// <param name="asyncErrorCallback">A method/delegate handler for when an error occurs.</param>
         /// <param name="fullpath">The path to watch for files with .mime extension.</param>
+        /// <param name="name">Arbitrary name for identification.</param>
         /// <returns>A new FileSystemWatcher wrapper instance.</returns>
         public static FSWMonitor Create(FileSystemEventHandler asyncCreatedCallback,
                                                ErrorEventHandler asyncErrorCallback,
-                                               string fullpath)
+                                               string fullpath,
+                                               string name)
         {
             var watcher = new FileSystemWatcher(fullpath);
 
@@ -27,7 +29,7 @@ namespace BFBMX.Service.Helpers
             watcher.Error += asyncErrorCallback;
             watcher.Filter = DefaultFileType;
             watcher.IncludeSubdirectories = false;
-            return new FSWMonitor(watcher);
+            return new FSWMonitor(watcher, name);
         }
     }
 }

@@ -9,10 +9,12 @@ namespace BFBMX.Service.Models
     public class FSWMonitor
     {
         private readonly FileSystemWatcher? fileSystemWatcher;
+        private readonly string? name;
         public FileSystemWatcher? GetFileSystemWatcher => fileSystemWatcher;
 
-        public FSWMonitor(FileSystemWatcher fileSystemWatcher)
+        public FSWMonitor(FileSystemWatcher fileSystemWatcher, string name)
         {
+            this.name = name;
             this.fileSystemWatcher = fileSystemWatcher;
         }
 
@@ -89,6 +91,11 @@ namespace BFBMX.Service.Models
         public void Dispose()
         {
             fileSystemWatcher?.Dispose();
+        }
+
+        public string GetName()
+        {
+            return name ?? string.Empty;
         }
     }
 }
