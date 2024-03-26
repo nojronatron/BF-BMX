@@ -36,8 +36,7 @@
                    VerticalAlignment="Center"
                    HorizontalAlignment="Right"
                    Height="24"/>
-            <TextBox x:Name="AlphaMonitorPath"
-                     Height="24"
+            <TextBox Height="24"
                      Width="320"
                      Margin="4"
                      VerticalAlignment="Center"
@@ -45,8 +44,8 @@
                      IsEnabled="{Binding AlphaMonitorPathEnabled}">
                 <TextBox.Text>
                 <Binding Path="AlphaMonitorPath" 
-                             ValidatesOnDataErrors="True" 
-                             UpdateSourceTrigger="PropertyChanged">
+                         ValidatesOnDataErrors="True" 
+                         UpdateSourceTrigger="PropertyChanged">
                     <Binding.ValidationRules>
                             <validators:FilepathRule MinimumCharacters="4"/>
                     </Binding.ValidationRules>
@@ -57,7 +56,8 @@
                 Command="{Binding InitAlphaMonitorCommand}"
                 Content="Initialize"
                 Padding="4"
-                Margin="4" />
+                Margin="4"
+                IsEnabled="{Binding AlphaMonitorStopped}"/>
         <Button x:Name="LaunchAlphaMonitorButton"
                 Command="{Binding StartAlphaMonitorCommand}"
                 Content="Launch"
@@ -89,40 +89,43 @@
                      Height="24"
                      Width="320"
                      Margin="4"
-                     VerticalAlignment="Center">
-                <TextBox.Text>"Placeholder: Directory path binding and Validation Rules"
-                    <!--<Binding Path="BravoPath" 
+                     VerticalAlignment="Center"
+                     Validation.ErrorTemplate="{StaticResource errorTemplate}"
+                     IsEnabled="{Binding BravoMonitorPathEnabled}">
+                <TextBox.Text>
+                    <Binding Path="BravoMonitorPath" 
                              ValidatesOnDataErrors="True" 
                              UpdateSourceTrigger="PropertyChanged">
                     <Binding.ValidationRules>
-                        <local:TextboxRule MinimumCharacters="4"/>
+                        <validators:FilepathRule MinimumCharacters="4"/>
                     </Binding.ValidationRules>
-                </Binding>-->
+                </Binding>
             </TextBox.Text>
         </TextBox>
         <Button x:Name="InitBravoMonitorButton"
-                Command="{Binding InitAlphaMonitorCommand}"
-                    Content="Initialize"
-                    Padding="4"
-                    Margin="4" />
+                Command="{Binding InitBravoMonitorCommand}"
+                Content="Initialize"
+                Padding="4"
+                Margin="4"
+                IsEnabled="{Binding BravoMonitorStopped}"/>
         <Button x:Name="LaunchBravoMonitorButton"
-                Command="{Binding InitAlphaMonitorCommand}"
-                    Content="Launch"
-                    Padding="4"
-                    Margin="4"
-                    IsEnabled="false" />
+                Command="{Binding StartBravoMonitorCommand}"
+                Content="Launch"
+                Padding="4"
+                Margin="4"
+                IsEnabled="{Binding BravoMonitorInitialized}"/>
         <Button x:Name="StopBravoMonitorButton"
-                Command="{Binding InitAlphaMonitorCommand}"
-                    Content="Stop" 
-                    Padding="4"
-                    Margin="4"
-                    IsEnabled="False" />
+                Command="{Binding StopBravoMonitorCommand}"
+                Content="Stop" 
+                Padding="4"
+                Margin="4"
+                IsEnabled="{Binding BravoMonitorStarted}"/>
         <Button x:Name="DestroyBravoMonitorButton"
-                Command="{Binding InitAlphaMonitorCommand}"
-                    Content="Destroy"
-                    Padding="4"
-                    Margin="4"
-                    IsEnabled="False" />
+                Command="{Binding DestroyBravoMonitorCommand}"
+                Content="Destroy"
+                Padding="4"
+                Margin="4"
+                IsEnabled="{Binding BravoMonitorInitialized}"/>
     </StackPanel>
 
     <StackPanel Orientation="Horizontal"
