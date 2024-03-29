@@ -14,7 +14,7 @@ public static class DataExImService
     {
         List<WinlinkMessageModel> result = new();
         string? userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
-        string? bfBmxFolderName = Environment.GetEnvironmentVariable("BFBMX_FOLDER_NAME");
+        string? bfBmxFolderName = Environment.GetEnvironmentVariable("BFBMX_SERVER_FOLDER_NAME");
         string? fileName = Environment.GetEnvironmentVariable("BFBMX_BACKUP_FILE_NAME");
 
         if (string.IsNullOrWhiteSpace(bfBmxFolderName) 
