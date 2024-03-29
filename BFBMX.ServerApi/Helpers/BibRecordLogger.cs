@@ -9,7 +9,7 @@ namespace BFBMX.ServerApi.Helpers
         private readonly ILogger<BibRecordLogger> _logger;
 
         private readonly string ParentDirectory = "Documents";
-        private readonly string LogFilename = "BibRecordsLog.txt";
+        private readonly string LogFilename = "BibRecordsServerLog.txt";
 
         public JsonNumberHandling JsonNumerHandling { get; private set; }
 
@@ -33,7 +33,7 @@ namespace BFBMX.ServerApi.Helpers
                 return false;
             }
 
-            string? logDirectory = Environment.GetEnvironmentVariable("BFBMX_FOLDER_NAME");
+            string? logDirectory = Environment.GetEnvironmentVariable("BFBMX_SERVER_FOLDER_NAME");
 
             if (string.IsNullOrEmpty(logDirectory))
             {
@@ -115,20 +115,13 @@ namespace BFBMX.ServerApi.Helpers
                 if (ValidateServerVariables(out string? bfBmxLogPath))
                 {
                     string bfBmxLogFilePath = Path.Combine(bfBmxLogPath!, LogFilename);
-                    //int counter = 0;
 
                     using (StreamWriter file = File.AppendText(bfBmxLogFilePath))
                     {
-                        //foreach (var bibRecord in wlMessagePayload.BibRecords)
-                        //{
-                        //    file.WriteLine(bibRecord.ToTabbedString());
-                        //    counter++;
-                        //}
                         file.Write(wlMessagePayload.ToAccessDatabaseTabbedString());
                     }
 
                     _logger.LogInformation("Wrote 1 Winlink Message payload to log file {logFile}", bfBmxLogFilePath);
-                    //_logger.LogInformation("Write {num} bib records to log file {logFile}", counter, bfBmxLogFilePath);
                 }
                 else
                 {
