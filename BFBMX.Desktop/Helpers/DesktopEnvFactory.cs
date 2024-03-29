@@ -1,6 +1,5 @@
 ﻿namespace BFBMX.Desktop.Helpers
 {
-    // todo: make DesktopEnvFactory class static
     public static class DesktopEnvFactory
     {
         public static string GetUserProfilePath()
@@ -39,6 +38,29 @@
         {
             string logFilename = "BibRecordsLog.txt";
             return logFilename;
+        }
+
+        public static string GetServerHostnameAndPort()
+        {
+            const string PROTOCOL = @"http://";
+            const string DEFAULTSERVER = "localhost";
+            const int DEFAULTPORT = 5150;
+
+            string serverName = Environment.GetEnvironmentVariable("BFBMX_SERVERNAME") ?? DEFAULTSERVER;
+            string envVarPort = Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? string.Empty;
+            int tempPort;
+
+            // if parse fails tempPort will be set to DEFAULTPORT
+            if (int.TryParse(envVarPort, out tempPort))
+            {
+                // tempPort is set correctly when TryParse succeeds
+            }
+            else
+            { 
+                tempPort = DEFAULTPORT;
+            }
+
+            return $"{PROTOCOL}{serverName}:{tempPort.ToString()}/";
         }
     }
 }
