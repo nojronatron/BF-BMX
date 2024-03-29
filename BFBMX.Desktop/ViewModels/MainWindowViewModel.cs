@@ -16,9 +16,11 @@ namespace BFBMX.Desktop.ViewModels
 
         private readonly ILogger<MainWindowViewModel> _logger;
 
-        public MainWindowViewModel(ILogger<MainWindowViewModel> logger)
+        public MainWindowViewModel(ILogger<MainWindowViewModel> logger,
+            IDiscoveredFilesCollection discoveredFilesCollection)
         {
             _logger = logger;
+            _discoveredFiles = discoveredFilesCollection;
         }
 
         [ObservableProperty]
@@ -29,7 +31,7 @@ namespace BFBMX.Desktop.ViewModels
         public string? _charlieStatusMessage = "Monitor #3 is in development.";
 
         [ObservableProperty]
-        public DiscoveredFilesCollection? _discoveredFiles = new();
+        public IDiscoveredFilesCollection _discoveredFiles;
 
         /***** Global Monitor Functions *****/
         public async void HandleFileCreatedAsync(object sender, FileSystemEventArgs e)
@@ -38,7 +40,7 @@ namespace BFBMX.Desktop.ViewModels
             string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
             // put the discovered filepath info into the queue and be done
             DiscoveredFileModel newFile = new(discoveredFilepath);
-            DiscoveredFiles!.Enqueue(newFile);
+            await _discoveredFiles.EnqueueAsync(newFile);
             _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
         }
 
