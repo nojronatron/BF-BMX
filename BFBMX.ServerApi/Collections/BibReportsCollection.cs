@@ -8,14 +8,14 @@ namespace BFBMX.ServerApi.Collections;
 
 public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, IBibReportsCollection
 {
-    private readonly BibMessageContext dbContext;
+    private readonly IDbContextFactory<BibMessageContext> _dbContextFactory;
     private readonly ILogger<BibReportsCollection> _logger;
 
     public BibReportsCollection(
-        BibMessageContext dbContext,
+        IDbContextFactory<BibMessageContext> dbContextFactory,
         ILogger<BibReportsCollection> logger)
     {
-        this.dbContext = dbContext;
+        _dbContextFactory = dbContextFactory;
         _logger = logger;
     }
 
@@ -32,10 +32,14 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
         {
             try
             {
-                dbContext.Add(wlMessagePayload);
-                saveCount = dbContext.SaveChanges();
-                Add(wlMessagePayload);
-                _logger.LogInformation("Stored {num} messages to the internal DB.", saveCount);
+                // see https://learn.microsoft.com/en-us/ef/core/dbcontext-configuration/#using-a-dbcontext-factory-eg-for-blazor
+                using (var bibMessageContext = _dbContextFactory.CreateDbContext())
+                {
+                    bibMessageContext.Add(wlMessagePayload);
+                    saveCount = bibMessageContext.SaveChanges();
+                    Add(wlMessagePayload);
+                    _logger.LogInformation("Stored {num} messages to the internal DB.", saveCount);
+                }
             }
             catch (DbUpdateConcurrencyException dbuce)
             {
@@ -73,8 +77,6 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
             {
                 AddEntityToCollection(message);
             }
-
-            saveCount = dbContext.SaveChanges();
         }
 
         _logger.LogInformation("Added {num} message entries to the internal DB.", saveCount);

@@ -8,5 +8,5 @@ public class BibMessageContext : DbContext
 {
     public DbSet<WinlinkMessageModel> WinlinkMessageModels { get; set; } = null!;
     public DbSet<FlaggedBibRecordModel> FlaggedBibRecordModels { get; set; } = null!;
-    public BibMessageContext(DbContextOptions options) : base(options) { }
+    public BibMessageContext(DbContextOptions<BibMessageContext> options) : base(options) { }
 }

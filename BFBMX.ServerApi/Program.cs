@@ -15,7 +15,6 @@ builder.Services.AddDbContextFactory <BibMessageContext> (options =>
 {
     options.UseInMemoryDatabase($"BFBMX-{Guid.NewGuid()}");
 });
-builder.Services.AddTransient<BibMessageContext>();
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddLogging();
