@@ -10,11 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
-// entity framework
+// entity framework must be configured and added as TRANSIENT in ASP.NET IoC
 builder.Services.AddDbContextFactory <BibMessageContext> (options =>
 {
     options.UseInMemoryDatabase($"BFBMX-{Guid.NewGuid()}");
 });
+builder.Services.AddTransient<BibMessageContext>();
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddLogging();
