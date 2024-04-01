@@ -30,13 +30,13 @@
         /// <returns>Filename for storing plain text running log data.</returns>
         public static string GetBfBmxLogFileName()
         {
-            string logFilename = "bfbmx-desktop.log";
+            string logFilename = "bfbmx-desktop-app-log.txt";
             return logFilename;
         }
 
         public static string GetBibRecordsLogFileName()
         {
-            string logFilename = "BibRecordsLog.txt";
+            string logFilename = "captured-bib-records.txt";
             return logFilename;
         }
 
@@ -48,19 +48,18 @@
 
             string serverName = Environment.GetEnvironmentVariable("BFBMX_SERVERNAME") ?? DEFAULTSERVER;
             string envVarPort = Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? string.Empty;
-            int tempPort;
 
             // if parse fails tempPort will be set to DEFAULTPORT
-            if (int.TryParse(envVarPort, out tempPort))
+            if (int.TryParse(envVarPort, out int tempPort))
             {
                 // tempPort is set correctly when TryParse succeeds
             }
             else
-            { 
+            {
                 tempPort = DEFAULTPORT;
             }
 
-            return $"{PROTOCOL}{serverName}:{tempPort.ToString()}/";
+            return $"{PROTOCOL}{serverName}:{tempPort}/";
         }
     }
 }
