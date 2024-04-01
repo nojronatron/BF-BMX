@@ -40,7 +40,7 @@ namespace BFBMX.Desktop.ViewModels
             string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
             // put the discovered filepath info into the queue and be done
             DiscoveredFileModel newFile = new(discoveredFilepath);
-            await _discoveredFiles.EnqueueAsync(newFile);
+            await DiscoveredFiles.EnqueueAsync(newFile);
             _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
         }
 
