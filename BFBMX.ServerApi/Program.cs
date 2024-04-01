@@ -22,6 +22,7 @@ builder.Services.AddLogging();
 // define scoped collections, helpers, etc
 builder.Services.AddScoped<IBibReportsCollection, BibReportsCollection>();
 builder.Services.AddScoped<IBibRecordLogger, BibRecordLogger>();
+builder.Services.AddScoped<IDataExImService, DataExImService>();
 
 var app = builder.Build();
 
@@ -55,28 +56,52 @@ app.MapGet("/", () => new
 
 app.MapPost("/WinlinkMessage", (WinlinkMessageModel request) =>
 {
-    var addedRecordsToCollection = bibReportPayloadsCollection.AddEntityToCollection(request);
+    bool addedRecordsToCollection = false;
+    try
+    {
+        addedRecordsToCollection = bibReportPayloadsCollection.AddEntityToCollection(request);
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning("MapPost Exception caught at AddEntityToCollection(request) call! {exceptionMessage}\n{exceptionTrace}", ex.Message, ex.StackTrace);
+    }
 
-    var loggedInTabDelimitedFormat = bibRecordLogger.LogFlaggedRecordsTabDelimited(request);
+    bool loggedInTabDelimitedFormat = false;
+    try
+    {
+        loggedInTabDelimitedFormat = bibRecordLogger.LogFlaggedRecordsTabDelimited(request);
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning("MapPost Exception caught at LogFlaggedRecordsTabDelimited(request) call! {exceptionMessage}\n{exceptionTrace}", ex.Message, ex.StackTrace);
+    }
 
-    var wroteToJsonAuditFile = bibRecordLogger.LogWinlinkMessagePayloadToJsonAuditFile(request);
+    bool wroteToJsonAuditFile = false;
+    try
+    {
+        wroteToJsonAuditFile = bibRecordLogger.LogWinlinkMessagePayloadToJsonAuditFile(request);
+    }
+        catch (Exception ex)
+    {
+        app.Logger.LogWarning("MapPost Exception caught at LogWinlinkMessagePayloadToJsonAuditFile(request) call! {exceptionMessage}\n{exceptionTrace}", ex.Message, ex.StackTrace);
+    }
 
     // return 200 OK or 400 Bad Request
     if (addedRecordsToCollection && loggedInTabDelimitedFormat && wroteToJsonAuditFile)
     {
-        Results.Ok("Stored Winlink Message and all attached bib records to DB, TabDelimited file, and Audit file.");
+        Results.Ok();
     }
     else if (!addedRecordsToCollection)
     {
-        Results.Problem("Unable to store Winlink Message headers and bib contents.");
+        Results.Problem();
     }
     else if (!loggedInTabDelimitedFormat)
     {
-        Results.Problem("Unable to log bib records for Access importation.");
+        Results.Problem();
     }
     else
     {
-        Results.Problem("Unable to completely store and log message with all bib records.");
+        Results.Problem();
     }
 })
 .Produces(StatusCodes.Status200OK)
@@ -85,21 +110,24 @@ app.MapPost("/WinlinkMessage", (WinlinkMessageModel request) =>
 // trigger a backup of the local DB to a remote location
 app.MapPost("/TriggerBackup", () =>
 {
+    int backupCount = 0;
+
     try
     {
-        // todo: result includes a Count of backed up items
-        if (bibReportPayloadsCollection.BackupCollection())
+        backupCount = bibReportPayloadsCollection.BackupCollection();
+
+        if (backupCount > 0)
         {
-            Results.Ok("Backup succeeded.");
+            Results.Ok();
         }
         else
         {
-            Results.Accepted("No backup file or no data to backup.");
+            Results.Accepted();
         }
     }
     catch (Exception)
     {
-        Results.Problem("Server error during backup.");
+        Results.Problem();
     }
 })
 .Produces(StatusCodes.Status200OK)
