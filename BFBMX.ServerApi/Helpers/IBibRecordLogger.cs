@@ -7,6 +7,5 @@ namespace BFBMX.ServerApi.Helpers
         bool ValidateServerVariables(out string? bfBmxLogPath);
         bool LogWinlinkMessagePayloadToJsonAuditFile(WinlinkMessageModel wlMessagePayload);
         bool LogFlaggedRecordsTabDelimited(WinlinkMessageModel wlMessagePayload);
-        Task<bool> LogFlaggedRecordsTabDelimitedAsync(WinlinkMessageModel wlMessagePayload);
     }
 }

@@ -6,6 +6,7 @@ namespace BFBMX.ServerApi.Helpers
 {
     public class BibRecordLogger : IBibRecordLogger
     {
+        private static readonly object LockObject = new object(); // lock object to ensure only single thread can access the file at a time
         private readonly ILogger<BibRecordLogger> _logger;
 
         private readonly string ParentDirectory = "Documents";
@@ -62,7 +63,6 @@ namespace BFBMX.ServerApi.Helpers
         {
             try
             {
-                // boolean return ensures bfBmxLogPath is not null before continuing
                 if (ValidateServerVariables(out string? bfBmxLogPath))
                 {
                     string bfBmxLogFilePath = Path.Combine(bfBmxLogPath!, wlMessagePayload.ToFilename());
@@ -74,10 +74,13 @@ namespace BFBMX.ServerApi.Helpers
                         WriteIndented = true
                     };
 
-                    using (StreamWriter file = File.CreateText(bfBmxLogFilePath))
+                    lock (LockObject)
                     {
-                        string? serializedPayload = JsonSerializer.Serialize(wlMessagePayload, options);
-                        file.Write(serializedPayload);
+                        using (StreamWriter file = File.CreateText(bfBmxLogFilePath))
+                        {
+                            string? serializedPayload = JsonSerializer.Serialize(wlMessagePayload, options);
+                            file.Write(serializedPayload);
+                        }
                     }
 
                     _logger.LogInformation("Write WinlinkMessage to audit file {logFile}", bfBmxLogFilePath);
@@ -87,6 +90,10 @@ namespace BFBMX.ServerApi.Helpers
                     _logger.LogWarning("Unable to path variables for logging payload to the Json Audit file.");
                     return false;
                 }
+            }
+            catch (IOException ioex)
+            {
+                _logger.LogError("LogWinlinkMessagePayloadToJsonAuditFile: writing serialized payload to file caused exception: {ex}", ioex);
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -111,14 +118,16 @@ namespace BFBMX.ServerApi.Helpers
         {
             try
             {
-                // boolean return ensures bfBmxLogPath is not null before continuing
                 if (ValidateServerVariables(out string? bfBmxLogPath))
                 {
                     string bfBmxLogFilePath = Path.Combine(bfBmxLogPath!, LogFilename);
 
-                    using (StreamWriter file = File.AppendText(bfBmxLogFilePath))
+                    lock (LockObject)
                     {
-                        file.Write(wlMessagePayload.ToAccessDatabaseTabbedString());
+                        using (StreamWriter file = File.AppendText(bfBmxLogFilePath))
+                        {
+                            file.Write(wlMessagePayload.ToAccessDatabaseTabbedString());
+                        }
                     }
 
                     _logger.LogInformation("Wrote 1 Winlink Message payload to log file {logFile}", bfBmxLogFilePath);
@@ -141,14 +150,6 @@ namespace BFBMX.ServerApi.Helpers
             }
 
             return true;
-        }
-
-        public Task<bool> LogFlaggedRecordsTabDelimitedAsync(WinlinkMessageModel wlMessagePayload)
-        {
-            return Task.Run(() =>
-            {
-                return LogFlaggedRecordsTabDelimited(wlMessagePayload);
-            });
         }
     }
 }
