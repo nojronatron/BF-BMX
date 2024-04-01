@@ -53,37 +53,37 @@ namespace BFBMX.Desktop.Helpers
                 }
                 catch (UriFormatException uriFormEx)
                 {
-                    _logger.LogError("Forming Uri failed\nStacktrace: {stacktrace}\nMessage: {msg}", uriFormEx.StackTrace, uriFormEx.Message);
+                    _logger.LogError("Forming Uri failed\nStacktrace: {uriFormatExceptionTrace}\nMessage: {uriFormatExceptionMessage}", uriFormEx.StackTrace, uriFormEx.Message);
                 }
                 catch (FormatException frmtEx)
                 {
-                    _logger.LogError("Forming a valid URI failed!\nStacktrace: {stacktrace}\nMessage: {msg}", frmtEx.StackTrace, frmtEx.Message);
+                    _logger.LogError("Forming a valid URI failed!\nStacktrace: {formatExceptionTrace}\nMessage: {formatExceptionMessage}", frmtEx.StackTrace, frmtEx.Message);
                     result = false;
                 }
                 catch (ArgumentNullException ArgNullEx)
                 {
-                    _logger.LogError("PostWinlinkMessageAsync: Argument Null Exception Stacktrace: {argnullst}. Message: {argnullmsg}", ArgNullEx.StackTrace, ArgNullEx.Message);
+                    _logger.LogError("PostWinlinkMessageAsync: Argument Null Exception Stacktrace: {argumentNullExceptionTrace}. Message: {argumentNullExceptionMessage}", ArgNullEx.StackTrace, ArgNullEx.Message);
                     if (ArgNullEx.InnerException != null)
                     {
-                        _logger.LogError("PostWinlinkMessageAsync: Arugment Null Inner Exception {argnullexinnermsg}", ArgNullEx.InnerException.Message);
+                        _logger.LogError("PostWinlinkMessageAsync: Arugment Null Inner Exception {innerExceptionMessage}", ArgNullEx.InnerException.Message);
                     }
                     result = false;
                 }
                 catch (HttpRequestException HReqEx)
                 {
-                    _logger.LogError("PostWinlinkMessageAsync: HTTP Request Exception Stacktrace: {argnullst}. Message: {argnullmsg}", HReqEx.StackTrace, HReqEx.Message);
+                    _logger.LogError("PostWinlinkMessageAsync: HTTP Request Exception Stacktrace: {httpRequestExceptionTrace}. Message: {httpRequestExceptionMessage}", HReqEx.StackTrace, HReqEx.Message);
                     if (HReqEx.InnerException != null)
                     {
-                        _logger.LogError("PostWinlinkMessageAsync: HTTP Request Inner Exception {argnullexinnermsg}", HReqEx.InnerException.Message);
+                        _logger.LogError("PostWinlinkMessageAsync: HTTP Request Inner Exception {innerExceptionMessage}", HReqEx.InnerException.Message);
                     }
                     result = false;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("PostWinlinkMessageAsync: Exception Stacktrace: {argnullst}. Message: {argnullmsg}", ex.StackTrace, ex.Message);
+                    _logger.LogError("PostWinlinkMessageAsync: Exception Stacktrace: {exceptionTrace}. Message: {exceptionMessage}", ex.StackTrace, ex.Message);
                     if (ex.InnerException != null)
                     {
-                        _logger.LogError("PostWinlinkMessageAsync: Exception Inner Exception {argnullexinnermsg}", ex.InnerException.Message);
+                        _logger.LogError("PostWinlinkMessageAsync: Exception Inner Exception {innerExceptionMessage}", ex.InnerException.Message);
                     }
                     result = false;
                 }
