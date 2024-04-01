@@ -2,6 +2,7 @@
 using System.Windows;
 using BFBMX.Desktop.Collections;
 using BFBMX.Desktop.Helpers;
+using BFBMX.Service.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -50,6 +51,7 @@ namespace BFBMX.Desktop
             string targetUrl = DesktopEnvFactory.GetServerHostnameAndPort();
             services.AddSingleton(new ApiClientSettings(targetUrl));
             services.AddSingleton<IApiClient, ApiClient>();
+            services.AddSingleton<IFileProcessor, FileProcessor>();
             services.AddSingleton<IDiscoveredFilesCollection, DiscoveredFilesCollection>();
 
             // inject viewmodels here as transient services
