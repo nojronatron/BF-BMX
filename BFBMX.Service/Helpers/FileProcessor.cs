@@ -43,6 +43,7 @@ namespace BFBMX.Service.Helpers
                 };
 
                 string json = JsonSerializer.Serialize<WinlinkMessageModel>(msg, options);
+                string prefixText = File.Exists(filepath) ? "," : string.Empty;
 
                 for (int tries = 3; tries > 0; tries--)
                 {
@@ -53,6 +54,7 @@ namespace BFBMX.Service.Helpers
 #pragma warning disable IDE0063 // Use simple 'using' statement
                             using (StreamWriter file = File.AppendText(filepath))
                             {
+                                file.WriteLine(prefixText);
                                 file.WriteLine(json);
                             }
 #pragma warning restore IDE0063 // Use simple 'using' statement
