@@ -37,7 +37,14 @@ namespace BFBMX.Desktop.Collections
 
         public async Task EnqueueAsync(DiscoveredFileModel item)
         {
-            if( this.Any(x => x.FullFilePath == item.FullFilePath))
+            if (item is null)
+            {
+                _logger.LogWarning("DiscoveredFileCollection EnqueueAsync: Item is null, ignoring.");
+                return;
+            }
+
+            // todo: find out from stakeholders if full path duplicates are allowed
+            if( this.Contains(item))
             {
                 _logger.LogWarning("DiscoveredFilesCollection EnqueueAsync: File {filepath} is a DUPLICATE. Storing in memory but contents might not get added to database.", item.FullFilePath);
             }
