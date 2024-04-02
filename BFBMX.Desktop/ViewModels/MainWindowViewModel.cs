@@ -38,10 +38,11 @@ namespace BFBMX.Desktop.ViewModels
         {
             _logger.LogInformation("HandleFileCreatedAsync called.");
             string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
-            // put the discovered filepath info into the queue and be done
             DiscoveredFileModel newFile = new(discoveredFilepath);
             await DiscoveredFiles.EnqueueAsync(newFile);
             _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
+            // todo: implement a collection for displaying latest data and send discovered files to it here
+
         }
 
         public void HandleError(object sender, ErrorEventArgs e)
