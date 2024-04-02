@@ -36,9 +36,7 @@ public class WinlinkMessageModel
     public string ToFilename()
     {
         // learn.microsoft.com: 2009-06-15T13:45:30 (DateTimeKind.Local) -> 2009-06-15T13:45:30
-        // string sortableFormatPattern = ClientDateTime.ToString("s");
         string customFormatPattern = MessageDateTime.ToString("yyyy-MM-ddTHH-mm-ss");
-        //return $"{ClientHostname}-{customFormatPattern}.txt"; // option
         return $"{WinlinkMessageId}-{customFormatPattern}.txt";
     }
 
@@ -72,5 +70,30 @@ public class WinlinkMessageModel
         }
 
         return sbBibData.ToString();
+    }
+
+    // for sake of comparing entities
+    public override bool Equals(object? obj)
+    {
+        if (obj is WinlinkMessageModel other)
+        {
+            return WinlinkMessageId == other.WinlinkMessageId
+                && MessageDateTime == other.MessageDateTime
+                && ClientHostname == other.ClientHostname
+                && (BibRecords?.Count == other.BibRecords?.Count);
+        }
+
+        return false;
+    }
+
+    // for sake of comparing entities
+    public override int GetHashCode()
+    {
+        int hash = 17;
+        hash = hash * 23 + (WinlinkMessageId?.GetHashCode() ?? 0);
+        hash = hash * 23 + MessageDateTime.GetHashCode();
+        hash = hash * 23 + (ClientHostname?.GetHashCode() ?? 0);
+        hash = hash * 23 + (BibRecords?.Count.GetHashCode() ?? 0);
+        return hash;
     }
 }

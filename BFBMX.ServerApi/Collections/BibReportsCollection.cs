@@ -30,40 +30,51 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
 
         if (wlMessagePayload is null)
         {
-            _logger.LogWarning("Unable to add null entity to collection");
+            _logger.LogWarning("BibReportsCollection: Unable to add null entity to collection");
             return false;
         }
-        else
+
+        string wlMsgId = string.IsNullOrWhiteSpace(wlMessagePayload.WinlinkMessageId) ? "ERROR!" : wlMessagePayload.WinlinkMessageId;
+
+        // todo: find out what stakeholders want to do if duplicate because collection items are written to file, db is not
+        if (this.Contains(wlMessagePayload))
         {
-            string wlMsgId = string.IsNullOrWhiteSpace(wlMessagePayload.WinlinkMessageId) ? "ERROR!" : wlMessagePayload.WinlinkMessageId;
+            _logger.LogWarning("BibReportsCollection: Entity already exists in the collection!");
+        }
 
-            lock(LockObject)
+        lock (LockObject)
+        {
+            Add(wlMessagePayload);
+        }
+
+        _logger.LogInformation("Stored message ID {msgid} to the internal collection.", wlMsgId);
+
+        try
+        {
+            // see https://learn.microsoft.com/en-us/ef/core/dbcontext-configuration/#using-a-dbcontext-factory-eg-for-blazor
+            using (var bibMessageContext = _dbContextFactory.CreateDbContext())
             {
-                Add(wlMessagePayload);
-            }
-
-            _logger.LogInformation("Stored message ID {msgid} to the internal collection.", wlMsgId);
-
-            try
-            {
-                // see https://learn.microsoft.com/en-us/ef/core/dbcontext-configuration/#using-a-dbcontext-factory-eg-for-blazor
-                using (var bibMessageContext = _dbContextFactory.CreateDbContext())
+                if (bibMessageContext.WinlinkMessageModels.Any(wl => wl.WinlinkMessageId == wlMessagePayload.WinlinkMessageId))
+                {
+                    // todo: find out what stakeholders want to do if the entity already exists in the DB or it that matters
+                    _logger.LogWarning("Winlink Message ID {wlmsgid} already exists in the internal DB.", wlMsgId);
+                }
+                else
                 {
                     bibMessageContext.Add(wlMessagePayload);
                     savedEntityCount = bibMessageContext.SaveChanges();
                     int bibCount = savedEntityCount - 1; // Entity contains 1 WL Message and a collection of N BibRecords
                     _logger.LogInformation("Stored Winlink Message ID {wlmsgid} with {bibcount} bib records to the internal DB.", wlMsgId, bibCount);
                 }
-
-                 }
-            catch (DbUpdateConcurrencyException dbuce)
-            {
-                _logger.LogError("Error adding concurrent entity to collection: {msg}", dbuce.Message);
             }
-            catch (DbUpdateException dbue)
-            {
-                _logger.LogError("Error adding entity to collection: {msg}", dbue.Message);
-            }
+        }
+        catch (DbUpdateConcurrencyException dbuce)
+        {
+            _logger.LogError("Error adding concurrent entity to collection: {msg}", dbuce.Message);
+        }
+        catch (DbUpdateException dbue)
+        {
+            _logger.LogError("Error adding entity to collection: {msg}", dbue.Message);
         }
 
         return savedEntityCount > 0;
