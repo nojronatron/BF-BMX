@@ -20,12 +20,7 @@ public class DataExImService : IDataExImService
     {
         List<WinlinkMessageModel> result = new();
 
-        string backupFilePath = Path.Combine(
-            ServerEnvFactory.GetuserProfilePath(), 
-            ServerEnvFactory.GetServerLogPath(),
-            ServerEnvFactory.GetServerFolderName(),
-            ServerEnvFactory.GetServerBackupFilename()
-            );
+        string backupFilePath = Path.Combine(ServerEnvFactory.GetServerBackupFileNameAndPath());
 
         _logger.LogInformation("DataExImService: ImportFileData: Attempting to read backup file {backupFilePath}.", backupFilePath);
 
@@ -60,16 +55,13 @@ public class DataExImService : IDataExImService
 
         if (data.Count > 0)
         {
-            string? userProfilePath = ServerEnvFactory.GetuserProfilePath();
-            string? bfBmxFolderName = ServerEnvFactory.GetServerFolderName();
-            string? fileName = ServerEnvFactory.GetServerBackupFilename();
-            _logger.LogInformation("DataExImService: ExportDataToFile: Backup Filename {filename} set.", fileName);
+            string fileNameAndPath = ServerEnvFactory.GetServerBackupFileNameAndPath();
+            _logger.LogInformation("DataExImService: ExportDataToFile: Backup Filename {filenameAndPath} set.", fileNameAndPath);
 
             try
             {
-                string filePath = Path.Combine(userProfilePath, ServerEnvFactory.GetServerLogPath(), bfBmxFolderName, fileName);
-                File.Create(filePath).Dispose();
-                _logger.LogInformation("DataExImService: ExportDataToFile: {filepath} opened for writing.", filePath);
+                File.Create(fileNameAndPath).Dispose();
+                _logger.LogInformation("DataExImService: ExportDataToFile: {filenameAndPath} opened for writing.", fileNameAndPath);
 
                 JsonSerializerOptions options = new()
                 {
@@ -79,13 +71,13 @@ public class DataExImService : IDataExImService
                 };
 
                 string json = JsonSerializer.Serialize<List<WinlinkMessageModel>>(data, options);
-                File.WriteAllText(filePath, json);
+                File.WriteAllText(fileNameAndPath, json);
                 itemsCount = data.Count;
-                _logger.LogInformation("DataExImService: ExportDataToFile: {num} items written to {filepath}.", itemsCount, filePath);
+                _logger.LogInformation("DataExImService: ExportDataToFile: {num} items written to {filenameAndPath}.", itemsCount, fileNameAndPath);
             }
             catch (UnauthorizedAccessException uAex)
             {
-                _logger.LogError("DataExImService: ExportDataToFile: Unauthorized access to {userProfilePath}, or {bfBmxFolderName}, or {fileName}. Operation HALTED.", userProfilePath, bfBmxFolderName, fileName);
+                _logger.LogError("DataExImService: ExportDataToFile: Unauthorized access to {fileNameAndPath}. Operation HALTED.", fileNameAndPath);
                 _logger.LogError("DataExImService: ExportDataToFile: Unauthorized access exception message {exMsg}", uAex.Message);
             }
             catch (Exception ex)
