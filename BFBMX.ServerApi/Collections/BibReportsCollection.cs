@@ -39,7 +39,7 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
         // todo: find out what stakeholders want to do if duplicate because collection items are written to file, db is not
         if (this.Contains(wlMessagePayload))
         {
-            _logger.LogWarning("BibReportsCollection: Entity already exists in the collection!");
+            _logger.LogWarning("Winlink Message ID {wlmsgid} already exists in memory!", wlMsgId);
         }
 
         lock (LockObject)
@@ -47,7 +47,7 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
             Add(wlMessagePayload);
         }
 
-        _logger.LogInformation("Stored message ID {msgid} to the internal collection.", wlMsgId);
+        _logger.LogInformation("Saved Winlink Message ID {msgid} and its Bib Records to memory.", wlMsgId);
 
         try
         {
@@ -57,24 +57,24 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
                 if (bibMessageContext.WinlinkMessageModels.Any(wl => wl.WinlinkMessageId == wlMessagePayload.WinlinkMessageId))
                 {
                     // todo: find out what stakeholders want to do if the entity already exists in the DB or it that matters
-                    _logger.LogWarning("Winlink Message ID {wlmsgid} already exists in the internal DB.", wlMsgId);
+                    _logger.LogWarning("Winlink Message ID {wlmsgid} already exists in the server DB!", wlMsgId);
                 }
                 else
                 {
                     bibMessageContext.Add(wlMessagePayload);
                     savedEntityCount = bibMessageContext.SaveChanges();
-                    int bibCount = savedEntityCount - 1; // Entity contains 1 WL Message and a collection of N BibRecords
-                    _logger.LogInformation("Stored Winlink Message ID {wlmsgid} with {bibcount} bib records to the internal DB.", wlMsgId, bibCount);
+                    int bibRecordCount = savedEntityCount - 1; // Entity contains 1 WL Message and a collection of N BibRecords
+                    _logger.LogInformation("Stored Winlink Message ID {wlmsgid} with {bibcount} bib records to server DB.", wlMsgId, bibRecordCount);
                 }
             }
         }
         catch (DbUpdateConcurrencyException dbuce)
         {
-            _logger.LogError("Error adding concurrent entity to collection: {msg}", dbuce.Message);
+            _logger.LogError("Error adding concurrent entity to server DB: {msg}", dbuce.Message);
         }
         catch (DbUpdateException dbue)
         {
-            _logger.LogError("Error adding entity to collection: {msg}", dbue.Message);
+            _logger.LogError("Error adding entity to server DB: {msg}", dbue.Message);
         }
 
         return savedEntityCount > 0;
@@ -108,7 +108,7 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
     public bool RestoreFromBackupFile()
     {
         int saveCount = 0;
-        var winlinkMessages = _dataExImService.ImportFileData();
+        List<WinlinkMessageModel> winlinkMessages = _dataExImService.ImportFileData();
 
         if (winlinkMessages.Count > 0)
         {
@@ -117,14 +117,11 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
                 Clear();
             }
 
-            if (winlinkMessages is not null && winlinkMessages.Count > 0)
+            foreach (WinlinkMessageModel message in winlinkMessages)
             {
-                foreach (var message in winlinkMessages)
+                if (AddEntityToCollection(message))
                 {
-                    if (AddEntityToCollection(message))
-                    {
-                        saveCount++;
-                    }
+                    saveCount++;
                 }
             }
 

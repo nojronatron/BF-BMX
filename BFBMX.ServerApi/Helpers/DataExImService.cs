@@ -22,7 +22,7 @@ public class DataExImService : IDataExImService
 
         string backupFilePath = Path.Combine(ServerEnvFactory.GetServerBackupFileNameAndPath());
 
-        _logger.LogInformation("DataExImService: ImportFileData: Attempting to read backup file {backupFilePath}.", backupFilePath);
+        _logger.LogInformation("Attempting to read backup file {backupFilePath}.", backupFilePath);
 
         if (File.Exists(backupFilePath))
         {
@@ -45,7 +45,7 @@ public class DataExImService : IDataExImService
 #pragma warning restore IDE0063 // Use simple 'using' statement
         }
 
-        _logger.LogInformation("DataExImService: ImportFileData: {num} items read from {backupFilePath}.", result.Count, backupFilePath);
+        _logger.LogInformation("{num} Winlink Messages read from {backupFilePath}.", result.Count, backupFilePath);
         return result;
     }
 
@@ -56,12 +56,12 @@ public class DataExImService : IDataExImService
         if (data.Count > 0)
         {
             string fileNameAndPath = ServerEnvFactory.GetServerBackupFileNameAndPath();
-            _logger.LogInformation("DataExImService: ExportDataToFile: Backup Filename {filenameAndPath} set.", fileNameAndPath);
+            _logger.LogInformation("Backup Filename {filenameAndPath} set.", fileNameAndPath);
 
             try
             {
                 File.Create(fileNameAndPath).Dispose();
-                _logger.LogInformation("DataExImService: ExportDataToFile: {filenameAndPath} opened for writing.", fileNameAndPath);
+                _logger.LogInformation("{filenameAndPath} opened for writing.", fileNameAndPath);
 
                 JsonSerializerOptions options = new()
                 {
@@ -73,16 +73,16 @@ public class DataExImService : IDataExImService
                 string json = JsonSerializer.Serialize<List<WinlinkMessageModel>>(data, options);
                 File.WriteAllText(fileNameAndPath, json);
                 itemsCount = data.Count;
-                _logger.LogInformation("DataExImService: ExportDataToFile: {num} items written to {filenameAndPath}.", itemsCount, fileNameAndPath);
+                _logger.LogInformation("{num} items written to {filenameAndPath}.", itemsCount, fileNameAndPath);
             }
             catch (UnauthorizedAccessException uAex)
             {
-                _logger.LogError("DataExImService: ExportDataToFile: Unauthorized access to {fileNameAndPath}. Operation HALTED.", fileNameAndPath);
-                _logger.LogError("DataExImService: ExportDataToFile: Unauthorized access exception message {exMsg}", uAex.Message);
+                _logger.LogError("Unauthorized access to {fileNameAndPath}. Operation HALTED.", fileNameAndPath);
+                _logger.LogError("Unauthorized access exception message {exMsg}", uAex.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError("DataExImService: ExportDataToFile: Some other exception was thrown! {exMsg} {exstack}", ex.Message, ex.StackTrace);
+                _logger.LogError("Some other exception was thrown! {exMsg} {exstack}", ex.Message, ex.StackTrace);
             }
         }
 
