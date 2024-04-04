@@ -26,7 +26,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="8"/>
             <ColumnDefinition Width="*"/>
-    <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="8"/>
     </Grid.ColumnDefinitions>
 
     <StackPanel Orientation="Horizontal"
@@ -210,15 +210,44 @@
             Content="{Binding CharlieStatusMessage}" />
     </StackPanel>
 
-    <StackPanel Orientation="Vertical"
-                Grid.Row="7"
-                Grid.Column="1">
-    <Label x:Name="DiscoveredFilesListView"
-           Height="178"
-           ScrollViewer.VerticalScrollBarVisibility="Visible"
-           ScrollViewer.CanContentScroll="True"
-           Content="DiscoveredFilesListView Placeholder" />
-    </StackPanel>
+        <StackPanel Orientation="Horizontal"
+                    Grid.Row="7"
+                    Grid.Column="1"
+                    Margin="2">
+            <StackPanel Orientation="Vertical"
+                        Background="LightBlue"
+                        MinWidth="310"
+                        Margin="2">
+                <Label x:Name="DiscoveredFilesListView"
+                       Height="178"
+                       ScrollViewer.VerticalScrollBarVisibility="Visible"
+                       ScrollViewer.CanContentScroll="True"
+                       Content="DiscoveredFilesListView Placeholder" />
+            </StackPanel>
+            <StackPanel Orientation="Vertical"
+                        MinWidth="310"
+                        Background="LightBlue"
+                        Margin="2">
+                <Label HorizontalAlignment="Left"
+                       Height="26"
+                       Margin="2"
+                       Content="Logfile Path:"/>
+                <Label HorizontalContentAlignment="Left"
+                       Height="26"
+                       Margin="2"
+                       Background="Azure"
+                       Content="{Binding LogfilePath}" />
+                <Label HorizontalAlignment="Left"
+                       Height="24"
+                       Margin="2"
+                       Content="Server and Port:"/>
+                <Label HorizontalContentAlignment="Left"
+                       Height="24"
+                       Margin="2"
+                       Background="Azure"
+                       Content="{Binding ServerNamePort}" />
+            </StackPanel>
+        </StackPanel>
 
     </Grid>
 
