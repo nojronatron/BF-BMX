@@ -7,7 +7,7 @@ using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string serverPort = Environment.GetEnvironmentVariable("BFBMX_SERVER_PORT") ?? "5000";
+string serverPort = Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? "5150";
 int.TryParse(serverPort, out int srvrPort);
 
 // Add services to the container.
