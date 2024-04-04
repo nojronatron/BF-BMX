@@ -1,5 +1,4 @@
 ﻿using BFBMX.Service.Models;
-using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -11,7 +10,6 @@ namespace BFBMX.ServerApi.Helpers;
 public class DataExImService : IDataExImService
 {
     private readonly ILogger<DataExImService> _logger;
-    public string DocumentsDirectoryName => "Documents";
 
     public DataExImService(ILogger<DataExImService> logger)
     {
@@ -21,11 +19,15 @@ public class DataExImService : IDataExImService
     public List<WinlinkMessageModel> ImportFileData()
     {
         List<WinlinkMessageModel> result = new();
-        string? userProfilePath = ServerEnvFactory.GetuserProfilePath();
-        string? bfBmxFolderName = ServerEnvFactory.GetServerFolderName();
-        string? fileName = ServerEnvFactory.GetServerBackupFilename();
 
-        string backupFilePath = Path.Combine(userProfilePath, DocumentsDirectoryName, bfBmxFolderName, fileName);
+        string backupFilePath = Path.Combine(
+            ServerEnvFactory.GetuserProfilePath(), 
+            ServerEnvFactory.GetServerLogPath(),
+            ServerEnvFactory.GetServerFolderName(),
+            ServerEnvFactory.GetServerBackupFilename()
+            );
+
+        _logger.LogInformation("DataExImService: ImportFileData: Attempting to read backup file {backupFilePath}.", backupFilePath);
 
         if (File.Exists(backupFilePath))
         {
@@ -48,30 +50,26 @@ public class DataExImService : IDataExImService
 #pragma warning restore IDE0063 // Use simple 'using' statement
         }
 
+        _logger.LogInformation("DataExImService: ImportFileData: {num} items read from {backupFilePath}.", result.Count, backupFilePath);
         return result;
-    }
-
-    public async Task<List<WinlinkMessageModel>> ImportFileDataAsync()
-    {
-        return await Task.Run(() =>
-        {
-            return ImportFileData();
-        });
     }
 
     public int ExportDataToFile(List<WinlinkMessageModel> data)
     {
         int itemsCount = 0;
-        string? userProfilePath = ServerEnvFactory.GetuserProfilePath();
-        string? bfBmxFolderName = ServerEnvFactory.GetServerFolderName();
-        string? fileName = ServerEnvFactory.GetServerBackupFilename();
 
         if (data.Count > 0)
         {
+            string? userProfilePath = ServerEnvFactory.GetuserProfilePath();
+            string? bfBmxFolderName = ServerEnvFactory.GetServerFolderName();
+            string? fileName = ServerEnvFactory.GetServerBackupFilename();
+            _logger.LogInformation("DataExImService: ExportDataToFile: Backup Filename {filename} set.", fileName);
+
             try
             {
-                string filePath = Path.Combine(userProfilePath, DocumentsDirectoryName, bfBmxFolderName, fileName);
+                string filePath = Path.Combine(userProfilePath, ServerEnvFactory.GetServerLogPath(), bfBmxFolderName, fileName);
                 File.Create(filePath).Dispose();
+                _logger.LogInformation("DataExImService: ExportDataToFile: {filepath} opened for writing.", filePath);
 
                 JsonSerializerOptions options = new()
                 {
@@ -83,18 +81,16 @@ public class DataExImService : IDataExImService
                 string json = JsonSerializer.Serialize<List<WinlinkMessageModel>>(data, options);
                 File.WriteAllText(filePath, json);
                 itemsCount = data.Count;
+                _logger.LogInformation("DataExImService: ExportDataToFile: {num} items written to {filepath}.", itemsCount, filePath);
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException uAex)
             {
-                string msg = $"Unauthorized access to path {userProfilePath}, or {bfBmxFolderName}, or {fileName}.";
-                Debug.WriteLine(msg);
-                Debug.WriteLine($"Related exception message: {ex.Message}");
+                _logger.LogError("DataExImService: ExportDataToFile: Unauthorized access to {userProfilePath}, or {bfBmxFolderName}, or {fileName}. Operation HALTED.", userProfilePath, bfBmxFolderName, fileName);
+                _logger.LogError("DataExImService: ExportDataToFile: Unauthorized access exception message {exMsg}", uAex.Message);
             }
             catch (Exception ex)
             {
-                string words = "File access was authorized but an error occurred while logging BibRecords to the file";
-                string msg = $"{words} {userProfilePath}\\{bfBmxFolderName}\\{fileName}: {ex.Message}";
-                Debug.WriteLine(msg);
+                _logger.LogError("DataExImService: ExportDataToFile: Some other exception was thrown! {exMsg} {exstack}", ex.Message, ex.StackTrace);
             }
         }
 
