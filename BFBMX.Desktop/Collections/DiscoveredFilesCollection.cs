@@ -1,6 +1,7 @@
 ﻿using BFBMX.Desktop.Helpers;
 using BFBMX.Service.Helpers;
 using BFBMX.Service.Models;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.IO;
 
@@ -10,7 +11,7 @@ namespace BFBMX.Desktop.Collections
     {
         int MaxItems { get; }
 
-        void Enqueue(DiscoveredFileModel item);
+        Task EnqueueAsync(DiscoveredFileModel item);
     }
 
     /// <summary>
@@ -18,33 +19,49 @@ namespace BFBMX.Desktop.Collections
     /// </summary>
     public class DiscoveredFilesCollection : ConcurrentQueue<DiscoveredFileModel>, IDiscoveredFilesCollection
     {
+        private readonly IApiClient _apiClient;
+        private readonly ILogger<DiscoveredFilesCollection> _logger;
+        private readonly IFileProcessor _fileProcessor;
+
         public int MaxItems { get; } = 6;
 
-        public DiscoveredFilesCollection()
+        public DiscoveredFilesCollection(
+            ILogger<DiscoveredFilesCollection> logger,
+            IApiClient apiClient,
+            IFileProcessor fileProcessor)
         {
+            _apiClient = apiClient;
+            _logger = logger;
+            _fileProcessor = fileProcessor;
         }
 
-        public new void Enqueue(DiscoveredFileModel item)
+        public async Task EnqueueAsync(DiscoveredFileModel item)
         {
-            base.Enqueue(item);
+            if (item is null)
+            {
+                _logger.LogWarning("DiscoveredFileCollection EnqueueAsync: Item is null, ignoring.");
+                return;
+            }
 
-            var winlinkMessage = FileProcessor.ProcessWinlinkMessageFile(item.FileTimeStamp, Environment.MachineName, item.FullFilePath);
+            // todo: find out from stakeholders if full path duplicates are allowed
+            if( this.Contains(item))
+            {
+                _logger.LogWarning("DiscoveredFilesCollection EnqueueAsync: File {filepath} is a DUPLICATE. Storing in memory but contents might not get added to database.", item.FullFilePath);
+            }
 
-            // write winilnkMessage to logfile
-            Task.Run(async () => {
-                return await FileProcessor.WriteWinlinkMessageToFile(winlinkMessage, Path.Combine(DesktopEnvFactory.GetBfBmxLogPath(), DesktopEnvFactory.GetBibRecordsLogFileName()));
-            });
+            Enqueue(item);
+            WinlinkMessageModel winlinkMessage = _fileProcessor.ProcessWinlinkMessageFile(item.FileTimeStamp, Environment.MachineName, item.FullFilePath);
 
-            // todo: send winlinkMessage to API Helper
-
-            //while (base.Count > this.MaxItems)
-            //{
-            //    base.TryDequeue(out DiscoveredFileModel? _);
-            //}
-        }
-
-        public DiscoveredFilesCollection(IEnumerable<DiscoveredFileModel> collection) : base(collection)
-        {
+            if (winlinkMessage is not null && winlinkMessage.BibRecords.Count > 0)
+            {
+                bool wroteToFile = _fileProcessor.WriteWinlinkMessageToFile(winlinkMessage, Path.Combine(DesktopEnvFactory.GetBfBmxLogPath(), DesktopEnvFactory.GetBibRecordsLogFileName()));
+                bool postedToApi = await _apiClient.PostWinlinkMessageAsync(winlinkMessage.ToJsonString());
+                _logger.LogInformation("DiscoveredFilesCollection EnqueueAync: Wrote to file? {wroteToFile}. Posted to API? {postedToApi}. Items in collection: {collectionCount}.", wroteToFile, postedToApi, Count);
+            }
+            else
+            {
+                _logger.LogInformation("DiscoveredFilesCollection EnqueueAsync: No bibrecords found in winlinkMessage.");
+            }
         }
     }
 }

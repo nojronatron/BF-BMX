@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using System.Windows;
+using BFBMX.Desktop.Collections;
 using BFBMX.Desktop.Helpers;
+using BFBMX.Service.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -40,19 +42,18 @@ namespace BFBMX.Desktop
             services.Configure<DesktopLoggerConfiguration>(config =>
             {
                 config.EventId = 0;
-                // override LogLevelToTextOutputMap configuration if wanted
-                //string baseProfilePath = Environment.GetEnvironmentVariable("USERPROFILE") ?? @"C:\";
-                //string basePath = baseProfilePath == @"C:\" ? baseProfilePath : Path.Combine(baseProfilePath, "Documents");
-                //string? envLogPath = Environment.GetEnvironmentVariable("BFBMX_FOLDER_NAME");
-                //string logPath = string.IsNullOrEmpty(envLogPath) ? "BFBMX" : envLogPath;
-                //string logfileName = "bfbmx-desktop.log";
                 config.LogfilePath = Path.Combine(DesktopEnvFactory.GetBfBmxLogPath(), DesktopEnvFactory.GetBfBmxLogFileName()); //(basePath, logPath, logfileName);
             });
             // add custom logging provider to the IoC container/collection
             services.AddSingleton<ILoggerProvider, DesktopLoggerProvider>();
 
-            // inject services here e.g. services.addsingleton<TInterface, TImplementation>();
-            
+            // inject services here e.g. services.AddSingleton<TInterface, TImplementation>() etc
+            string targetUrl = DesktopEnvFactory.GetServerHostnameAndPort();
+            services.AddSingleton(new ApiClientSettings(targetUrl));
+            services.AddSingleton<IApiClient, ApiClient>();
+            services.AddSingleton<IFileProcessor, FileProcessor>();
+            services.AddSingleton<IDiscoveredFilesCollection, DiscoveredFilesCollection>();
+
             // inject viewmodels here as transient services
             services.AddTransient<ViewModels.MainWindowViewModel>();
 

@@ -1,5 +1,5 @@
 using BFBMX.Service.Models;
-using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -7,26 +7,27 @@ using System.Text.RegularExpressions;
 
 namespace BFBMX.Service.Helpers
 {
-    public interface IFileReader
-    {
-        bool Exists(string path);
-        string[] ReadAllLines(string path);
-    }
-
-    public class FileReader : IFileReader
-    {
-        public bool Exists(string path) => File.Exists(path);
-        public string[] ReadAllLines(string path) => File.ReadAllLines(path);
-    }
-
-    public class FileProcessor
+    public class FileProcessor : IFileProcessor
     {
         private static readonly object _lock = new object();
-        private static readonly string messageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
-        private static readonly string strictBibPattern = @"\b\d{1,3}\t(OUT|IN|DROP)\t\d{4}\t\d{1,2}\t\w{2}\b";
-        private static readonly string sloppyBibPattern = @"\b\w{1,15}\t\w{1,5}\t\w{1,5}\t\w{1,3}\t\w{1,26}\b";
+        private readonly ILogger<FileProcessor> _logger;
 
-        public static async Task<bool> WriteWinlinkMessageToFile(WinlinkMessageModel msg, string filepath)
+        private readonly string messageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
+        private readonly string strictBibPattern = @"\b\d{1,3}\t(OUT|IN|DROP)\t\d{4}\t\d{1,2}\t\w{2}\b";
+        private readonly string sloppyBibPattern = @"\b\w{1,15}\t\w{1,5}\t\w{1,5}\t\w{1,3}\t\w{1,26}\b";
+
+        public FileProcessor(ILogger<FileProcessor> logger)
+        {
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Writes a non-null WinilnkMessageModel instance to a file at filepath.
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="filepath"></param>
+        /// <returns>True if succeeds writing to file, otherwise False</returns>
+        public bool WriteWinlinkMessageToFile(WinlinkMessageModel msg, string filepath)
         {
             if (msg is null || msg.BibRecords.Count < 1 || string.IsNullOrWhiteSpace(filepath))
             {
@@ -43,40 +44,38 @@ namespace BFBMX.Service.Helpers
 
                 string json = JsonSerializer.Serialize<WinlinkMessageModel>(msg, options);
 
-                return await Task.Run(async () =>
+                for (int tries = 3; tries > 0; tries--)
                 {
-                    for (int tries = 3; tries > 0; tries--)
+                    try
                     {
-                        try
+                        lock (_lock)
                         {
-                            lock (_lock)
-                            {
-                                //File.AppendAllText(filepath, $"{json}\n");
 #pragma warning disable IDE0063 // Use simple 'using' statement
-                                using (StreamWriter file = File.AppendText(filepath))
-                                {
-                                    file.WriteLine(json);
-                                }
-#pragma warning restore IDE0063 // Use simple 'using' statement
+                            using (StreamWriter file = File.AppendText(filepath))
+                            {
+                                file.WriteLine(json);
                             }
-
-                            return true;
-                        }
-                        catch (Exception)
-                        {
-                            Debug.WriteLine($"WriteWinlinkMessageToFile: Attempt number {tries} - Could not write to {filepath}.");
+#pragma warning restore IDE0063 // Use simple 'using' statement
                         }
 
-                        await Task.Delay(125);
+                        return true;
                     }
+                    catch (Exception)
+                    {
+                        _logger.LogWarning("WriteWinlinkMessageToFile: Attempt number {tries} - Could not write to {filepath}.", tries, filepath);
+                    }
+                }
 
-                    return false;
-                });
+                return false;
             }
         }
 
-        // method converts string[] to List<FlaggedBibRecordModel>
-        public static string RecordsArrayToString(string[] fileData)
+        /// <summary>
+        /// Converts an array of strings to a single string with each element separated by a newline character.
+        /// </summary>
+        /// <param name="fileData"></param>
+        /// <returns>string representing elements, each separated by a newline character.</returns>
+        public string RecordsArrayToString(string[] fileData)
         {
             StringBuilder sb = new();
             foreach (var fd in fileData)
@@ -86,8 +85,14 @@ namespace BFBMX.Service.Helpers
             return sb.ToString();
         }
 
-        // method gets WInlinkMessageId and processed bibs and returns them as a WinlinkMessageModel
-        public static WinlinkMessageModel ProcessWinlinkMessageFile(DateTime timestamp, string machineName, string filePath)
+        /// <summary>
+        /// Processes a Winlink message file information and returns a WinlinkMessageModel instance.
+        /// </summary>
+        /// <param name="timestamp"></param>
+        /// <param name="machineName"></param>
+        /// <param name="filePath"></param>
+        /// <returns>WinlinkMessageModel instance</returns>
+        public WinlinkMessageModel ProcessWinlinkMessageFile(DateTime timestamp, string machineName, string filePath)
         {
             var fileData = GetFileData(filePath);
 
@@ -117,8 +122,8 @@ namespace BFBMX.Service.Helpers
         /// Resuable wrapper method to get file data without throwing an IO and other Exceptions.
         /// </summary>
         /// <param name="fullFilePath"></param>
-        /// <returns></returns>
-        public static string[] GetFileData(string fullFilePath)
+        /// <returns>Array of strings representing lines of data in the file at fullFilePath</returns>
+        public string[] GetFileData(string fullFilePath)
         {
             if (!string.IsNullOrWhiteSpace(fullFilePath) && File.Exists(fullFilePath))
             {
@@ -129,12 +134,12 @@ namespace BFBMX.Service.Helpers
                     try
                     {
                         string[] lines = File.ReadAllLines(fullFilePath);
-                        Debug.WriteLine($"GetFileData: Successfully read data from {fullFilePath}.");
+                        _logger.LogWarning("GetFileData: Successfully read data from {fullFilePath}.", fullFilePath);
                         return lines;
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"GetFileData: Attempt number {tries} - Unable to read data from {fullFilePath}: {ex.Message}");
+                        _logger.LogWarning("GetFileData: Attempt number {tries} - Unable to read data from {fullFilePath}: {exMessage}", tries, fullFilePath, ex.Message);
                     }
                 }
             }
@@ -147,14 +152,14 @@ namespace BFBMX.Service.Helpers
         /// </summary>
         /// <param name="fileData"></param>
         /// <returns>Message-ID value or an empty string if none found.</returns>
-        public static string GetMessageId(string fileData)
+        public string GetMessageId(string fileData)
         {
             if (string.IsNullOrWhiteSpace(fileData))
             {
                 return string.Empty;
             }
 
-            Regex match = new(messageIdPattern, RegexOptions.IgnoreCase, new TimeSpan(0, 0,  2));
+            Regex match = new(messageIdPattern, RegexOptions.IgnoreCase, new TimeSpan(0, 0, 2));
             MatchCollection matches = match.Matches(fileData);
 
             if (matches.Count > 0)
@@ -173,11 +178,11 @@ namespace BFBMX.Service.Helpers
         /// <param name="bibRecords">Empty List of type BibRecordModel</param>
         /// <param name="lines">Array of string data to check for bib records</param>
         /// <returns>True if strict and sloppy match counts are same, otherwise False.</returns>
-        public static bool ProcessBibs(List<FlaggedBibRecordModel> bibRecords, string[] lines)
+        public bool ProcessBibs(List<FlaggedBibRecordModel> bibRecords, string[] lines)
         {
             if (lines is null || lines.Length < 1)
             {
-                Debug.WriteLine($"Input {nameof(lines)}. Returning and empty list.");
+                _logger.LogWarning("Input {linesProperty} is null, returning and empty list.", nameof(lines));
             }
             else
             {
@@ -204,36 +209,41 @@ namespace BFBMX.Service.Helpers
         /// Attempts to find potential matches in bib data. Returns a list of FlaggedBibRecordModel with DataWarnings set as appropriate.
         /// </summary>
         /// <param name="lines"></param>
-        /// <returns></returns>
-        public static List<FlaggedBibRecordModel> GetSloppyMatches(string[] lines)
+        /// <returns>List of FlaggedBibRecordModel instances</returns>
+        public List<FlaggedBibRecordModel> GetSloppyMatches(string[] lines)
         {
             var sloppyBibRecords = new List<FlaggedBibRecordModel>();
 
             if (lines is null || lines.Length < 1)
             {
-                Debug.WriteLine($"GetSloppyMatches input {nameof(lines)} was empty. Returning an empty list.");
+                _logger.LogWarning("GetSloppyMatches input {linesProperty} was empty, returning an empty list.", nameof(lines));
                 return sloppyBibRecords;
             }
 
             bool result = GetBibMatches(sloppyBibRecords, lines, sloppyBibPattern);
             string didOrNotFind = result ? "found" : "did not find";
-            Debug.WriteLine($"GetSloppyMatches {didOrNotFind} bib data.");
+            _logger.LogWarning("GetSloppyMatches {didOrNotFind} bib data.", didOrNotFind);
             return sloppyBibRecords;
         }
 
-        public static List<FlaggedBibRecordModel> GetStrictMatches(string[] lines)
+        /// <summary>
+        /// Attempts to find strict matches in bib data. Returns a list of FlaggedBibRecordModel with DataWarnings set as appropriate.
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <returns>List of FlaggedBibRecordModel instances</returns>
+        public List<FlaggedBibRecordModel> GetStrictMatches(string[] lines)
         {
             var strictBibRecords = new List<FlaggedBibRecordModel>();
 
             if (lines is null || lines.Length < 1)
             {
-                Debug.WriteLine($"GetStrictMatches input {nameof(lines)} was empty. Returning and empty list.");
+                _logger.LogWarning("GetStrictMatches input {linesProperty} was empty, returning and empty list.", nameof(lines));
                 return strictBibRecords;
             }
 
             bool result = GetBibMatches(strictBibRecords, lines, strictBibPattern);
             string didOrNotFind = result ? "found" : "did not find";
-            Debug.WriteLine($"GetStrictMatches {didOrNotFind} bib data.");
+            _logger.LogWarning("GetStrictMatches {didOrNotFind} bib data.", didOrNotFind);
             return strictBibRecords;
         }
 
@@ -245,7 +255,7 @@ namespace BFBMX.Service.Helpers
         /// <param name="fileDataLines"></param>
         /// <param name="pattern"></param>
         /// <returns>true if any matches are found, false in any other case.</returns>
-        public static bool GetBibMatches(List<FlaggedBibRecordModel> emptyBibList,
+        public bool GetBibMatches(List<FlaggedBibRecordModel> emptyBibList,
                                          string[] fileDataLines,
                                          string pattern)
         {
@@ -276,9 +286,9 @@ namespace BFBMX.Service.Helpers
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"GetBibMatches RegEx operation could not match \"{pattern}\" to \"{line}\"!" +
-                            $"Data should be audited carefully! Exception message: {ex.Message}." +
-                            $"FileProcessor operations will continue.");
+                        _logger.LogWarning("FileProcessor GetBibMatches: RegEx operation could not match {pattern} to {line}!", pattern, line);
+                        _logger.LogWarning("FileProcessor GetBibMatches: Exception message is {exMessage}.", ex.Message);
+                        _logger.LogWarning("FileProcessor GetBibMatches: Operations will continue but an audit should be performed.");
                     }
                 }
 
