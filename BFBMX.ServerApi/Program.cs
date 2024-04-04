@@ -8,7 +8,7 @@ using System.Net;
 var builder = WebApplication.CreateBuilder(args);
 
 string serverPort = Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? "5150";
-int.TryParse(serverPort, out int srvrPort);
+_ = int.TryParse(serverPort, out int srvrPort);
 
 // Add services to the container.
 builder.WebHost.ConfigureKestrel((context, serverOptions) =>
