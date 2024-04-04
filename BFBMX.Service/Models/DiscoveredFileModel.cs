@@ -16,6 +16,7 @@ namespace BFBMX.Service.Models
 
         public string FileName => FullFileInfo.Name;
         public string FullFilePath => FullFileInfo.FullName;
+        public DateTime FileTimeStamp => FullFileInfo.CreationTime;
 
         public override bool Equals(object? obj)
         {

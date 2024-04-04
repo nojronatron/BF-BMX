@@ -83,6 +83,37 @@ At a very high level:
 
 This section will be written as the project enters the Beta Testing phase.
 
+### Configure Local Environment Variables
+
+BFBMX will create a folder for its logfiles in the Documents folder of USERPROFILE, for example:
+
+C:\Users\username\Documents
+
+Environment Variables:
+BFBMX_BACKUP_FILE_NAME = Filename to store server data entries as readable JSON. Recommend: "BFBMX-LocalDb-Backup.txt"
+
+BFBMX_SERVER_FOLDER_NAME =  Name of the folder where the server will store various other log files. Recommend: "BFBMX_Server_Logs"
+
+BFBMX_FOLDER_NAME = Name of the folder where the Desktop App will store its log files. Recommand: "BFBMX_Desktop_Logs"
+
+How to Set Environment Variables so they survive logout/restart:
+
+1. Click `Start` and then `Settings` (or `CTRL + X` and then select `Settings`).
+2. Left Nav Bar: Click `System`.
+3. Right Content Listing: Click `About` (at the bottom of the list).
+4. Click `Advanced system settings` to bring up the `System Properties` window.
+5. Click `Advanced` tab.
+6. Click button `Environment Variables...` (near the bottom).
+7. There are two sections: User variables, and System variables.
+8. Under `System Variables` click button `New...` to bring up the New System Variable window.
+9. Type the Environment Variable `name` in the space to left of the equals sign.
+10. Excluding quotation marks, copy or type the Variable `value` to the right of the equals sign.
+11. Click `OK`.
+12. Repeat steps 8-11 until all environment variable names and values have been entered.
+13. `Close` the Environment Variables window and the System Properties window.
+14. Start the BF-BMX Desktop application and/or Server.
+
+
 ## Notes and Limitations
 
 - Messages can be forwarded by intermediary stations. This is different than an RMS _relay_ where message content is not changed. When an intermediary operator clicks "Forward" the original message body is not changed but new headers are added: Date-Time, From, Message-ID, etc, and the Subject line is modified - prefixed with "FW: ". The Message ID that this program tracks is the one that is attached to the outermost message header, not any attachments or forwarded headers. This should make it easier to sift through Winlink Message IDs at the receiving station to find a message with possible data problems.
