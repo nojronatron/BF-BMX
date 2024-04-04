@@ -44,22 +44,12 @@
         {
             const string PROTOCOL = @"http://";
             const string DEFAULTSERVER = "localhost";
-            const int DEFAULTPORT = 5150;
+            const string DEFAULTPORT = "5150";
 
             string serverName = Environment.GetEnvironmentVariable("BFBMX_SERVERNAME") ?? DEFAULTSERVER;
-            string envVarPort = Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? string.Empty;
+            string serverPort = Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? DEFAULTPORT;
 
-            // if parse fails tempPort will be set to DEFAULTPORT
-            if (int.TryParse(envVarPort, out int tempPort))
-            {
-                // tempPort is set correctly when TryParse succeeds
-            }
-            else
-            {
-                tempPort = DEFAULTPORT;
-            }
-
-            return $"{PROTOCOL}{serverName}:{tempPort}/";
+            return $"{PROTOCOL}{serverName}:{serverPort}/";
         }
     }
 }
