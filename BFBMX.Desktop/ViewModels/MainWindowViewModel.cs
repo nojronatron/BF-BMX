@@ -17,11 +17,16 @@ namespace BFBMX.Desktop.ViewModels
 
         private readonly ILogger<MainWindowViewModel> _logger;
 
+        public readonly IDiscoveredFilesCollection _discoveredFiles;
+
         public MainWindowViewModel(ILogger<MainWindowViewModel> logger,
-            IDiscoveredFilesCollection discoveredFilesCollection)
+            IDiscoveredFilesCollection discoveredFilesCollection,
+            IMostRecentFilesCollection mostRecentFilesCollection)
         {
             _logger = logger;
             _discoveredFiles = discoveredFilesCollection;
+            MostRecentFilesCollection = mostRecentFilesCollection;
+            MostRecentItems = new();
             LogfilePath = DesktopEnvFactory.GetBfBmxLogPath();
             ServerNamePort = DesktopEnvFactory.GetServerHostnameAndPort();
         }
@@ -39,28 +44,45 @@ namespace BFBMX.Desktop.ViewModels
         public string? _charlieStatusMessage = "Monitor #3 is in development.";
 
         [ObservableProperty]
-        public IDiscoveredFilesCollection _discoveredFiles;
+        public IMostRecentFilesCollection _mostRecentFilesCollection;
+
+        [ObservableProperty]
+        public List<DiscoveredFileModel> _mostRecentItems;
 
         /***** Global Monitor Functions *****/
         public async void HandleFileCreatedAsync(object sender, FileSystemEventArgs e)
         {
-            _logger.LogInformation("HandleFileCreatedAsync: File creation detected, waiting 1 second before reading contents.");
+            _logger.LogInformation("File creation detected, waiting 1 second before reading contents.");
             await Task.Delay(1000);
             string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
-            _logger.LogInformation("HandleFileCreatedAsync: Discovered file path is {filepath}", discoveredFilepath);
+            _logger.LogInformation("Discovered file path is {filepath}", discoveredFilepath);
             DiscoveredFileModel newFile = new(discoveredFilepath);
-            await DiscoveredFiles.EnqueueAsync(newFile);
-            _logger.LogInformation("HandleFileCreatedAsync: Enqueued path {discoveredFilepath}", discoveredFilepath);
-            // todo: implement a collection for displaying latest data and send discovered files to it here
-
+            await _discoveredFiles.EnqueueAsync(newFile);
+            MostRecentFilesCollection.AddFirst(newFile);
+            MostRecentItems.Clear();
+            MostRecentItems = MostRecentFilesCollection.GetList();
+            _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
         }
 
-        public void HandleError(object sender, ErrorEventArgs e)
+        public void HandleErrorAlpha(object sender, ErrorEventArgs e)
         {
-            string? errorMessage = e.GetException().Message;
-            string msg = $"HandleError: {errorMessage}";
-            AlphaStatusMessage = msg;
-            _logger.LogInformation("HandleError called: {errMsg}", errorMessage);
+            string errMsg = e.GetException().Message;
+            AlphaStatusMessage = $"Error handling file: {errMsg}";
+            _logger.LogInformation("HandleError called: {errmsg}", errMsg);
+        }
+
+        public void HandleErrorBravo(object sender, ErrorEventArgs e)
+        {
+            string errMsg = e.GetException().Message;
+            AlphaStatusMessage = $"Error handling file: {errMsg}";
+            _logger.LogInformation("HandleError called: {errmsg}", errMsg);
+        }
+
+        public void HandleErrorCharlie(object sender, ErrorEventArgs e)
+        {
+            string errMsg = e.GetException().Message;
+            AlphaStatusMessage = $"Error handling file: {errMsg}";
+            _logger.LogInformation("HandleError called: {errmsg}", errMsg);
         }
 
         /***** End Global Monitor Functions *****/
@@ -103,7 +125,7 @@ namespace BFBMX.Desktop.ViewModels
                         {
                             monitor.EnableRaisingEvents = false;
                             monitor.Dispose();
-                            _logger.LogInformation("ResetMonitor: An existing Alpha Monitor was disposed.");
+                            _logger.LogInformation("ResetMonitor: Alpha Monitor disposed.");
                             AlphaMonitorPathEnabled = true;
                             AlphaMonitorInitialized = false;
                             AlphaStatusMessage = "This monitor has been reset.";
@@ -113,7 +135,7 @@ namespace BFBMX.Desktop.ViewModels
                         {
                             monitor.EnableRaisingEvents = false;
                             monitor.Dispose();
-                            _logger.LogInformation("ResetMonitor: An existing Bravo Monitor was disposed.");
+                            _logger.LogInformation("ResetMonitor: Bravo Monitor disposed.");
                             BravoMonitorPathEnabled = true;
                             BravoMonitorInitialized = false;
                             BravoStatusMessage = "This monitor has been reset.";
@@ -138,7 +160,7 @@ namespace BFBMX.Desktop.ViewModels
             }
             else
             {
-                _logger.LogInformation("ResetMonitor: No existing Monitor to dispose. All monitors states unchanged.");
+                _logger.LogInformation("ResetMonitor: No existing Monitor to dispose, no state(s) were changed.");
             }
         }
 
@@ -155,7 +177,7 @@ namespace BFBMX.Desktop.ViewModels
 
             try
             {
-                _alphaMonitor = FSWatcherFactory.Create(HandleFileCreatedAsync, HandleError, AlphaMonitorPath!, AlphaMonitorName);
+                _alphaMonitor = FSWatcherFactory.Create(HandleFileCreatedAsync, HandleErrorAlpha, AlphaMonitorPath!, AlphaMonitorName);
                 AlphaMonitorPathEnabled = false;
                 AlphaMonitorInitialized = _alphaMonitor!.IsInitialized;
                 string isOrNotInitialized = AlphaMonitorInitialized ? "successfully" : "not";
@@ -348,7 +370,7 @@ namespace BFBMX.Desktop.ViewModels
 
             try
             {
-                _bravoMonitor = FSWatcherFactory.Create(HandleFileCreatedAsync, HandleError, BravoMonitorPath!, BravoMonitorName);
+                _bravoMonitor = FSWatcherFactory.Create(HandleFileCreatedAsync, HandleErrorBravo, BravoMonitorPath!, BravoMonitorName);
                 BravoMonitorPathEnabled = false;
                 BravoMonitorInitialized = _bravoMonitor!.IsInitialized;
                 string isOrNotInitialized = BravoMonitorInitialized ? "successfully" : "not";
