@@ -11,6 +11,10 @@ The overarching goal of this project is to create a synchronization tool that wi
 
 ## Project Status
 
+5-Apr-2024:
+
+- Added UI feature that displays latest detected file paths.
+
 3-Mar-2024:
 
 - Implemented tests and squashed bugs.
