@@ -3,10 +3,22 @@ using BFBMX.ServerApi.EF;
 using BFBMX.ServerApi.Helpers;
 using BFBMX.Service.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
+string serverPort = Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? "5150";
+_ = int.TryParse(serverPort, out int srvrPort);
+
 // Add services to the container.
+builder.WebHost.ConfigureKestrel((context, serverOptions) =>
+{
+    serverOptions.Listen(IPAddress.Any, srvrPort, listenOptions =>
+    {
+        listenOptions.UseConnectionLogging();
+    });
+});
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 

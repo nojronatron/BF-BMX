@@ -1,5 +1,4 @@
 ﻿using BFBMX.Service.Models;
-using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -11,7 +10,6 @@ namespace BFBMX.ServerApi.Helpers;
 public class DataExImService : IDataExImService
 {
     private readonly ILogger<DataExImService> _logger;
-    public string DocumentsDirectoryName => "Documents";
 
     public DataExImService(ILogger<DataExImService> logger)
     {
@@ -21,11 +19,10 @@ public class DataExImService : IDataExImService
     public List<WinlinkMessageModel> ImportFileData()
     {
         List<WinlinkMessageModel> result = new();
-        string? userProfilePath = ServerEnvFactory.GetuserProfilePath();
-        string? bfBmxFolderName = ServerEnvFactory.GetServerFolderName();
-        string? fileName = ServerEnvFactory.GetServerBackupFilename();
 
-        string backupFilePath = Path.Combine(userProfilePath, DocumentsDirectoryName, bfBmxFolderName, fileName);
+        string backupFilePath = Path.Combine(ServerEnvFactory.GetServerBackupFileNameAndPath());
+
+        _logger.LogInformation("Attempting to read backup file {backupFilePath}.", backupFilePath);
 
         if (File.Exists(backupFilePath))
         {
@@ -48,30 +45,23 @@ public class DataExImService : IDataExImService
 #pragma warning restore IDE0063 // Use simple 'using' statement
         }
 
+        _logger.LogInformation("{num} Winlink Messages read from {backupFilePath}.", result.Count, backupFilePath);
         return result;
-    }
-
-    public async Task<List<WinlinkMessageModel>> ImportFileDataAsync()
-    {
-        return await Task.Run(() =>
-        {
-            return ImportFileData();
-        });
     }
 
     public int ExportDataToFile(List<WinlinkMessageModel> data)
     {
         int itemsCount = 0;
-        string? userProfilePath = ServerEnvFactory.GetuserProfilePath();
-        string? bfBmxFolderName = ServerEnvFactory.GetServerFolderName();
-        string? fileName = ServerEnvFactory.GetServerBackupFilename();
 
         if (data.Count > 0)
         {
+            string fileNameAndPath = ServerEnvFactory.GetServerBackupFileNameAndPath();
+            _logger.LogInformation("Backup Filename {filenameAndPath} set.", fileNameAndPath);
+
             try
             {
-                string filePath = Path.Combine(userProfilePath, DocumentsDirectoryName, bfBmxFolderName, fileName);
-                File.Create(filePath).Dispose();
+                File.Create(fileNameAndPath).Dispose();
+                _logger.LogInformation("{filenameAndPath} opened for writing.", fileNameAndPath);
 
                 JsonSerializerOptions options = new()
                 {
@@ -81,20 +71,18 @@ public class DataExImService : IDataExImService
                 };
 
                 string json = JsonSerializer.Serialize<List<WinlinkMessageModel>>(data, options);
-                File.WriteAllText(filePath, json);
+                File.WriteAllText(fileNameAndPath, json);
                 itemsCount = data.Count;
+                _logger.LogInformation("{num} items written to {filenameAndPath}.", itemsCount, fileNameAndPath);
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException uAex)
             {
-                string msg = $"Unauthorized access to path {userProfilePath}, or {bfBmxFolderName}, or {fileName}.";
-                Debug.WriteLine(msg);
-                Debug.WriteLine($"Related exception message: {ex.Message}");
+                _logger.LogError("Unauthorized access to {fileNameAndPath}. Operation HALTED.", fileNameAndPath);
+                _logger.LogError("Unauthorized access exception message {exMsg}", uAex.Message);
             }
             catch (Exception ex)
             {
-                string words = "File access was authorized but an error occurred while logging BibRecords to the file";
-                string msg = $"{words} {userProfilePath}\\{bfBmxFolderName}\\{fileName}: {ex.Message}";
-                Debug.WriteLine(msg);
+                _logger.LogError("Some other exception was thrown! {exMsg} {exstack}", ex.Message, ex.StackTrace);
             }
         }
 

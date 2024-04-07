@@ -1,4 +1,5 @@
 ﻿using BFBMX.Desktop.Collections;
+using BFBMX.Desktop.Helpers;
 using BFBMX.Service.Helpers;
 using BFBMX.Service.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -21,7 +22,14 @@ namespace BFBMX.Desktop.ViewModels
         {
             _logger = logger;
             _discoveredFiles = discoveredFilesCollection;
+            LogfilePath = DesktopEnvFactory.GetBfBmxLogPath();
+            ServerNamePort = DesktopEnvFactory.GetServerHostnameAndPort();
         }
+
+        [ObservableProperty]
+        public string? _logfilePath;
+        [ObservableProperty]
+        public string? _serverNamePort;
 
         [ObservableProperty]
         public string? _alphaStatusMessage;
@@ -36,11 +44,13 @@ namespace BFBMX.Desktop.ViewModels
         /***** Global Monitor Functions *****/
         public async void HandleFileCreatedAsync(object sender, FileSystemEventArgs e)
         {
-            _logger.LogInformation("HandleFileCreatedAsync called.");
+            _logger.LogInformation("HandleFileCreatedAsync: File creation detected, waiting 1 second before reading contents.");
+            await Task.Delay(1000);
             string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
+            _logger.LogInformation("HandleFileCreatedAsync: Discovered file path is {filepath}", discoveredFilepath);
             DiscoveredFileModel newFile = new(discoveredFilepath);
             await DiscoveredFiles.EnqueueAsync(newFile);
-            _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
+            _logger.LogInformation("HandleFileCreatedAsync: Enqueued path {discoveredFilepath}", discoveredFilepath);
             // todo: implement a collection for displaying latest data and send discovered files to it here
 
         }

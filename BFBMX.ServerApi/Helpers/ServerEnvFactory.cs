@@ -30,5 +30,14 @@
             string serverLogPath = System.IO.Path.Combine(userProfilePath, "Documents", logDirectory);
             return serverLogPath;
         }
+
+        public static string GetServerBackupFileNameAndPath()
+        {
+            string backupFilePathAndName = Path.Combine(
+                ServerEnvFactory.GetServerLogPath(),
+                ServerEnvFactory.GetServerBackupFilename()
+                );
+            return backupFilePathAndName;
+        }
     }
 }

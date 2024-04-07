@@ -42,7 +42,7 @@ namespace BFBMX.Desktop
             services.Configure<DesktopLoggerConfiguration>(config =>
             {
                 config.EventId = 0;
-                config.LogfilePath = Path.Combine(DesktopEnvFactory.GetBfBmxLogPath(), DesktopEnvFactory.GetBfBmxLogFileName()); //(basePath, logPath, logfileName);
+                config.LogfilePath = GetLogFilePath();
             });
             // add custom logging provider to the IoC container/collection
             services.AddSingleton<ILoggerProvider, DesktopLoggerProvider>();
@@ -58,6 +58,28 @@ namespace BFBMX.Desktop
             services.AddTransient<ViewModels.MainWindowViewModel>();
 
             return services.BuildServiceProvider();
+        }
+
+        private static string GetLogFilePath()
+        {
+            string logFilePath = Path.Combine(DesktopEnvFactory.GetBfBmxLogPath(), DesktopEnvFactory.GetBfBmxLogFileName());
+
+            // DesktopEnvFactory will return useable, default values if environment variables are not set
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+            string dirPath = Path.GetDirectoryName(path: logFilePath);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+
+            if (Directory.Exists(dirPath) == false)
+            {
+                Directory.CreateDirectory(dirPath!);
+            }
+
+            if (File.Exists(logFilePath) == false)
+            {
+                using var fs = File.Create(logFilePath);
+            }
+
+            return Path.Combine(logFilePath);
         }
     }
 }
