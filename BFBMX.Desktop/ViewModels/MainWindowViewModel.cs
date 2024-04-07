@@ -15,6 +15,8 @@ namespace BFBMX.Desktop.ViewModels
         const string BravoMonitorName = "Bravo";
         const string CharlieMonitorName = "Charlie";
 
+        private static readonly object _lock = new();
+
         private readonly ILogger<MainWindowViewModel> _logger;
 
         public readonly IDiscoveredFilesCollection _discoveredFiles;
@@ -58,9 +60,12 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("Discovered file path is {filepath}", discoveredFilepath);
             DiscoveredFileModel newFile = new(discoveredFilepath);
             await _discoveredFiles.EnqueueAsync(newFile);
-            MostRecentFilesCollection.AddFirst(newFile);
-            MostRecentItems.Clear();
-            MostRecentItems = MostRecentFilesCollection.GetList();
+            lock (_lock)
+            {
+                MostRecentFilesCollection.AddFirst(newFile);
+                MostRecentItems.Clear();
+                MostRecentItems = MostRecentFilesCollection.GetList();
+            }
             _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
         }
 
