@@ -41,7 +41,7 @@ namespace BFBMX.Desktop.ViewModels
         [ObservableProperty]
         public string? _bravoStatusMessage;
         [ObservableProperty]
-        public string? _charlieStatusMessage = "Monitor #3 is in development.";
+        public string? _charlieStatusMessage;
 
         [ObservableProperty]
         public IMostRecentFilesCollection _mostRecentFilesCollection;
@@ -83,6 +83,48 @@ namespace BFBMX.Desktop.ViewModels
             string errMsg = e.GetException().Message;
             AlphaStatusMessage = $"Error handling file: {errMsg}";
             _logger.LogInformation("HandleError called: {errmsg}", errMsg);
+        }
+
+        private bool IsGoodPath(string? directoryPath)
+        {
+            if (string.IsNullOrWhiteSpace(directoryPath))
+            {
+                return false;
+            }
+
+            if (Directory.Exists(directoryPath))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private void SetStatusMessage(string? monitorName, string? message)
+        {
+            switch (monitorName)
+            {
+                case AlphaMonitorName:
+                    {
+                        AlphaStatusMessage = message;
+                        break;
+                    }
+                case BravoMonitorName:
+                    {
+                        BravoStatusMessage = message;
+                        break;
+                    }
+                case CharlieMonitorName:
+                    {
+                        CharlieStatusMessage = message;
+                        break;
+                    }
+                default:
+                    {
+                        _logger.LogWarning("SetStatusMessage: Monitor name not recognized: {monitorName}", monitorName);
+                        break;
+                    }
+            }
         }
 
         /***** End Global Monitor Functions *****/
@@ -128,7 +170,8 @@ namespace BFBMX.Desktop.ViewModels
                             _logger.LogInformation("ResetMonitor: Alpha Monitor disposed.");
                             AlphaMonitorPathEnabled = true;
                             AlphaMonitorInitialized = false;
-                            AlphaStatusMessage = "This monitor has been reset.";
+                            SetStatusMessage(AlphaMonitorName, "This monitor has been reset.");
+                            monitor = null;
                             break;
                         }
                     case BravoMonitorName:
@@ -138,17 +181,19 @@ namespace BFBMX.Desktop.ViewModels
                             _logger.LogInformation("ResetMonitor: Bravo Monitor disposed.");
                             BravoMonitorPathEnabled = true;
                             BravoMonitorInitialized = false;
-                            BravoStatusMessage = "This monitor has been reset.";
+                            SetStatusMessage(BravoMonitorName, "This monitor has been reset.");
+                            monitor = null;
                             break;
                         }
                     case CharlieMonitorName:
                         {
-                            //monitor.EnableRaisingEvents = false;
-                            //monitor.Dispose();
-                            //_logger.LogInformation("ResetMonitor: An existing Charlie Monitor was disposed.");
+                            monitor.EnableRaisingEvents = false;
+                            monitor.Dispose();
+                            _logger.LogInformation("ResetMonitor: Charlie Monitor disposed.");
                             //CharlieMonitorPathEnabled = true;
-                            //CharlieMonitorInitialized = false;
-                            //AlphaStatusMessage = "This monitor has been reset.";
+                            CharlieMonitorInitialized = false;
+                            SetStatusMessage(CharlieMonitorName, "This monitor has been reset.");
+                            monitor = null;
                             break;
                         }
                     default:
@@ -374,12 +419,12 @@ namespace BFBMX.Desktop.ViewModels
                 BravoMonitorPathEnabled = false;
                 BravoMonitorInitialized = _bravoMonitor!.IsInitialized;
                 string isOrNotInitialized = BravoMonitorInitialized ? "successfully" : "not";
-                BravoStatusMessage = "Monitor initialized.";
+                SetStatusMessage(BravoMonitorName, "Monitor initialized.");
                 _logger.LogInformation("Bravo Monitor {isOrNotInit} initialized for path: {monitorPath}", isOrNotInitialized, BravoMonitorPath);
             }
             catch (Exception ex)
             {
-                BravoStatusMessage = "Unable to initialize! Try the Destroy button, then input the path again.";
+                SetStatusMessage(BravoMonitorName, "Unable to initialize! Try the Destroy button, then input the path again.");
                 _logger.LogInformation("Bravo Monitor unable to initialize for {monitorPath}, exception msg: {exceptionMsg}",
                                       BravoMonitorPath, ex.Message);
                 BravoMonitorPathEnabled = true;
@@ -408,13 +453,13 @@ namespace BFBMX.Desktop.ViewModels
                 _bravoMonitor.EnableRaisingEvents = true;
                 BravoMonitorStarted = _bravoMonitor.IsStarted;
                 string isOrNot = _bravoMonitor.IsStarted ? "successfully" : "not";
-                BravoStatusMessage = $"Monitor {isOrNot} started for path.";
+                SetStatusMessage(BravoMonitorName, $"Monitor {isOrNot} started for path.");
                 _logger.LogInformation("StartBravoMonitor: Monitor {isOrNot} started for path {monitorPath}", isOrNot, BravoMonitorPath);
             }
             else
             {
                 BravoMonitorStarted = false;
-                BravoStatusMessage = "Unable to start monitor! Check logs then try Destroy or Initialize instead.";
+                SetStatusMessage(BravoMonitorName, "Unable to start monitor! Check logs then try Destroy or Initialize instead.");
                 _logger.LogWarning("StartBravoMonitor: Unable to enable raising events for {monitorpath}!", BravoMonitorPath);
             }
         }
@@ -481,7 +526,7 @@ namespace BFBMX.Desktop.ViewModels
         {
             _logger.LogInformation("DestroyBravoMonitor: Button pressed.");
             ResetMonitor(_bravoMonitor);
-            BravoStatusMessage = "Monitor has been reset.";
+            SetStatusMessage(BravoMonitorName, "Monitor has been reset.");
             BravoMonitorPathEnabled = true;
         }
 
@@ -510,50 +555,209 @@ namespace BFBMX.Desktop.ViewModels
 
         /***** End Bravo Monitor Commands *****/
 
+        /***** Charlie Monitor Configuration *****/
+        private static FSWMonitor? _charlieMonitor;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(InitCharlieMonitorCommand), nameof(StartCharlieMonitorCommand), nameof(StopCharlieMonitorCommand), nameof(DestroyCharlieMonitorCommand))]
+        public bool _charlieMonitorPathEnabled = true;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(InitCharlieMonitorCommand), nameof(StartCharlieMonitorCommand), nameof(StopCharlieMonitorCommand), nameof(DestroyCharlieMonitorCommand))]
+        public string? _charlieMonitorPath = string.Empty;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(InitCharlieMonitorCommand), nameof(StartCharlieMonitorCommand), nameof(StopCharlieMonitorCommand), nameof(DestroyCharlieMonitorCommand))]
+        public bool _charlieMonitorInitialized = false;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(InitCharlieMonitorCommand), nameof(StartCharlieMonitorCommand), nameof(StopCharlieMonitorCommand), nameof(DestroyCharlieMonitorCommand))]
+        public bool _charlieMonitorStarted = false;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(InitCharlieMonitorCommand), nameof(StartCharlieMonitorCommand), nameof(StopCharlieMonitorCommand), nameof(DestroyCharlieMonitorCommand))]
+        public bool _charlieMonitorStopped = true;
+
+        /***** End Charlie Monitor Configuration *****/
+
         /***** Charlie Monitor Commands *****/
+
         [RelayCommand(CanExecute = nameof(CanInitCharlieMonitor))]
         public void InitCharlieMonitor()
         {
+            _logger.LogInformation("InitCharlieMonitor button pressed.");
 
+            if (_charlieMonitor is null)
+            {
+                _charlieMonitor = FSWatcherFactory.Create(
+                    HandleFileCreatedAsync,
+                    HandleErrorCharlie,
+                    CharlieMonitorPath!,
+                    CharlieMonitorName);
+            }
+            else
+            {
+                _charlieMonitor.EnableRaisingEvents = false;
+                _charlieMonitor.MonitoredPath = CharlieMonitorPath!;
+            }
+
+            try
+            {
+                CharlieMonitorInitialized = _charlieMonitor!.IsInitialized;
+                CharlieMonitorStarted = _charlieMonitor.IsStarted;
+                CharlieMonitorStopped = _charlieMonitor.IsStopped;
+                CharlieMonitorPathEnabled = false;
+                string isOrNotInitialized = CharlieMonitorInitialized ? "successfully" : "not";
+                SetStatusMessage(CharlieMonitorName, "Monitor initialized. Click Launch to start monitoring.");
+                _logger.LogInformation("Charlie Monitor {isOrNotInit} initialized for path: {monitorPath}",
+                    isOrNotInitialized,
+                    CharlieMonitorPath);
+            }
+            catch (Exception ex)
+            {
+                SetStatusMessage(CharlieMonitorName, "Unable to initialize! Click Destroy, add the path, then click initialize.");
+                _logger.LogInformation("Charlie Monitor unable to initialize for {monitorPath}, exception msg: {exceptionMsg}",
+                                       CharlieMonitorPath, ex.Message);
+                CharlieMonitorPathEnabled = true;
+
+                if (_charlieMonitor is not null)
+                {
+                    _charlieMonitor.EnableRaisingEvents = false;
+                    _charlieMonitor.Dispose();
+                }
+            }
         }
 
         public bool CanInitCharlieMonitor()
         {
-            return false;
+            if (IsGoodPath(CharlieMonitorPath))
+            {
+                if (CharlieMonitorPath!.Equals(AlphaMonitorPath)
+                    || CharlieMonitorPath.Equals(BravoMonitorPath))
+                {
+                    SetStatusMessage(CharlieMonitorName, "Path is already being monitored. Choose another path.");
+                    _logger.LogWarning("CanInitCharlieMonitor: Path not unique. Returning false.");
+                    return false;
+                }
+
+                if (_charlieMonitor is null)
+                {
+                    _logger.LogInformation("CanInitCharlieMonitor: Monitor is null and path exists. Returning true.");
+                    return true;
+                }
+
+                _logger.LogInformation("CanInitCharlieMonitor: Monitor is not null but a path exists. Returning false.");
+                return false;
+            }
+            else
+            {
+                _logger.LogInformation("CanInitCharlieMonitor: Path is null or empty or does not exist. Returning false.");
+                return false;
+            }
         }
 
         [RelayCommand(CanExecute = nameof(CanStartCharlieMonitor))]
         public void StartCharlieMonitor()
         {
-
+            _logger.LogInformation("StartCharlieMonitor button pressed.");
+            _charlieMonitor!.EnableRaisingEvents = true;
+            CharlieMonitorPathEnabled = false;
+            CharlieMonitorInitialized = _charlieMonitor.IsInitialized;
+            CharlieMonitorStarted = _charlieMonitor.IsStarted;
+            CharlieMonitorStopped = _charlieMonitor.IsStopped;
+            SetStatusMessage(CharlieMonitorName, "Monitor is watching for new files at path.");
+            _logger.LogInformation("StartCharlieMonitor button: Monitor started for path {monitorPath}", CharlieMonitorPath);
         }
 
         public bool CanStartCharlieMonitor()
         {
+            if (_charlieMonitor is null)
+            {
+                _logger.LogInformation("CanStartCharlieMonitor: Monitor is null. Returning false.");
+                return false;
+            }
+
+            if (_charlieMonitor.CanStart())
+            {
+                _logger.LogInformation("CanStartCharlieMonitor: Monitor is not null and CanStart(). Returning true.");
+                return true;
+            }
+
+            _logger.LogInformation("CanStartCharlieMonitor: Monitor is not null and any other state. Returning false.");
             return false;
         }
 
         [RelayCommand(CanExecute = nameof(CanStopCharlieMonitor))]
         public void StopCharlieMonitor()
         {
-
+            _logger.LogInformation("StopCharlieMonitor button pressed.");
+            _charlieMonitor!.EnableRaisingEvents = false;
+            CharlieMonitorPathEnabled = false;
+            CharlieMonitorInitialized = _charlieMonitor.IsInitialized;
+            CharlieMonitorStarted = _charlieMonitor.IsStarted;
+            CharlieMonitorStopped = _charlieMonitor.IsStopped;
+            SetStatusMessage(CharlieMonitorName, "Monitor no longer watching for new files.");
+            _logger.LogInformation("StopCharlieMonitor button: Monitor stopped for path {monitorPath}", CharlieMonitorPath);
         }
 
         public bool CanStopCharlieMonitor()
         {
-            return true;
+            if (_charlieMonitor is null)
+            {
+                _logger.LogInformation("CanStopCharlieMonitor: Monitor is null. Returning false");
+                return false;
+            }
+
+            if (_charlieMonitor.IsStarted)
+            {
+                _logger.LogInformation("CanStopCharlieMonitor: Monitor is not null and IsStarted. Returning true.");
+                return true;
+            }
+
+            _logger.LogInformation("CanStopCharlieMonitor: Is in any other state. Returning false.");
+            return false;
         }
 
         [RelayCommand(CanExecute = nameof(CanDestroyCharlieMonitor))]
         public void DestroyCharlieMonitor()
         {
+            _logger.LogInformation("DestroyCharlieMonitor button pressed.");
 
+            if (_charlieMonitor is not null)
+            {
+                _charlieMonitor.EnableRaisingEvents = false;
+                // No need to reset MonitoredPath since this instance will be disposed
+                _charlieMonitor.Dispose();
+                _charlieMonitor = null;
+            }
+
+            CharlieMonitorPathEnabled = true;
+            //CharlieMonitorPath = string.Empty;
+            CharlieMonitorInitialized = false;
+            CharlieMonitorStarted = false;
+            CharlieMonitorStopped = false;
+            SetStatusMessage(CharlieMonitorName, "Monitor reset and must be reconfigured.");
+            _logger.LogInformation("DestroyCharlieMonitor button: Monitor destroyed.");
         }
 
         public bool CanDestroyCharlieMonitor()
         {
+            if (_charlieMonitor is null && string.IsNullOrWhiteSpace(CharlieMonitorPath))
+            {
+                _logger.LogInformation("CanDestroyCharlieMonitor: Monitor is null and path is empty. Returning false.");
+                return false;
+            }
+
+            if (_charlieMonitor is null && !string.IsNullOrWhiteSpace(CharlieMonitorPath))
+            {
+                _logger.LogInformation("CanDestroyCharlieMonitor: Monitor is null and path has been entered (not validated). Returning false.");
+                return false;
+            }
+
+            _logger.LogInformation("CanDestroyCharlieMonitor: Monitor exists and is initialized. Returning true.");
             return true;
         }
+
         /***** End Charlie Monitor Commands *****/
 
     }

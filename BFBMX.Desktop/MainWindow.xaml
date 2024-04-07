@@ -43,7 +43,7 @@
                    HorizontalAlignment="Right"
                    Height="24"/>
             <TextBox Height="24"
-                     Width="320"
+                     Width="376"
                      Margin="4"
                      VerticalAlignment="Center"
                      Validation.ErrorTemplate="{StaticResource errorTemplate}"
@@ -58,30 +58,22 @@
                     </Binding>
                 </TextBox.Text>
             </TextBox>
-            <Button x:Name="InitAlphaMonitorButton"
-                    Command="{Binding InitAlphaMonitorCommand}"
+            <Button Command="{Binding InitAlphaMonitorCommand}"
                     Content="Initialize"
                     Padding="4"
-                    Margin="4"
-                    IsEnabled="{Binding AlphaMonitorStopped}"/>
-            <Button x:Name="LaunchAlphaMonitorButton"
-                    Command="{Binding StartAlphaMonitorCommand}"
-                    Content="Launch"
+                    Margin="4"/>
+            <Button Command="{Binding StartAlphaMonitorCommand}"
+                    Content="Start"
                     Padding="4"
-                    Margin="4"
-                    IsEnabled="{Binding AlphaMonitorInitialized}" />
-            <Button x:Name="StopAlphaMonitorButton"
-                    Command="{Binding StopAlphaMonitorCommand}"
+                    Margin="4"/>
+            <Button Command="{Binding StopAlphaMonitorCommand}"
                     Content="Stop" 
                     Padding="4"
-                    Margin="4" 
-                    IsEnabled="{Binding AlphaMonitorStarted}" />
-            <Button x:Name="DestroyAlphaMonitorButton"
-                    Command="{Binding DestroyAlphaMonitorCommand}"
-                    Content="Destroy"
+                    Margin="4"/>
+            <Button Command="{Binding DestroyAlphaMonitorCommand}"
+                    Content="Reset"
                     Padding="4"
-                    Margin="4"
-                    IsEnabled="{Binding AlphaMonitorInitialized}" />
+                    Margin="4"/>
         </StackPanel>
 
         <StackPanel Orientation="Vertical"
@@ -104,7 +96,7 @@
                     Height="24" />
             <TextBox x:Name="BravoMonitorPath"
                     Height="24"
-                    Width="320"
+                    Width="376"
                     Margin="4"
                     VerticalAlignment="Center"
                     Validation.ErrorTemplate="{StaticResource errorTemplate}"
@@ -119,30 +111,22 @@
                     </Binding>
                 </TextBox.Text>
             </TextBox>
-            <Button x:Name="InitBravoMonitorButton"
-                    Command="{Binding InitBravoMonitorCommand}"
+            <Button Command="{Binding InitBravoMonitorCommand}"
                     Content="Initialize"
                     Padding="4"
-                    Margin="4"
-                    IsEnabled="{Binding BravoMonitorStopped}"/>
-            <Button x:Name="LaunchBravoMonitorButton"
-                    Command="{Binding StartBravoMonitorCommand}"
-                    Content="Launch"
+                    Margin="4"/>
+            <Button Command="{Binding StartBravoMonitorCommand}"
+                    Content="Start"
                     Padding="4"
-                    Margin="4"
-                    IsEnabled="{Binding BravoMonitorInitialized}"/>
-            <Button x:Name="StopBravoMonitorButton"
-                    Command="{Binding StopBravoMonitorCommand}"
+                    Margin="4"/>
+            <Button Command="{Binding StopBravoMonitorCommand}"
                     Content="Stop" 
                     Padding="4"
-                    Margin="4"
-                    IsEnabled="{Binding BravoMonitorStarted}"/>
-            <Button x:Name="DestroyBravoMonitorButton"
-                    Command="{Binding DestroyBravoMonitorCommand}"
-                    Content="Destroy"
+                    Margin="4"/>
+            <Button Command="{Binding DestroyBravoMonitorCommand}"
+                    Content="Reset"
                     Padding="4"
-                    Margin="4"
-                    IsEnabled="{Binding BravoMonitorInitialized}"/>
+                    Margin="4"/>
         </StackPanel>
 
         <StackPanel Orientation="Vertical"
@@ -159,48 +143,43 @@
         <StackPanel Orientation="Horizontal"
                     Grid.Row="9"
                     Grid.Column="1">
-            <Label Content="Monitor 2 Path:"
+            <Label Content="Monitor 3 Path:"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Right"
                    Height="24" />
-            <TextBox x:Name="CharlieMonitorPath"
-                     Height="24"
-                     Width="320"
+            <TextBox Height="24"
+                     Width="376"
                      Margin="4"
-                     VerticalAlignment="Center">
-                <TextBox.Text>"Placeholder: Directory path binding and Validation Rules"
-                    <!--<Binding Path="CharliePath" 
+                     VerticalAlignment="Center"
+                     Validation.ErrorTemplate="{StaticResource errorTemplate}"
+                     IsEnabled="{Binding CharlieMonitorPathEnabled}">
+                <TextBox.Text>
+                    <Binding Path="CharlieMonitorPath" 
                              ValidatesOnDataErrors="True" 
-                             UpdateSourceTrigger="PropertyChanged">
+                             UpdateSourceTrigger="LostFocus">
                     <Binding.ValidationRules>
-                        <local:TextboxRule MinimumCharacters="4"/>
+                        <validators:FilepathRule MinimumCharacters="4"/>
                     </Binding.ValidationRules>
-                </Binding>-->
+                </Binding>
                 </TextBox.Text>
             </TextBox>
-            <Button x:Name="InitCharlieMonitorButton"
-                    Command="{Binding InitAlphaMonitorCommand}"
+            <Button Command="{Binding InitCharlieMonitorCommand}"
                     Content="Initialize"
                     Padding="4"
-                    Margin="4" />
-            <Button x:Name="LaunchCharlieMonitorButton"
-                    Command="{Binding InitAlphaMonitorCommand}"
-                    Content="Launch"
+                    Margin="4"/>
+            <Button Command="{Binding StartCharlieMonitorCommand}"
+                    Content="Start"
                     Padding="4"
-                    Margin="4"
-                    IsEnabled="False" />
-            <Button x:Name="StopCharlieMonitorButton"
-                    Command="{Binding InitAlphaMonitorCommand}"
+                    Margin="4"/>
+            <Button Command="{Binding StopCharlieMonitorCommand}"
                     Content="Stop" 
                     Padding="4"
-                    Margin="4" 
-                    IsEnabled="False"/>
+                    Margin="4"/>
             <Button x:Name="DestroyCharlieMonitorButton"
-                    Command="{Binding InitAlphaMonitorCommand}"
-                    Content="Destroy"
+                    Command="{Binding DestroyCharlieMonitorCommand}"
+                    Content="Reset"
                     Padding="4"
-                    Margin="4"
-                    IsEnabled="False" />
+                    Margin="4"/>
         </StackPanel>
 
         <StackPanel Orientation="Vertical"
@@ -222,7 +201,7 @@
                     Margin="2,4"
                     Content="Logfile Path:"/>
             <Label HorizontalContentAlignment="Left"
-                    Width="300"
+                    Width="308"
                     Margin="2,4"
                     Background="Azure"
                     Content="{Binding LogfilePath}" />
@@ -230,7 +209,7 @@
                     Margin="2,4"
                     Content="Server, Port:"/>
             <Label HorizontalContentAlignment="Left"
-                    Width="160"
+                    Width="192"
                     Margin="2,4"
                     Background="Azure"
                     Content="{Binding ServerNamePort}" />

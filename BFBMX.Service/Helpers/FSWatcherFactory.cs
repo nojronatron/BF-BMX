@@ -19,7 +19,7 @@ namespace BFBMX.Service.Helpers
                                                string fullpath,
                                                string name)
         {
-            var watcher = new FileSystemWatcher(fullpath);
+            FileSystemWatcher watcher = new(fullpath);
 
             watcher.NotifyFilter = NotifyFilters.FileName
                                  | NotifyFilters.DirectoryName

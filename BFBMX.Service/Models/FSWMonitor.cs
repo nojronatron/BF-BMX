@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BFBMX.Service.Models
+﻿namespace BFBMX.Service.Models
 {
     public class FSWMonitor
     {
@@ -74,18 +68,12 @@ namespace BFBMX.Service.Models
             }
         }
 
-        public bool CanInitialize()
-        {
-            return fileSystemWatcher is not null 
-                   && !string.IsNullOrWhiteSpace(fileSystemWatcher.Path) 
-                   && IsStopped;
-        }
-
         public bool CanStart()
         {
             return fileSystemWatcher is not null 
                    && fileSystemWatcher.EnableRaisingEvents == false 
-                   && !string.IsNullOrWhiteSpace(fileSystemWatcher.Path);
+                   && !string.IsNullOrWhiteSpace(fileSystemWatcher.Path)
+                   && IsStopped;
         }
 
         public void Dispose()
