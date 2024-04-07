@@ -2,16 +2,29 @@ using BFBMX.Service.Helpers;
 using BFBMX.Service.Models;
 using BFBMX.Service.Test.TestData;
 using System.Diagnostics;
+using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace BFBMX.Service.Test.Helpers;
 
 public class FileProcessorTests
 {
+    private readonly IFileProcessor _fileProcessor;
+    private readonly Mock<ILogger<FileProcessor>> _mockLogger;
+
+    public static string GenericWinlinkId { get => "ABC123DEF456"; }
+
+    public FileProcessorTests()
+    {
+        _mockLogger = new Mock<ILogger<FileProcessor>>();
+        _fileProcessor = new FileProcessor(_mockLogger.Object);
+    }
+
     [Fact]
     public void FileDoesNotExist_ReturnsZeroCountList()
     {
         var expectedCount = 0;
-        var actualResult = FileProcessor.GetFileData("nonexistentfile.txt");
+        var actualResult = _fileProcessor.GetFileData("nonexistentfile.txt");
         var actualCount = actualResult.Length;
         Assert.Equal(expectedCount, actualCount);
     }
@@ -36,7 +49,7 @@ public class FileProcessorTests
             }
 
             var expectedCount = 4;
-            var actualResult = FileProcessor.GetFileData(tempFile);
+            var actualResult = _fileProcessor.GetFileData(tempFile);
             var actualCount = actualResult.Length;
             Assert.Equal(expectedCount, actualCount);
 
@@ -62,7 +75,7 @@ public class FileProcessorTests
         };
 
         List<FlaggedBibRecordModel> actualResult = new();
-        bool strictMatches = FileProcessor.ProcessBibs(actualResult, bibList);
+        bool strictMatches = _fileProcessor.ProcessBibs(actualResult, bibList, GenericWinlinkId);
         Assert.True(strictMatches);
         Assert.NotNull(actualResult);
         var actualCount = actualResult.Count;
@@ -80,8 +93,8 @@ public class FileProcessorTests
         };
 
         List<FlaggedBibRecordModel> actualResult = new();
-        bool strictMatches = FileProcessor.ProcessBibs(actualResult, bibList);
-        Assert.False(strictMatches);
+        bool strictMatches = _fileProcessor.ProcessBibs(actualResult, bibList, GenericWinlinkId);
+        Assert.True(strictMatches);
         Assert.NotNull(actualResult);
         var actualCount = actualResult.Count;
         Assert.Equal(expectedCount, actualCount);
@@ -92,7 +105,7 @@ public class FileProcessorTests
     {
         string sampleMsg = SampleMessages.ValidSingleMesageWithSevenBibRecords;
         string expectedResult = "0K3K2DET73LU";
-        var actualResult = FileProcessor.GetMessageId(sampleMsg);
+        var actualResult = _fileProcessor.GetMessageId(sampleMsg);
         Assert.Equal(expectedResult, actualResult);
     }
 
@@ -107,9 +120,9 @@ public class FileProcessorTests
         string expectedResultBravo = "3HPR0R1L20LD";
         string expectdResultCharlie = "0K3K2DET73LU";
 
-        string actualResultAlpha = FileProcessor.GetMessageId(messageAlpha);
-        string actualResultBravo = FileProcessor.GetMessageId(messageBravo);
-        string actualResultCharlie = FileProcessor.GetMessageId(messageCharlie);
+        string actualResultAlpha = _fileProcessor.GetMessageId(messageAlpha);
+        string actualResultBravo = _fileProcessor.GetMessageId(messageBravo);
+        string actualResultCharlie = _fileProcessor.GetMessageId(messageCharlie);
 
         Assert.Equal(expectedResultAlpha, actualResultAlpha);
         Assert.Equal(expectedResultBravo, actualResultBravo);
@@ -127,8 +140,8 @@ public class FileProcessorTests
         string badRecordCharlie = "123456789012	DROPP	09	33	WR";
         string[] bibInput = { bibAlpha, bibBravo, bibCharlie, badRecordAlpha, badRecordBravo, badRecordCharlie };
 
-        var strictResult = FileProcessor.GetStrictMatches(bibInput);
-        var sloppyResult = FileProcessor.GetSloppyMatches(bibInput);
+        var strictResult = _fileProcessor.GetStrictMatches(bibInput);
+        var sloppyResult = _fileProcessor.GetSloppyMatches(bibInput);
 
         Assert.True(strictResult.Count == 3);
         foreach(var result in strictResult)
@@ -159,29 +172,29 @@ public class FileProcessorTests
         int expectedCountDelta = 26;
 
         string[] alphaLines = messageAlpha.Split('\n');
-        List< FlaggedBibRecordModel> actualStrictResultListAlpha = FileProcessor.GetStrictMatches(alphaLines);
-        List<FlaggedBibRecordModel> actualSloppyResultListAlpha = FileProcessor.GetSloppyMatches(alphaLines);
+        List< FlaggedBibRecordModel> actualStrictResultListAlpha = _fileProcessor.GetStrictMatches(alphaLines);
+        List<FlaggedBibRecordModel> actualSloppyResultListAlpha = _fileProcessor.GetSloppyMatches(alphaLines);
 
         Assert.Equal(expectedCountAlpha, actualStrictResultListAlpha.Count);
         Assert.Equal(expectedCountAlpha, actualSloppyResultListAlpha.Count);
 
         string[] bravoLines = messageBravo.Split('\n');
-        List<FlaggedBibRecordModel> actualStrictResultListBravo = FileProcessor.GetStrictMatches(bravoLines);
-        List<FlaggedBibRecordModel> actualSloppyResultListBravo = FileProcessor.GetSloppyMatches(bravoLines);
+        List<FlaggedBibRecordModel> actualStrictResultListBravo = _fileProcessor.GetStrictMatches(bravoLines);
+        List<FlaggedBibRecordModel> actualSloppyResultListBravo = _fileProcessor.GetSloppyMatches(bravoLines);
 
         Assert.Equal(expectedCountBravo, actualStrictResultListBravo.Count);
         Assert.Equal(expectedCountBravo, actualSloppyResultListBravo.Count);
 
         string[] charlieLines = messageCharlie.Split('\n');
-        List<FlaggedBibRecordModel> actualStrictResultListCharlie = FileProcessor.GetStrictMatches(charlieLines);
-        List<FlaggedBibRecordModel> actualSloppyResultListCharlie = FileProcessor.GetSloppyMatches(charlieLines);
+        List<FlaggedBibRecordModel> actualStrictResultListCharlie = _fileProcessor.GetStrictMatches(charlieLines);
+        List<FlaggedBibRecordModel> actualSloppyResultListCharlie = _fileProcessor.GetSloppyMatches(charlieLines);
 
         Assert.Equal(expectedCountCharlie, actualStrictResultListCharlie.Count);
         Assert.Equal(expectedCountCharlie, actualSloppyResultListCharlie.Count);
 
         string[] deltaLines = messageDelta.Split('\n');
-        List<FlaggedBibRecordModel> actualStrictResultListDelta = FileProcessor.GetStrictMatches(deltaLines);
-        List<FlaggedBibRecordModel> actualSloppyResultListDelta = FileProcessor.GetSloppyMatches(deltaLines);
+        List<FlaggedBibRecordModel> actualStrictResultListDelta = _fileProcessor.GetStrictMatches(deltaLines);
+        List<FlaggedBibRecordModel> actualSloppyResultListDelta = _fileProcessor.GetSloppyMatches(deltaLines);
 
         Assert.Equal(expectedCountDelta, actualStrictResultListDelta.Count);
         Assert.Equal(expectedCountDelta, actualSloppyResultListDelta.Count);
@@ -194,8 +207,8 @@ public class FileProcessorTests
         int expectedSpaceDelimitedBibs = 0; // there are 5 space-delimited bibs in the sample msg
         string[] spaceDelimitedLines = spaceDelimitedMessages.Split('\n');
 
-        List<FlaggedBibRecordModel> actualStrictResultList = FileProcessor.GetStrictMatches(spaceDelimitedLines);
-        List<FlaggedBibRecordModel> actualSloppyResultList = FileProcessor.GetSloppyMatches(spaceDelimitedLines);
+        List<FlaggedBibRecordModel> actualStrictResultList = _fileProcessor.GetStrictMatches(spaceDelimitedLines);
+        List<FlaggedBibRecordModel> actualSloppyResultList = _fileProcessor.GetSloppyMatches(spaceDelimitedLines);
 
         Assert.Equal(expectedSpaceDelimitedBibs, actualStrictResultList.Count);
         Assert.Equal(expectedSpaceDelimitedBibs, actualSloppyResultList.Count);
@@ -208,8 +221,8 @@ public class FileProcessorTests
         int expectedCommaDelimitedBibs = 0; // there are 5 comma-delimited bibs in the sample msg
         string[] commaDelimitedLines = commaDelimitedMessages.Split('\n');
 
-        List<FlaggedBibRecordModel> actualStrictResult = FileProcessor.GetStrictMatches(commaDelimitedLines);
-        List<FlaggedBibRecordModel> actualSloppyResultList = FileProcessor.GetSloppyMatches(commaDelimitedLines);
+        List<FlaggedBibRecordModel> actualStrictResult = _fileProcessor.GetStrictMatches(commaDelimitedLines);
+        List<FlaggedBibRecordModel> actualSloppyResultList = _fileProcessor.GetSloppyMatches(commaDelimitedLines);
 
         Assert.Equal(expectedCommaDelimitedBibs, actualStrictResult.Count);
         Assert.Equal(expectedCommaDelimitedBibs, actualSloppyResultList.Count);
@@ -229,7 +242,7 @@ public class FileProcessorTests
                             "123456789012\tDROPP\t09\t33\tWR",
                             "one\tDROP\t1234\t23\tWR"};
 
-        List<FlaggedBibRecordModel> actualResult = FileProcessor.GetSloppyMatches(bibList);
+        List<FlaggedBibRecordModel> actualResult = _fileProcessor.GetSloppyMatches(bibList);
         Assert.Equal(expectedCount, actualResult.Count);
 
         for (int idx = 0; idx < expectedResult.Length; idx++)

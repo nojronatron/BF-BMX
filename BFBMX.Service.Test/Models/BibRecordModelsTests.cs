@@ -1,9 +1,13 @@
 ﻿using BFBMX.Service.Models;
+using System.Reflection.Metadata.Ecma335;
 
 namespace BFBMX.Service.Test.Models
 {
     public class BibRecordModelsTests
     {
+        public string DataWarningText { get => "ALERT"; }
+        public string NoDataWarningText { get => "NOMINAL";}
+
         [Fact]
         public void InstantiateBibRecordModelAllFields()
         {
@@ -29,7 +33,7 @@ namespace BFBMX.Service.Test.Models
         }
 
         [Fact]
-        public void BibRecordModelToString()
+        public void BibRecordModelToTabbedStringBothDataWarningStates()
         {
             // no data warning
             var sutGoodData = new FlaggedBibRecordModel();
@@ -40,7 +44,7 @@ namespace BFBMX.Service.Test.Models
             sutGoodData.Location = "test-location";
             sutGoodData.DataWarning = false;
 
-            var expectedGoodData = "1\tIN\t1314\t2\ttest-location";
+            var expectedGoodData = $"{NoDataWarningText}\t1\tIN\t1314\t2\ttest-location";
             var actualGoodData = sutGoodData.ToTabbedString();
 
             Assert.Equal(expectedGoodData, actualGoodData);
@@ -54,7 +58,7 @@ namespace BFBMX.Service.Test.Models
             sutDataWarning.Location = "test-location";
             sutDataWarning.DataWarning = true;
 
-            var expectedDataWarning = "1\tIN\t1314\t2\ttest-location\tWarning";
+            var expectedDataWarning = $"{DataWarningText}\t1\tIN\t1314\t2\ttest-location";
             var actualDataWarning = sutDataWarning.ToTabbedString();
 
             Assert.Equal(expectedDataWarning, actualDataWarning);
