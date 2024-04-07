@@ -77,9 +77,9 @@ namespace BFBMX.Service.Models
 
         public string ToTabbedString()
         {
-            // optionally display (tab)Warning if true, otherwise nothing
-            string dwText = DataWarning ? "\tWarning" : string.Empty;
-            return $"{BibNumber}\t{Action}\t{BibTimeOfDay}\t{DayOfMonth}\t{Location}{dwText}";
+            // Set DataWarning as a string: ALERT if true, NOMINAL if false
+            string dwText = DataWarning ? "ALERT" : "NOMINAL";
+            return $"{dwText}\t{BibNumber}\t{Action}\t{BibTimeOfDay}\t{DayOfMonth}\t{Location}";
         }
 
         public string ToJsonString()
