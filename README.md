@@ -11,6 +11,11 @@ The overarching goal of this project is to create a synchronization tool that wi
 
 ## Project Status
 
+4-Apr-2024:
+
+- Improved logging to capture more data server-side.
+- Updated Environment Variables requirements for both client and server.
+
 3-Mar-2024:
 
 - Implemented tests and squashed bugs.
@@ -76,12 +81,30 @@ Operators must be able to:
 
 At a very high level:
 
-- A client-side application built for Windows 10+ will monitor Winlink Express for new messages, recording data from any new message that is a "Bigfoot Bib Report" to a logfile, and sending the data to a configured server service on the local area network (LAN).
-- A server-side application listens for configured clients to send it data in a specialized format. When it receives data that matches, it logs the "Bigfoot Bib Data" to a file, which can be used for querying and reporting on data.
+- A client-side application monitors _up to three_ Winlink Express messages folder for new items. When found, any "bib records" discovered are recorded to a logfile and sent to a configured server service on the local area network (LAN).
+- A server-side application listens for configured clients to send it data in a JSON format. When data is received, the server logs the "bib data" to a file that can be imported into a database or spreadsheet for further analysis.
 
 ## How To Use
 
-This section will be written as the project enters the Beta Testing phase.
+This section will be updated as the project enters the Beta Testing phase.
+
+### Configure and Run
+
+1. See [Target Environment And Dependencies](#target-environment-and-dependencies) for the minimum requirements.
+1. See [Configure Local Environment Variables](#configure-local-environment-variables) for configuring the Desktop App and Server service.
+1. Copy the compiled Desktop App folder and its files to a convenient location on the client computer.
+1. Copy the compiled Server Service folder and its files to a convenient location on the server computer (or client if running both on one machine).
+1. Start the Server Service by double-clicking the BFBMX-Server-API.exe file, and accepting the Windows Firewall prompt. Make not of the `log location` presented in the Server Service console output window (do not close the console).
+1. Start the Desktop App by double-clicking the BFBMX-Desktop-App.exe file. Make not of the `log location` that is presented in the Desktop App.
+1. More steps to follow.
+
+### Use the Desktop App
+
+This section will include information such as: Setting up paths to monitor, starting and stopping monitors, and reviewing log files.
+
+### Use the Server App
+
+This section will include information such as: Reviewing Console Logging, finding and using logging output files.
 
 ### Configure Local Environment Variables
 
@@ -89,12 +112,16 @@ BFBMX will create a folder for its logfiles in the Documents folder of USERPROFI
 
 C:\Users\username\Documents
 
-Environment Variables:
-BFBMX_BACKUP_FILE_NAME = Filename to store server data entries as readable JSON. Recommend: "BFBMX-LocalDb-Backup.txt"
+Environment Variables that apply only to the Server Service:
 
-BFBMX_SERVER_FOLDER_NAME =  Name of the folder where the server will store various other log files. Recommend: "BFBMX_Server_Logs"
+- `BFBMX_BACKUP_FILE_NAME` = Filename to store server data entries as readable JSON. Recommend a name like: "BFBMX-LocalDb-Backup.txt"
+- `BFBMX_SERVER_FOLDER_NAME` =  Name of the folder where the server will store various other log files. Recommend a name like: "BFBMX_Server_Logs"
 
-BFBMX_FOLDER_NAME = Name of the folder where the Desktop App will store its log files. Recommand: "BFBMX_Desktop_Logs"
+Environment Variables that apply to BOTH Desktop App and Server Service:
+
+- `BFBMX_FOLDER_NAME` = Name of the folder where the Desktop App will store its log files. Recommend a name like: "BFBMX_Desktop_Logs"
+- `BFBMX_SERVERNAME` = Name or IP address of server hosting the BF-BMX API. The server name or IP _must_ be accessible as `localhost` if local, or by an IP Address if remote (hostname if DNS is available on the network).
+- `BFBMX_SERVERPORT` = The port that the BF-BMX API host is available on. Default port is `5150`. Check with the server computer operator to confirm correct port number configuration.
 
 How to Set Environment Variables so they survive logout/restart:
 
