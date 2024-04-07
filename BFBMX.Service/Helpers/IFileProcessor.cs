@@ -9,7 +9,7 @@ namespace BFBMX.Service.Helpers
         string GetMessageId(string fileData);
         List<FlaggedBibRecordModel> GetSloppyMatches(string[] lines);
         List<FlaggedBibRecordModel> GetStrictMatches(string[] lines);
-        bool ProcessBibs(List<FlaggedBibRecordModel> bibRecords, string[] lines);
+        bool ProcessBibs(List<FlaggedBibRecordModel> bibRecords, string[] lines, string winlinkMessageId);
         WinlinkMessageModel ProcessWinlinkMessageFile(DateTime timestamp, string machineName, string filePath);
         string RecordsArrayToString(string[] fileData);
         bool WriteWinlinkMessageToFile(WinlinkMessageModel msg, string filepath);

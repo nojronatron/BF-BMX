@@ -107,7 +107,7 @@ namespace BFBMX.Service.Helpers
             string winlinkMessageId = GetMessageId(RecordsArrayToString(fileData));
             List<FlaggedBibRecordModel> bibRecords = new();
 
-            if (ProcessBibs(bibRecords, fileData))
+            if (ProcessBibs(bibRecords, fileData, winlinkMessageId))
             {
                 // no errors processing file
                 if (bibRecords.Count > 0)
@@ -180,11 +180,11 @@ namespace BFBMX.Service.Helpers
         /// <param name="bibRecords">Empty List of type BibRecordModel</param>
         /// <param name="lines">Array of string data to check for bib records</param>
         /// <returns>True if strict and sloppy match counts are same, otherwise False.</returns>
-        public bool ProcessBibs(List<FlaggedBibRecordModel> bibRecords, string[] lines)
+        public bool ProcessBibs(List<FlaggedBibRecordModel> bibRecords, string[] lines, string messageId)
         {
             if (lines is null || lines.Length < 1)
             {
-                _logger.LogWarning("Input {linesProperty} is null, returning and empty list.", nameof(lines));
+                _logger.LogWarning("Input {linesProperty} is null in Message ID {msgId}. Returning and empty list.", nameof(lines), messageId);
             }
             else
             {
@@ -193,12 +193,14 @@ namespace BFBMX.Service.Helpers
 
                 if (strictMatches.Count == sloppyMatches.Count)
                 {
+                    _logger.LogInformation("ProcessBibs: MessageId {msgId}: Found {strictCount} strict and {sloppyCount} sloppy bib records.", messageId, strictMatches.Count, sloppyMatches.Count);
                     bibRecords.AddRange(strictMatches);
                     return true;
                 }
 
                 if (strictMatches.Count < sloppyMatches.Count)
                 {
+                    _logger.LogWarning("ProcessBibs: MessageId {msgId}: Found {strictCount} strict and {sloppyCount} sloppy bib record matches. Returning all sloppy matches.", messageId, strictMatches.Count, sloppyMatches.Count);
                     bibRecords.AddRange(sloppyMatches);
                     return true;
                 }
@@ -218,13 +220,13 @@ namespace BFBMX.Service.Helpers
 
             if (lines is null || lines.Length < 1)
             {
-                _logger.LogWarning("GetSloppyMatches input {linesProperty} was empty, returning an empty list.", nameof(lines));
+                //_logger.LogWarning("GetSloppyMatches input {linesProperty} was empty, returning an empty list.", nameof(lines));
                 return sloppyBibRecords;
             }
 
             bool result = GetBibMatches(sloppyBibRecords, lines, sloppyBibPattern);
-            string didOrNotFind = result ? "found" : "did not find";
-            _logger.LogWarning("GetSloppyMatches {didOrNotFind} bib data.", didOrNotFind);
+            //string didOrNotFind = result ? "found" : "did not find";
+            //_logger.LogWarning("GetSloppyMatches {didOrNotFind} bib data.", didOrNotFind);
             return sloppyBibRecords;
         }
 
@@ -239,13 +241,13 @@ namespace BFBMX.Service.Helpers
 
             if (lines is null || lines.Length < 1)
             {
-                _logger.LogWarning("GetStrictMatches input {linesProperty} was empty, returning and empty list.", nameof(lines));
+                //_logger.LogWarning("GetStrictMatches input {linesProperty} was empty, returning and empty list.", nameof(lines));
                 return strictBibRecords;
             }
 
             bool result = GetBibMatches(strictBibRecords, lines, strictBibPattern);
-            string didOrNotFind = result ? "found" : "did not find";
-            _logger.LogWarning("GetStrictMatches {didOrNotFind} bib data.", didOrNotFind);
+            //string didOrNotFind = result ? "found" : "did not find";
+            //_logger.LogWarning("GetStrictMatches {didOrNotFind} bib data.", didOrNotFind);
             return strictBibRecords;
         }
 
@@ -288,9 +290,9 @@ namespace BFBMX.Service.Helpers
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning("FileProcessor GetBibMatches: RegEx operation could not match {pattern} to {line}!", pattern, line);
-                        _logger.LogWarning("FileProcessor GetBibMatches: Exception message is {exMessage}.", ex.Message);
-                        _logger.LogWarning("FileProcessor GetBibMatches: Operations will continue but an audit should be performed.");
+                        _logger.LogError("FileProcessor GetBibMatches: RegEx operation could not match {pattern} to {line}!", pattern, line);
+                        _logger.LogError("FileProcessor GetBibMatches: Exception message is {exMessage}.", ex.Message);
+                        _logger.LogError("FileProcessor GetBibMatches: Operations will continue but an audit should be performed.");
                     }
                 }
 
