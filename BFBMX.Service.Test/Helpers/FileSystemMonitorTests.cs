@@ -30,10 +30,12 @@ namespace BFBMX.Service.Test.Helpers
             var expectedNotifyFilter = NotifyFilters.FileName
                                      | NotifyFilters.DirectoryName
                                      | NotifyFilters.CreationTime;
-            var expectedWatcher = new FileSystemWatcher(expectedPath!);
-            expectedWatcher.NotifyFilter = expectedNotifyFilter;
-            expectedWatcher.Filter = expectedFilter;
-            expectedWatcher.IncludeSubdirectories = expectedIncludeSubdirs;
+            var expectedWatcher = new FileSystemWatcher(expectedPath!)
+            {
+                NotifyFilter = expectedNotifyFilter,
+                Filter = expectedFilter,
+                IncludeSubdirectories = expectedIncludeSubdirs
+            };
 
             var actualWatcher = FSWatcherFactory.Create((s, e) => { }, (s, e) => { }, expectedPath!, AlphaMonitorName);
 

@@ -1,17 +1,16 @@
 ﻿using BFBMX.Service.Models;
-using System.Reflection.Metadata.Ecma335;
 
 namespace BFBMX.Service.Test.Models
 {
     public class BibRecordModelsTests
     {
-        public string DataWarningText { get => "ALERT"; }
-        public string NoDataWarningText { get => "NOMINAL";}
+        public static string DataWarningText { get => "ALERT"; }
+        public static string NoDataWarningText { get => "NOMINAL";}
 
         [Fact]
         public void InstantiateBibRecordModelAllFields()
         {
-            var sut = new FlaggedBibRecordModel
+            FlaggedBibRecordModel sut = new()
             {
                 BibNumber = 1,
                 @Action = "IN",
@@ -26,7 +25,7 @@ namespace BFBMX.Service.Test.Models
         [Fact]
         public void InstantiateNullBibRecord()
         {
-            var sut = new FlaggedBibRecordModel();
+            FlaggedBibRecordModel sut = new();
             Assert.Equal("MISSING", sut.@Action);
             Assert.Equal("MISSING", sut.Location);
             Assert.True(sut.DataWarning);
@@ -36,13 +35,15 @@ namespace BFBMX.Service.Test.Models
         public void BibRecordModelToTabbedStringBothDataWarningStates()
         {
             // no data warning
-            var sutGoodData = new FlaggedBibRecordModel();
-            sutGoodData.BibNumber = 1;
-            sutGoodData.@Action = "IN";
-            sutGoodData.BibTimeOfDay = "1314";
-            sutGoodData.DayOfMonth = 2;
-            sutGoodData.Location = "test-location";
-            sutGoodData.DataWarning = false;
+            FlaggedBibRecordModel sutGoodData = new ()
+            {
+                BibNumber = 1,
+                @Action = "IN",
+                BibTimeOfDay = "1314",
+                DayOfMonth = 2,
+                Location = "test-location",
+                DataWarning = false
+            };
 
             var expectedGoodData = $"{NoDataWarningText}\t1\tIN\t1314\t2\ttest-location";
             var actualGoodData = sutGoodData.ToTabbedString();
@@ -50,13 +51,15 @@ namespace BFBMX.Service.Test.Models
             Assert.Equal(expectedGoodData, actualGoodData);
 
             // with data warning
-            var sutDataWarning = new FlaggedBibRecordModel();
-            sutDataWarning.BibNumber = 1;
-            sutDataWarning.@Action = "IN";
-            sutDataWarning.BibTimeOfDay = "1314";
-            sutDataWarning.DayOfMonth = 2;
-            sutDataWarning.Location = "test-location";
-            sutDataWarning.DataWarning = true;
+            FlaggedBibRecordModel sutDataWarning = new ()
+            {
+                BibNumber = 1,
+                @Action = "IN",
+                BibTimeOfDay = "1314",
+                DayOfMonth = 2,
+                Location = "test-location",
+                DataWarning = true
+            };
 
             var expectedDataWarning = $"{DataWarningText}\t1\tIN\t1314\t2\ttest-location";
             var actualDataWarning = sutDataWarning.ToTabbedString();
@@ -70,8 +73,10 @@ namespace BFBMX.Service.Test.Models
             // set bibnumber to negative values or zero
             int negativeBib = -1;
             int zeroBib = 0;
-            FlaggedBibRecordModel sut = new();
-            sut.BibNumber = negativeBib;
+            FlaggedBibRecordModel sut = new()
+            {
+                BibNumber = negativeBib
+            };
             Assert.Equal(negativeBib, sut.BibNumber);
             sut.BibNumber = zeroBib;
             Assert.Equal(zeroBib, sut.BibNumber);
@@ -84,8 +89,10 @@ namespace BFBMX.Service.Test.Models
             int negativeDay = -1;
             int zeroDay = 0;
             int thirtyTwoDay = 32;
-            FlaggedBibRecordModel sut = new();
-            sut.DayOfMonth = negativeDay;
+            FlaggedBibRecordModel sut = new()
+            {
+                DayOfMonth = negativeDay
+            };
             Assert.Equal(negativeDay, sut.DayOfMonth);
             sut.DayOfMonth = zeroDay;
             Assert.Equal(zeroDay, sut.DayOfMonth);
@@ -97,8 +104,10 @@ namespace BFBMX.Service.Test.Models
         public void ActionEdgeCases()
         {
             // set action to null or empty string
-            FlaggedBibRecordModel sut = new();
-            sut.Action = null;
+            FlaggedBibRecordModel sut = new()
+            {
+                Action = null
+            };
             Assert.Null(sut.Action);
             sut.Action = string.Empty;
             Assert.Empty(sut.Action);
@@ -108,8 +117,10 @@ namespace BFBMX.Service.Test.Models
         public void LocationEdgeCases()
         {
             // set location to null or empty string
-            FlaggedBibRecordModel sut = new();
-            sut.Location = null;
+            FlaggedBibRecordModel sut = new()
+            {
+                Location = null
+            };
             Assert.Null(sut.Location);
             sut.Location = string.Empty;
             Assert.Empty(sut.Location);
@@ -119,10 +130,12 @@ namespace BFBMX.Service.Test.Models
         public void ToJsonEdgeCases()
         {
             // set all fields to null or empty string
-            FlaggedBibRecordModel sut = new();
-            sut.Action = null;
-            sut.BibTimeOfDay = null;
-            sut.Location = null;
+            FlaggedBibRecordModel sut = new()
+            {
+                Action = null,
+                BibTimeOfDay = null,
+                Location = null
+            };
 
             var expectedData = "{\"BibNumber\":-1,\"Action\":null,\"BibTimeOfDay\":null,\"DayOfMonth\":-1,\"Location\":null,\"DataWarning\":true}";
             var actualData = sut.ToJsonString();
@@ -144,13 +157,15 @@ namespace BFBMX.Service.Test.Models
         public void BibRecordModelToJson()
         {
             // no data warning
-            var sutGoodData = new FlaggedBibRecordModel();
-            sutGoodData.BibNumber = 1;
-            sutGoodData.@Action = "IN";
-            sutGoodData.BibTimeOfDay = "1314";
-            sutGoodData.DayOfMonth = 2;
-            sutGoodData.Location = "test-location";
-            sutGoodData.DataWarning = false;
+            var sutGoodData = new FlaggedBibRecordModel
+            {
+                BibNumber = 1,
+                @Action = "IN",
+                BibTimeOfDay = "1314",
+                DayOfMonth = 2,
+                Location = "test-location",
+                DataWarning = false
+            };
 
             var expectedGoodData = "{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":false}";
             var actualGoodData = sutGoodData.ToJsonString();
@@ -158,13 +173,15 @@ namespace BFBMX.Service.Test.Models
             Assert.Equal(expectedGoodData, actualGoodData);
 
             // with data warning
-            var sutDataWarning = new FlaggedBibRecordModel();
-            sutDataWarning.BibNumber = 1;
-            sutDataWarning.@Action = "IN";
-            sutDataWarning.BibTimeOfDay = "1314";
-            sutDataWarning.DayOfMonth = 2;
-            sutDataWarning.Location = "test-location";
-            sutDataWarning.DataWarning = true;
+            var sutDataWarning = new FlaggedBibRecordModel
+            {
+                BibNumber = 1,
+                @Action = "IN",
+                BibTimeOfDay = "1314",
+                DayOfMonth = 2,
+                Location = "test-location",
+                DataWarning = true
+            };
 
             var expectedWarningData = "{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":true}";
             var actualWarningData = sutDataWarning.ToJsonString();
