@@ -378,4 +378,21 @@ public class FileProcessorTests
         Assert.NotEmpty(bibRecords);
         Assert.Equal(expectedCount, bibRecords.Count);
     }
+    [Fact]
+    public void FileProcessor_ProcessBibLikeMessageContentShouldFindNone()
+    {
+        int expectedCount = 0;
+        string messageId = "ABC123DEF456";
+
+        string[] lines =
+        {
+            "\r\n", "\r\n", "306\r\n", "317\r\n", "318\r\n", "322\r\n", "339\r\n", "343\r\n", "348\r\n", "351\r\n", "357\r\n", "359\r\n", "366\r\n", "372\r\n", "374\r\n",
+            "396\r\n", "402\r\n", "403\r\n", "404\r\n", "\r\n\r\nJ"
+        };
+
+        List<FlaggedBibRecordModel> actualResult = _fileProcessor.ProcessBibs(lines, messageId);
+
+        Assert.Empty(actualResult);
+        Assert.Equal(expectedCount, actualResult.Count);
+    }
 }
