@@ -87,5 +87,39 @@ namespace BFBMX.Service.Models
             // serialize to json
             return JsonSerializer.Serialize<FlaggedBibRecordModel>(this);
         }
+
+        /// <summary>
+        /// Custom hash code implementation to support equality comparison.
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            int hash = 17;
+            hash = hash * 23 + BibNumber.GetHashCode();
+            hash = hash * 23 + (Action != null ? Action.GetHashCode() : 0);
+            hash = hash * 23 + (BibTimeOfDay != null ? BibTimeOfDay.GetHashCode() : 0);
+            hash = hash * 23 + DayOfMonth.GetHashCode();
+            hash = hash * 23 + (Location != null ? Location.GetHashCode() : 0);
+            return hash;
+        }
+
+        /// <summary>
+        /// Custom equality comparison implementation to be used by HashSet and others.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object? obj)
+        {
+            if (obj is FlaggedBibRecordModel other)
+            {
+                return BibNumber == other.BibNumber
+                    && Action == other.Action
+                    && BibTimeOfDay == other.BibTimeOfDay
+                    && DayOfMonth == other.DayOfMonth
+                    && Location == other.Location;
+            }
+
+            return false;
+        }
     }
 }
