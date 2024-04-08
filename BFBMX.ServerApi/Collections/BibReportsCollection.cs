@@ -8,7 +8,7 @@ namespace BFBMX.ServerApi.Collections;
 
 public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, IBibReportsCollection
 {
-    private static Object LockObject = new Object();
+    private static Object LockObject = new();
     private readonly IDbContextFactory<BibMessageContext> _dbContextFactory;
     private readonly ILogger<BibReportsCollection> _logger;
     private readonly IDataExImService _dataExImService;
