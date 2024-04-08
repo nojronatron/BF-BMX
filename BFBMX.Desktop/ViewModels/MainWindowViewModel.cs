@@ -18,14 +18,20 @@ namespace BFBMX.Desktop.ViewModels
         private static readonly object _lock = new();
 
         private readonly ILogger<MainWindowViewModel> _logger;
+        private readonly IFileProcessor _fileProcessor;
+        private readonly IApiClient _apiClient;
 
         public readonly IDiscoveredFilesCollection _discoveredFiles;
 
         public MainWindowViewModel(ILogger<MainWindowViewModel> logger,
+            IFileProcessor fileProcessor,
+            IApiClient apiClient,
             IDiscoveredFilesCollection discoveredFilesCollection,
             IMostRecentFilesCollection mostRecentFilesCollection)
         {
             _logger = logger;
+            _fileProcessor = fileProcessor;
+            _apiClient = apiClient;
             _discoveredFiles = discoveredFilesCollection;
             MostRecentFilesCollection = mostRecentFilesCollection;
             MostRecentItems = new();
@@ -60,13 +66,38 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("Discovered file path is {filepath}", discoveredFilepath);
             DiscoveredFileModel newFile = new(discoveredFilepath);
             await _discoveredFiles.EnqueueAsync(newFile);
+
             lock (_lock)
             {
                 MostRecentFilesCollection.AddFirst(newFile);
                 MostRecentItems.Clear();
                 MostRecentItems = MostRecentFilesCollection.GetList();
             }
+
             _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
+
+            // moved from DiscoveredFilesCollection
+
+            // get machine name for File Processor
+            string? hostname = Environment.MachineName;
+            string machineName = string.IsNullOrWhiteSpace(hostname) ? "Unknown" : hostname;
+
+            // process the file for bib records
+            WinlinkMessageModel winlinkMessage = _fileProcessor.ProcessWinlinkMessageFile(newFile.FileTimeStamp, machineName, newFile.FullFilePath);
+
+            // write the non-empty Winlink Message to a file and post it to the API, or do nothing if no bib records were found
+            // todo: consider moving the following code to FileProcessor
+            if (winlinkMessage is null || winlinkMessage.BibRecords.Count <= 0)
+            {
+                _logger.LogInformation("No bibrecords found in winlinkMessage.");
+                return;
+            }
+
+            string logPathAndFilename = Path.Combine(DesktopEnvFactory.GetBfBmxLogPath(), DesktopEnvFactory.GetBibRecordsLogFileName());
+            bool wroteToFile = _fileProcessor.WriteWinlinkMessageToFile(winlinkMessage, logPathAndFilename);
+            bool postedToApi = await _apiClient.PostWinlinkMessageAsync(winlinkMessage.ToJsonString());
+            _logger.LogInformation("Wrote to file? {wroteToFile}. Posted to API? {postedToApi}. Items stored in memory: {collectionCount}.", wroteToFile, postedToApi, winlinkMessage.BibRecords.Count);
+            // end code move
         }
 
         public void HandleErrorAlpha(object sender, ErrorEventArgs e)
@@ -90,7 +121,7 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("HandleError called: {errmsg}", errMsg);
         }
 
-        private bool IsGoodPath(string? directoryPath)
+        private static bool IsGoodPath(string? directoryPath)
         {
             if (string.IsNullOrWhiteSpace(directoryPath))
             {
