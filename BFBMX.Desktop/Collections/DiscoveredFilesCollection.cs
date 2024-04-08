@@ -22,7 +22,6 @@ namespace BFBMX.Desktop.Collections
         private readonly ILogger<DiscoveredFilesCollection> _logger;
         private readonly IFileProcessor _fileProcessor;
 
-        //public const int MAXITEMS = 9;
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -38,6 +37,7 @@ namespace BFBMX.Desktop.Collections
 
         public async Task EnqueueAsync(DiscoveredFileModel discoveredFile)
         {
+            // todo: rewrite EnqueueAsync so it does not handle any non-collection activities (due to async complexity)
             if (discoveredFile is null)
             {
                 _logger.LogWarning("Received a null Discovered File. Ignoring.");
@@ -53,15 +53,6 @@ namespace BFBMX.Desktop.Collections
             // get machine name for File Processor
             string? hostname = Environment.MachineName;
             string machineName = string.IsNullOrWhiteSpace(hostname) ? "Unknown" : hostname;
-
-            //while (this.Count >= MAXITEMS && MAXITEMS > 0)
-            //{
-            //    TryDequeue(out DiscoveredFileModel? dequeuedItem);
-            //    if (dequeuedItem is not null)
-            //    {
-            //        _logger.LogInformation("Removing Discovered File {dequeuedItemFullPath} from the Queue and the UI.", dequeuedItem.FullFilePath);
-            //    }
-            //}
 
             // add the discovered file to the collection and notify subscribers
             Enqueue(discoveredFile);
