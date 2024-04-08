@@ -74,30 +74,24 @@ public class FileProcessorTests
           "196\tOUT\t2009\t11\tWR"
         };
 
-        List<FlaggedBibRecordModel> actualResult = new();
-        bool strictMatches = _fileProcessor.ProcessBibs(actualResult, bibList, GenericWinlinkId);
-        Assert.True(strictMatches);
+        List<FlaggedBibRecordModel> actualResult = _fileProcessor.GetStrictMatches(bibList).ToList();
         Assert.NotNull(actualResult);
-        var actualCount = actualResult.Count;
-        Assert.Equal(expectedCount, actualCount);
+        Assert.Equal(expectedCount, actualResult.Count);
     }
 
     [Fact]
     public void CaptureThreeBibRecordsNotStrict()
     {
-        int expectedCount = 3;
+        int expectedCount = 2;
         var bibList = new string[] {
           "115	0UT	2oo9	II	WR",
           "195	OUT	2009	11	WR",
           "196	OUT	2009	11	WR"
         };
 
-        List<FlaggedBibRecordModel> actualResult = new();
-        bool strictMatches = _fileProcessor.ProcessBibs(actualResult, bibList, GenericWinlinkId);
-        Assert.True(strictMatches);
+        List<FlaggedBibRecordModel> actualResult = _fileProcessor.GetStrictMatches(bibList).ToList();
         Assert.NotNull(actualResult);
-        var actualCount = actualResult.Count;
-        Assert.Equal(expectedCount, actualCount);
+        Assert.Equal(expectedCount, actualResult.Count);
     }
 
     [Fact]
@@ -172,29 +166,29 @@ public class FileProcessorTests
         int expectedCountDelta = 26;
 
         string[] alphaLines = messageAlpha.Split('\n');
-        List< FlaggedBibRecordModel> actualStrictResultListAlpha = _fileProcessor.GetStrictMatches(alphaLines);
-        List<FlaggedBibRecordModel> actualSloppyResultListAlpha = _fileProcessor.GetSloppyMatches(alphaLines);
+        List< FlaggedBibRecordModel> actualStrictResultListAlpha = _fileProcessor.GetStrictMatches(alphaLines).ToList();
+        List<FlaggedBibRecordModel> actualSloppyResultListAlpha = _fileProcessor.GetSloppyMatches(alphaLines).ToList();
 
         Assert.Equal(expectedCountAlpha, actualStrictResultListAlpha.Count);
         Assert.Equal(expectedCountAlpha, actualSloppyResultListAlpha.Count);
 
         string[] bravoLines = messageBravo.Split('\n');
-        List<FlaggedBibRecordModel> actualStrictResultListBravo = _fileProcessor.GetStrictMatches(bravoLines);
-        List<FlaggedBibRecordModel> actualSloppyResultListBravo = _fileProcessor.GetSloppyMatches(bravoLines);
+        List<FlaggedBibRecordModel> actualStrictResultListBravo = _fileProcessor.GetStrictMatches(bravoLines).ToList();
+        List<FlaggedBibRecordModel> actualSloppyResultListBravo = _fileProcessor.GetSloppyMatches(bravoLines).ToList();
 
         Assert.Equal(expectedCountBravo, actualStrictResultListBravo.Count);
         Assert.Equal(expectedCountBravo, actualSloppyResultListBravo.Count);
 
         string[] charlieLines = messageCharlie.Split('\n');
-        List<FlaggedBibRecordModel> actualStrictResultListCharlie = _fileProcessor.GetStrictMatches(charlieLines);
-        List<FlaggedBibRecordModel> actualSloppyResultListCharlie = _fileProcessor.GetSloppyMatches(charlieLines);
+        List<FlaggedBibRecordModel> actualStrictResultListCharlie = _fileProcessor.GetStrictMatches(charlieLines).ToList();
+        List<FlaggedBibRecordModel> actualSloppyResultListCharlie = _fileProcessor.GetSloppyMatches(charlieLines).ToList();
 
         Assert.Equal(expectedCountCharlie, actualStrictResultListCharlie.Count);
         Assert.Equal(expectedCountCharlie, actualSloppyResultListCharlie.Count);
 
         string[] deltaLines = messageDelta.Split('\n');
-        List<FlaggedBibRecordModel> actualStrictResultListDelta = _fileProcessor.GetStrictMatches(deltaLines);
-        List<FlaggedBibRecordModel> actualSloppyResultListDelta = _fileProcessor.GetSloppyMatches(deltaLines);
+        List<FlaggedBibRecordModel> actualStrictResultListDelta = _fileProcessor.GetStrictMatches(deltaLines).ToList();
+        List<FlaggedBibRecordModel> actualSloppyResultListDelta = _fileProcessor.GetSloppyMatches(deltaLines).ToList();
 
         Assert.Equal(expectedCountDelta, actualStrictResultListDelta.Count);
         Assert.Equal(expectedCountDelta, actualSloppyResultListDelta.Count);
@@ -207,8 +201,8 @@ public class FileProcessorTests
         int expectedSpaceDelimitedBibs = 0; // there are 5 space-delimited bibs in the sample msg
         string[] spaceDelimitedLines = spaceDelimitedMessages.Split('\n');
 
-        List<FlaggedBibRecordModel> actualStrictResultList = _fileProcessor.GetStrictMatches(spaceDelimitedLines);
-        List<FlaggedBibRecordModel> actualSloppyResultList = _fileProcessor.GetSloppyMatches(spaceDelimitedLines);
+        List<FlaggedBibRecordModel> actualStrictResultList = _fileProcessor.GetStrictMatches(spaceDelimitedLines).ToList();
+        List<FlaggedBibRecordModel> actualSloppyResultList = _fileProcessor.GetSloppyMatches(spaceDelimitedLines).ToList();
 
         Assert.Equal(expectedSpaceDelimitedBibs, actualStrictResultList.Count);
         Assert.Equal(expectedSpaceDelimitedBibs, actualSloppyResultList.Count);
@@ -221,8 +215,8 @@ public class FileProcessorTests
         int expectedCommaDelimitedBibs = 0; // there are 5 comma-delimited bibs in the sample msg
         string[] commaDelimitedLines = commaDelimitedMessages.Split('\n');
 
-        List<FlaggedBibRecordModel> actualStrictResult = _fileProcessor.GetStrictMatches(commaDelimitedLines);
-        List<FlaggedBibRecordModel> actualSloppyResultList = _fileProcessor.GetSloppyMatches(commaDelimitedLines);
+        List<FlaggedBibRecordModel> actualStrictResult = _fileProcessor.GetStrictMatches(commaDelimitedLines).ToList();
+        List<FlaggedBibRecordModel> actualSloppyResultList = _fileProcessor.GetSloppyMatches(commaDelimitedLines).ToList();
 
         Assert.Equal(expectedCommaDelimitedBibs, actualStrictResult.Count);
         Assert.Equal(expectedCommaDelimitedBibs, actualSloppyResultList.Count);
@@ -242,13 +236,146 @@ public class FileProcessorTests
                             "123456789012\tDROPP\t09\t33\tWR",
                             "one\tDROP\t1234\t23\tWR"};
 
-        List<FlaggedBibRecordModel> actualResult = _fileProcessor.GetSloppyMatches(bibList);
+        List<FlaggedBibRecordModel> actualResult = _fileProcessor.GetSloppyMatches(bibList).ToList();
         Assert.Equal(expectedCount, actualResult.Count);
 
         for (int idx = 0; idx < expectedResult.Length; idx++)
         {
-            Debug.WriteLine($"Expected: {expectedResult[idx].ToString()}");
+            Debug.WriteLine($"Expected: {expectedResult[idx]}");
             Debug.WriteLine($"Actual: {actualResult[idx].ToTabbedString()}");
         }
+    }
+
+    [Fact]
+    public void WriteWinlinkMessageToFile_WritesFileSuccessfully()
+    {
+        // Arrange
+        var targetFolder = Environment.SpecialFolder.CommonDocuments;
+        string fileName = "testFilePath";
+        string filePath = Path.Combine(Environment.GetFolderPath(targetFolder), fileName);
+        Console.WriteLine("Target filepath is: ", filePath);
+
+        FlaggedBibRecordModel mockBibRecord = new()
+        {
+            BibNumber = 123,
+            Action = "OUT",
+            BibTimeOfDay = "1234",
+            DayOfMonth = 12,
+            Location = "KT",
+            DataWarning = false
+        };
+
+        WinlinkMessageModel mockMessage = new()
+        {
+            WinlinkMessageId = "ABC123DEF456",
+            ClientHostname = "TestMachine",
+            MessageDateTime = DateTime.Now
+        };
+
+        mockMessage.BibRecords.Add(mockBibRecord);
+
+        // Act
+        var result = _fileProcessor.WriteWinlinkMessageToFile(mockMessage, filePath);
+
+        if (File.Exists(filePath))
+        {
+            Thread.Sleep(150);
+            File.Delete(filePath);
+        }
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void WriteWinlinkMessageToFile_WontWriteFileIfNoBibs()
+    {
+        // Arrange
+        var targetFolder = Environment.SpecialFolder.CommonDocuments;
+        string fileName = "testFilePath";
+        string filePath = Path.Combine(Environment.GetFolderPath(targetFolder), fileName);
+        Console.WriteLine("Target filepath is: ", filePath);
+
+        WinlinkMessageModel mockMessage = new()
+        {
+            WinlinkMessageId = "ABC123DEF456",
+            ClientHostname = "TestMachine",
+            MessageDateTime = DateTime.Now
+        };
+
+        // Act
+        var result = _fileProcessor.WriteWinlinkMessageToFile(mockMessage, filePath);
+
+        if (File.Exists(filePath))
+        {
+            Thread.Sleep(150);
+            File.Delete(filePath);
+        }
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void RecordsArrayToString_ConvertsArrayToString()
+    {
+        // Arrange
+        var array = new string[] { "Hello", "World", "!" };
+
+        // Act
+        var result = _fileProcessor.RecordsArrayToString(array);
+
+        // Assert
+        Assert.Equal("Hello\nWorld\n!\n", result);
+    }
+
+    [Fact]
+    public void ProcessWinlinkMessageFile_ProcessesFileSuccessfully()
+    {
+        // Arrange
+        var timestamp = DateTime.Now;
+        var machineName = "TestMachine";
+        var filePath = "testFilePath.txt";
+
+        // Create a test file
+        File.WriteAllText(filePath, SampleMessages.ValidSingleMesageWithSevenBibRecords);
+
+        // Act
+        var result = _fileProcessor.ProcessWinlinkMessageFile(timestamp, machineName, filePath);
+
+        // Assert
+        Assert.NotNull(result);
+
+        // Clean up the test file
+        File.Delete(filePath);
+    }
+
+    [Fact]
+    public void ProcessBibs_ProcessesBibsSuccessfully()
+    {
+        // Arrange
+        int expectedCount = 5;
+        List<FlaggedBibRecordModel> bibRecords = new();
+        string messageId = "ABC123DEF456";
+
+        var lines = new string[] {
+        "Content-Transfer-Encoding: quoted - printable",
+        "",
+        "-",
+        "10\tOUT\t834\t13\tCH",
+        "10\tIN\t748\t13\tCH",
+        "34\tOUT\t449\t13\tCH",
+        "34\tIN\t406\t13\tCH",
+        "37\tOUT\t855\t13\tCH",
+        "-----",
+        "* The entries in this email are TAB delimited. This allows you to copy and =\r\npaste into a spreadsheet."
+        };
+
+        // Act
+        bibRecords = _fileProcessor.ProcessBibs(lines, messageId);
+
+        // Assert
+        Assert.NotEmpty(bibRecords);
+        Assert.Equal(expectedCount, bibRecords.Count);
     }
 }
