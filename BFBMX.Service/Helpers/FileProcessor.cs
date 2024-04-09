@@ -9,12 +9,12 @@ namespace BFBMX.Service.Helpers
 {
     public class FileProcessor : IFileProcessor
     {
-        private static readonly object _lock = new object();
+        private static readonly object _lock = new();
         private readonly ILogger<FileProcessor> _logger;
 
         private readonly string messageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
-        private readonly string strictBibPattern = @"\b\d{1,3}\t(OUT|IN|DROP)\t\d{4}\t\d{1,2}\t\w{2}\b";
-        private readonly string sloppyBibPattern = @"\b\w{1,15}\t\w{1,5}\t\w{1,5}\t\w{1,3}\t\w{1,26}\b";
+        private readonly string strictBibPatternTabDelim = @"\b\d{1,3}\t(OUT|IN|DROP)\t\d{1,4}\t\d{1,2}\t\w{2}\b";
+        private readonly string sloppyBibPatternTabDelim = @"\b\w{1,15}\t\w{1,5}\t\w{1,5}\t\w{1,3}\t\w{1,26}\b";
 
         public FileProcessor(ILogger<FileProcessor> logger)
         {
@@ -96,7 +96,7 @@ namespace BFBMX.Service.Helpers
         /// <returns>WinlinkMessageModel instance</returns>
         public WinlinkMessageModel ProcessWinlinkMessageFile(DateTime timestamp, string machineName, string filePath)
         {
-            var fileData = GetFileData(filePath);
+            string[] fileData = GetFileData(filePath);
 
             if (fileData.Length < 1)
             {
@@ -105,16 +105,12 @@ namespace BFBMX.Service.Helpers
             }
 
             string winlinkMessageId = GetMessageId(RecordsArrayToString(fileData));
-            List<FlaggedBibRecordModel> bibRecords = new();
+            List<FlaggedBibRecordModel> bibRecords = ProcessBibs(fileData, winlinkMessageId);
 
-            if (ProcessBibs(bibRecords, fileData, winlinkMessageId))
+            if (bibRecords.Count > 0)
             {
-                // no errors processing file
-                if (bibRecords.Count > 0)
-                {
-                    // bib data was found so return a concrete object
-                    return WinlinkMessageModel.GetWinlinkMessageInstance(winlinkMessageId, timestamp, machineName, bibRecords);
-                }
+                // bib data was found so return a concrete object
+                return WinlinkMessageModel.GetWinlinkMessageInstance(winlinkMessageId, timestamp, machineName, bibRecords);
             }
 
             return new WinlinkMessageModel();
@@ -131,13 +127,14 @@ namespace BFBMX.Service.Helpers
             {
                 for (int tries = 1; tries < 4; tries++)
                 {
-                    Thread.Sleep(100);
-
                     try
                     {
-                        string[] lines = File.ReadAllLines(fullFilePath);
-                        _logger.LogWarning("GetFileData: Successfully read data from {fullFilePath}.", fullFilePath);
-                        return lines;
+                        lock (_lock)
+                        {
+                            string[] lines = File.ReadAllLines(fullFilePath);
+                            _logger.LogInformation("GetFileData: Successfully read {dataLines} lines of data from {fullFilePath}.", lines.Length, fullFilePath);
+                            return lines;
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -177,36 +174,49 @@ namespace BFBMX.Service.Helpers
         /// <summary>
         /// Matches strictBibPattern and sloppyBibPattern and adds matches to a list of BibRecordModel.
         /// </summary>
-        /// <param name="bibRecords">Empty List of type BibRecordModel</param>
         /// <param name="lines">Array of string data to check for bib records</param>
+        /// <param name="messageId">The Winlink MessageID that is being processed</param>
         /// <returns>True if strict and sloppy match counts are same, otherwise False.</returns>
-        public bool ProcessBibs(List<FlaggedBibRecordModel> bibRecords, string[] lines, string messageId)
+        public List<FlaggedBibRecordModel> ProcessBibs(string[] lines, string messageId)
         {
+            List<FlaggedBibRecordModel> bibRecords = new();
+
             if (lines is null || lines.Length < 1)
             {
                 _logger.LogWarning("Input {linesProperty} is null in Message ID {msgId}. Returning and empty list.", nameof(lines), messageId);
+                return bibRecords;
             }
-            else
+
+            HashSet<FlaggedBibRecordModel> strictMatches = GetStrictMatches(lines);
+            HashSet<FlaggedBibRecordModel> sloppyMatches = GetSloppyMatches(lines);
+
+            int strictCount = strictMatches.Count;
+            int sloppyCount = sloppyMatches.Count;
+
+            switch(strictCount, sloppyCount)
             {
-                List<FlaggedBibRecordModel> strictMatches = GetStrictMatches(lines);
-                List<FlaggedBibRecordModel> sloppyMatches = GetSloppyMatches(lines);
-
-                if (strictMatches.Count == sloppyMatches.Count)
-                {
-                    _logger.LogInformation("ProcessBibs: MessageId {msgId}: Found {strictCount} strict and {sloppyCount} sloppy bib records.", messageId, strictMatches.Count, sloppyMatches.Count);
-                    bibRecords.AddRange(strictMatches);
-                    return true;
-                }
-
-                if (strictMatches.Count < sloppyMatches.Count)
-                {
-                    _logger.LogWarning("ProcessBibs: MessageId {msgId}: Found {strictCount} strict and {sloppyCount} sloppy bib record matches. Returning all sloppy matches.", messageId, strictMatches.Count, sloppyMatches.Count);
-                    bibRecords.AddRange(sloppyMatches);
-                    return true;
-                }
+                case (0, 0):
+                    _logger.LogInformation("ProcessBibs: Neither strict nor relaxed matches found in Message ID {msgId}, returning empty list.", messageId);
+                    break;
+                case (0, > 0):
+                    bibRecords = sloppyMatches.ToList();
+                    _logger.LogWarning("ProcessBibs: No strict matches and {sloppyCount} relaxed matches found in Message ID {msgId}.", sloppyCount, messageId);
+                    break;
+                case (> 0, 0):
+                    bibRecords = strictMatches.ToList();
+                    _logger.LogWarning("ProcessBibs: {strictCount} strict matches and no relaxed matches found in Message ID {msgId}.", strictCount, messageId);
+                    break;
+                case (> 0, > 0):
+                    strictMatches.UnionWith(sloppyMatches);
+                    bibRecords = strictMatches.ToList();
+                    _logger.LogWarning("ProcessBibs: Will union {strictCount} strict matches with {sloppyCount} relaxed matches, favoring found strict matches in Message ID {msgId}.", strictCount, sloppyCount, messageId);
+                    break;
+                default:
+                    _logger.LogError("ProcessBibs: An unexpected combination of strict and relaxed records matching occurred when processing bib records in Message ID {msgId}. Returning an empty list.", messageId);
+                    break;
             }
 
-            return false;
+            return bibRecords;
         }
 
         /// <summary>
@@ -214,20 +224,21 @@ namespace BFBMX.Service.Helpers
         /// </summary>
         /// <param name="lines"></param>
         /// <returns>List of FlaggedBibRecordModel instances</returns>
-        public List<FlaggedBibRecordModel> GetSloppyMatches(string[] lines)
+        public HashSet<FlaggedBibRecordModel> GetSloppyMatches(string[] lines)
         {
-            var sloppyBibRecords = new List<FlaggedBibRecordModel>();
-
             if (lines is null || lines.Length < 1)
             {
-                //_logger.LogWarning("GetSloppyMatches input {linesProperty} was empty, returning an empty list.", nameof(lines));
-                return sloppyBibRecords;
+                return new HashSet<FlaggedBibRecordModel>();
             }
 
-            bool result = GetBibMatches(sloppyBibRecords, lines, sloppyBibPattern);
-            //string didOrNotFind = result ? "found" : "did not find";
-            //_logger.LogWarning("GetSloppyMatches {didOrNotFind} bib data.", didOrNotFind);
-            return sloppyBibRecords;
+            HashSet<FlaggedBibRecordModel> foundBibRecords = GetBibMatches(lines, sloppyBibPatternTabDelim);
+
+            foreach(FlaggedBibRecordModel bibRecord in foundBibRecords)
+            {
+                bibRecord.DataWarning = true;
+            }
+
+            return foundBibRecords;
         }
 
         /// <summary>
@@ -235,20 +246,14 @@ namespace BFBMX.Service.Helpers
         /// </summary>
         /// <param name="lines"></param>
         /// <returns>List of FlaggedBibRecordModel instances</returns>
-        public List<FlaggedBibRecordModel> GetStrictMatches(string[] lines)
+        public HashSet<FlaggedBibRecordModel> GetStrictMatches(string[] lines)
         {
-            var strictBibRecords = new List<FlaggedBibRecordModel>();
-
             if (lines is null || lines.Length < 1)
             {
-                //_logger.LogWarning("GetStrictMatches input {linesProperty} was empty, returning and empty list.", nameof(lines));
-                return strictBibRecords;
+                return new HashSet<FlaggedBibRecordModel>();
             }
 
-            bool result = GetBibMatches(strictBibRecords, lines, strictBibPattern);
-            //string didOrNotFind = result ? "found" : "did not find";
-            //_logger.LogWarning("GetStrictMatches {didOrNotFind} bib data.", didOrNotFind);
-            return strictBibRecords;
+            return GetBibMatches(lines, strictBibPatternTabDelim);
         }
 
         /// <summary>
@@ -259,17 +264,16 @@ namespace BFBMX.Service.Helpers
         /// <param name="fileDataLines"></param>
         /// <param name="pattern"></param>
         /// <returns>true if any matches are found, false in any other case.</returns>
-        public bool GetBibMatches(List<FlaggedBibRecordModel> emptyBibList,
-                                         string[] fileDataLines,
-                                         string pattern)
+        public HashSet<FlaggedBibRecordModel> GetBibMatches(string[] fileDataLines, string pattern)
         {
+            HashSet<FlaggedBibRecordModel> emptyBibList = new();
+
             if (
-                emptyBibList is null || emptyBibList.Count > 0
-                || fileDataLines is null || fileDataLines.Length < 1
+                fileDataLines is null || fileDataLines.Length < 1
                 || string.IsNullOrWhiteSpace(pattern)
                 )
             {
-                return false;
+                return emptyBibList;
             }
             else
             {
@@ -296,7 +300,7 @@ namespace BFBMX.Service.Helpers
                     }
                 }
 
-                return emptyBibList.Count > 0;
+                return emptyBibList;
             }
         }
     }
