@@ -67,7 +67,7 @@ namespace BFBMX.Desktop.ViewModels
         /// <param name="e"></param>
         public async void HandleFileCreatedAsync(object sender, FileSystemEventArgs e)
         {
-            // todo: this try-catch is to debug apparently random exceptions that are difficult to reproduce
+            _logger.LogInformation("File creation detected, waiting 1 second before reading contents.");
             string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
             _logger.LogInformation("Discovered file path {filepath}. Enqueuing to be processed.", discoveredFilepath);
             DiscoveredFileModel newFile = new(discoveredFilepath);
