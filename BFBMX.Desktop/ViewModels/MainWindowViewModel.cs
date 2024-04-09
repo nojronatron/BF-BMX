@@ -59,6 +59,12 @@ namespace BFBMX.Desktop.ViewModels
         public ObservableCollection<DiscoveredFileModel> _mostRecentItems;
 
         /***** Global Monitor Functions *****/
+
+        /// <summary>
+        /// Event Handler for all three FileSystemWatcher calls when a file created event occurs.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public async void HandleFileCreatedAsync(object sender, FileSystemEventArgs e)
         {
             _logger.LogInformation("File creation detected, waiting 1 second before reading contents.");
@@ -111,6 +117,11 @@ namespace BFBMX.Desktop.ViewModels
             /***** end moved from DiscoveredFilesCollection *****/
         }
 
+        /// <summary>
+        /// The first File Watcher will call this Event Handler if there was an error.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void HandleErrorAlpha(object sender, ErrorEventArgs e)
         {
             string errMsg = e.GetException().Message;
@@ -118,6 +129,11 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("HandleError called: {errmsg}", errMsg);
         }
 
+        /// <summary>
+        /// The second File Watcher will call this Event Handler if there was an error.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void HandleErrorBravo(object sender, ErrorEventArgs e)
         {
             string errMsg = e.GetException().Message;
@@ -125,6 +141,11 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("HandleError called: {errmsg}", errMsg);
         }
 
+        /// <summary>
+        /// The third File Watcher will call this Event Handler if there was an error.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void HandleErrorCharlie(object sender, ErrorEventArgs e)
         {
             string errMsg = e.GetException().Message;
@@ -132,21 +153,21 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("HandleError called: {errmsg}", errMsg);
         }
 
+        /// <summary>
+        /// Tests for null or whitespace directory path, then checks that the path exists and returns true only if both are true.
+        /// </summary>
+        /// <param name="directoryPath"></param>
+        /// <returns></returns>
         private static bool IsGoodPath(string? directoryPath)
         {
-            if (string.IsNullOrWhiteSpace(directoryPath))
-            {
-                return false;
+            return !string.IsNullOrWhiteSpace(directoryPath) && Directory.Exists(directoryPath);
             }
 
-            if (Directory.Exists(directoryPath))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
+        /// <summary>
+        /// Handle helper method to set the status message for the appropriate monitor.
+        /// </summary>
+        /// <param name="monitorName"></param>
+        /// <param name="message"></param>
         private void SetStatusMessage(string? monitorName, string? message)
         {
             switch (monitorName)
@@ -285,6 +306,10 @@ namespace BFBMX.Desktop.ViewModels
             }
         }
 
+        /// <summary>
+        /// Determines if the Alpha Monitor can be initialized based on the path being set.
+        /// </summary>
+        /// <returns>True if the path is set and exists.</returns>
         public bool CanInitAlphaMonitor()
         {
             if (string.IsNullOrWhiteSpace(AlphaMonitorPath))
@@ -318,6 +343,10 @@ namespace BFBMX.Desktop.ViewModels
             }
         }
 
+        /// <summary>
+        /// Determines if the Alpha Monitor can be started based on its current state.
+        /// </summary>
+        /// <returns>True if not null, is not already running, and the path matches.</returns>
         public bool CanStartAlphaMonitor()
         {
             if (_alphaMonitor is null)
@@ -364,6 +393,10 @@ namespace BFBMX.Desktop.ViewModels
             }
         }
 
+        /// <summary>
+        /// Determines if Alpha Monitor can be stopped based on its current state.
+        /// </summary>
+        /// <returns>True if not null, is already set to raise events, and the path matches.</returns>
         public bool CanStopAlphaMonitor()
         {
             if (_alphaMonitor is null)
@@ -399,6 +432,11 @@ namespace BFBMX.Desktop.ViewModels
             AlphaMonitorPathEnabled = true;
         }
 
+        /// <summary>
+        /// Determines if Alpha Monitor can be destroyed based on its current state.
+        /// This is more lenient than the other Can methods so the operator can recover from a bad or misbehaving Monitor.
+        /// </summary>
+        /// <returns>True in nearly any case except for null.</returns>
         public bool CanDestroyAlphaMonitor()
         {
             if (_alphaMonitor is null)
