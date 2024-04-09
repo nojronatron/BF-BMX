@@ -5,6 +5,7 @@ using BFBMX.Service.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using System.Collections.ObjectModel;
 using System.IO;
 
 namespace BFBMX.Desktop.ViewModels
@@ -55,7 +56,7 @@ namespace BFBMX.Desktop.ViewModels
         public IMostRecentFilesCollection _mostRecentFilesCollection;
 
         [ObservableProperty]
-        public List<DiscoveredFileModel> _mostRecentItems;
+        public ObservableCollection<DiscoveredFileModel> _mostRecentItems;
 
         /***** Global Monitor Functions *****/
         public async void HandleFileCreatedAsync(object sender, FileSystemEventArgs e)
@@ -63,41 +64,51 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("File creation detected, waiting 1 second before reading contents.");
             await Task.Delay(1000);
             string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
-            _logger.LogInformation("Discovered file path is {filepath}", discoveredFilepath);
+            _logger.LogInformation("Discovered file path {filepath}. Enqueuing to be processed.", discoveredFilepath);
             DiscoveredFileModel newFile = new(discoveredFilepath);
             await _discoveredFiles.EnqueueAsync(newFile);
 
-            lock (_lock)
+            // insert the new item into the collection on the UI Thread (WPF requirement)
+            App.Current.Dispatcher.Invoke(() =>
             {
-                MostRecentFilesCollection.AddFirst(newFile);
-                MostRecentItems.Clear();
-                MostRecentItems = MostRecentFilesCollection.GetList();
+                MostRecentItems.Insert(0, newFile);
+                // update the UI by adding an item to the observable collection and maintaining a max of 12 items
+                int mostRecentItemsCount = MostRecentItems.Count;
+
+                if (mostRecentItemsCount > 12)
+                {
+                    MostRecentItems.RemoveAt(mostRecentItemsCount - 1);
             }
+            });
 
-            _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
+            _logger.LogInformation("Path {discoveredFilepath} sent to screen for display.", discoveredFilepath);
 
-            // moved from DiscoveredFilesCollection
+            /***** moved from DiscoveredFilesCollection *****/
 
             // get machine name for File Processor
             string? hostname = Environment.MachineName;
             string machineName = string.IsNullOrWhiteSpace(hostname) ? "Unknown" : hostname;
 
             // process the file for bib records
+            await Task.Delay(1000);
+            _logger.LogInformation("Sending file {newFile} to file processor.", newFile.FullFilePath);
             WinlinkMessageModel winlinkMessage = _fileProcessor.ProcessWinlinkMessageFile(newFile.FileTimeStamp, machineName, newFile.FullFilePath);
 
-            // write the non-empty Winlink Message to a file and post it to the API, or do nothing if no bib records were found
-            // todo: consider moving the following code to FileProcessor
+            // No bib reports found, log and return
             if (winlinkMessage is null || winlinkMessage.BibRecords.Count <= 0)
             {
-                _logger.LogInformation("No bibrecords found in winlinkMessage.");
+                _logger.LogInformation("No bibrecords found in winlinkMessage {msgName}.", newFile.FullFilePath);
                 return;
             }
 
+            // send bib reports to API and log to file
             string logPathAndFilename = Path.Combine(DesktopEnvFactory.GetBfBmxLogPath(), DesktopEnvFactory.GetBibRecordsLogFileName());
+            _logger.LogInformation("Sending {wlMsgId} bib data to logfile and API.", winlinkMessage.WinlinkMessageId);
             bool wroteToFile = _fileProcessor.WriteWinlinkMessageToFile(winlinkMessage, logPathAndFilename);
             bool postedToApi = await _apiClient.PostWinlinkMessageAsync(winlinkMessage.ToJsonString());
-            _logger.LogInformation("Wrote to file? {wroteToFile}. Posted to API? {postedToApi}. Items stored in memory: {collectionCount}.", wroteToFile, postedToApi, winlinkMessage.BibRecords.Count);
-            // end code move
+            _logger.LogInformation("Message ID: {wlMsgId} => Wrote to file? {wroteToFile}. Posted to API? {postedToApi}. Items stored in memory: {collectionCount}.", winlinkMessage.WinlinkMessageId, wroteToFile, postedToApi, winlinkMessage.BibRecords.Count);
+
+            /***** end moved from DiscoveredFilesCollection *****/
         }
 
         public void HandleErrorAlpha(object sender, ErrorEventArgs e)
