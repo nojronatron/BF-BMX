@@ -67,8 +67,7 @@ namespace BFBMX.Desktop.ViewModels
         /// <param name="e"></param>
         public async void HandleFileCreatedAsync(object sender, FileSystemEventArgs e)
         {
-            _logger.LogInformation("File creation detected, waiting 1 second before reading contents.");
-            await Task.Delay(1000);
+            // todo: this try-catch is to debug apparently random exceptions that are difficult to reproduce
             string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
             _logger.LogInformation("Discovered file path {filepath}. Enqueuing to be processed.", discoveredFilepath);
             DiscoveredFileModel newFile = new(discoveredFilepath);
@@ -84,7 +83,7 @@ namespace BFBMX.Desktop.ViewModels
                 if (mostRecentItemsCount > 12)
                 {
                     MostRecentItems.RemoveAt(mostRecentItemsCount - 1);
-            }
+                }
             });
 
             _logger.LogInformation("Path {discoveredFilepath} sent to screen for display.", discoveredFilepath);
@@ -161,7 +160,7 @@ namespace BFBMX.Desktop.ViewModels
         private static bool IsGoodPath(string? directoryPath)
         {
             return !string.IsNullOrWhiteSpace(directoryPath) && Directory.Exists(directoryPath);
-            }
+        }
 
         /// <summary>
         /// Handle helper method to set the status message for the appropriate monitor.
@@ -313,7 +312,7 @@ namespace BFBMX.Desktop.ViewModels
         public bool CanInitAlphaMonitor()
         {
             if (string.IsNullOrWhiteSpace(AlphaMonitorPath))
-            {
+                {
                 _logger.LogInformation("CanInitAlphaMonitor: Alpha Monitor path is null or empty, cannot initialize.");
                 return false;
             }
@@ -519,7 +518,7 @@ namespace BFBMX.Desktop.ViewModels
         public bool CanInitBravoMonitor()
         {
             if (string.IsNullOrWhiteSpace(BravoMonitorPath))
-            {
+                {
                 _logger.LogInformation("CanInitBravoMonitor: Bravo Monitor path is null or empty, cannot initialize.");
                 return false;
             }
