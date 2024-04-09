@@ -83,7 +83,7 @@ namespace BFBMX.ServerApi.Helpers
                         }
                     }
 
-                    _logger.LogInformation("Write WinlinkMessage to audit file {logFile}", bfBmxLogFilePath);
+                    _logger.LogInformation("Wrote WinlinkMessage to audit file {logFile}", bfBmxLogFilePath);
                 }
                 else
                 {
