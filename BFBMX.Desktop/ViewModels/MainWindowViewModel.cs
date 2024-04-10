@@ -194,31 +194,6 @@ namespace BFBMX.Desktop.ViewModels
             }
         }
 
-        /***** End Global Monitor Functions *****/
-
-        /***** Alpha Monitor Configuration *****/
-        private static FSWMonitor? _alphaMonitor;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(InitAlphaMonitorCommand), nameof(DestroyAlphaMonitorCommand))]
-        public bool _alphaMonitorPathEnabled = true;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(InitAlphaMonitorCommand), nameof(StartAlphaMonitorCommand), nameof(StopAlphaMonitorCommand), nameof(DestroyAlphaMonitorCommand))]
-        public string _alphaMonitorPath = string.Empty;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(InitAlphaMonitorCommand), nameof(StartAlphaMonitorCommand), nameof(StopAlphaMonitorCommand), nameof(DestroyAlphaMonitorCommand))]
-        public bool _alphaMonitorInitialized = false;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(InitAlphaMonitorCommand), nameof(StartAlphaMonitorCommand), nameof(StopAlphaMonitorCommand), nameof(DestroyAlphaMonitorCommand))]
-        public bool _alphaMonitorStarted = false;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(InitAlphaMonitorCommand), nameof(StartAlphaMonitorCommand), nameof(StopAlphaMonitorCommand), nameof(DestroyAlphaMonitorCommand))]
-        public bool _alphaMonitorStopped = true;
-
         /// <summary>
         /// Reset FileSystemWatcher instance to clear monitoring configuration and free memory.
         /// </summary>
@@ -276,32 +251,74 @@ namespace BFBMX.Desktop.ViewModels
             }
         }
 
+        /***** End Global Monitor Functions *****/
+
+        /***** Alpha Monitor Configuration *****/
+        private static FSWMonitor? _alphaMonitor;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(InitAlphaMonitorCommand), nameof(StartAlphaMonitorCommand), nameof(StopAlphaMonitorCommand), nameof(DestroyAlphaMonitorCommand))]
+        public bool _alphaMonitorPathEnabled = true;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(InitAlphaMonitorCommand), nameof(StartAlphaMonitorCommand), nameof(StopAlphaMonitorCommand), nameof(DestroyAlphaMonitorCommand))]
+        public string _alphaMonitorPath = string.Empty;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(InitAlphaMonitorCommand), nameof(StartAlphaMonitorCommand), nameof(StopAlphaMonitorCommand), nameof(DestroyAlphaMonitorCommand))]
+        public bool _alphaMonitorInitialized = false;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(InitAlphaMonitorCommand), nameof(StartAlphaMonitorCommand), nameof(StopAlphaMonitorCommand), nameof(DestroyAlphaMonitorCommand))]
+        public bool _alphaMonitorStarted = false;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(InitAlphaMonitorCommand), nameof(StartAlphaMonitorCommand), nameof(StopAlphaMonitorCommand), nameof(DestroyAlphaMonitorCommand))]
+        public bool _alphaMonitorStopped = true;
+
         [RelayCommand(CanExecute = nameof(CanInitAlphaMonitor))]
         public void InitAlphaMonitor()
         {
             _logger.LogInformation("InitAlphaMonitor button pressed.");
 
-            if (_alphaMonitor is not null)
+            if (_alphaMonitor is null)
             {
-                _logger.LogInformation("InitAlphaMonitor: Resetting existing Alpha Monitor.");
-                ResetMonitor(_alphaMonitor);
+                _alphaMonitor = FSWatcherFactory.Create(
+                    HandleFileCreatedAsync,
+                    HandleErrorAlpha,
+                    AlphaMonitorPath!,
+                    AlphaMonitorName);
             }
+            else
+            {
+                _alphaMonitor.EnableRaisingEvents = false;
+                _alphaMonitor.MonitoredPath = AlphaMonitorPath!;
+            } 
 
             try
             {
-                _alphaMonitor = FSWatcherFactory.Create(HandleFileCreatedAsync, HandleErrorAlpha, AlphaMonitorPath!, AlphaMonitorName);
-                AlphaMonitorPathEnabled = false;
                 AlphaMonitorInitialized = _alphaMonitor!.IsInitialized;
+                AlphaMonitorStarted = _alphaMonitor.IsStarted;
+                AlphaMonitorStopped = _alphaMonitor.IsStopped;
+                AlphaMonitorPathEnabled = false;
                 string isOrNotInitialized = AlphaMonitorInitialized ? "successfully" : "not";
-                AlphaStatusMessage = "Monitor initialized.";
-                _logger.LogInformation("Alpha Monitor {isOrNotInit} initialized for path: {monitorPath}", isOrNotInitialized, AlphaMonitorPath);
+                _logger.LogInformation("Alpha Monitor {isOrNotInit} initialized for path: {monitorPath}", 
+                    isOrNotInitialized, 
+                    AlphaMonitorPath);
             }
             catch (Exception ex)
             {
-                AlphaStatusMessage = "Unable to initialize! Try the Destroy button, then input the path again.";
+                SetStatusMessage(AlphaMonitorName, "Unable to initialize! Click Destroy, add the path, then click Initialize.");
                 _logger.LogInformation("Alpha Monitor unable to initialize for {monitorPath}, exception msg: {exceptionMsg}",
-                                      AlphaMonitorPath, ex.Message);
+                                      AlphaMonitorPath, 
+                                      ex.Message);
                 AlphaMonitorPathEnabled = true;
+
+                if (_alphaMonitor is not null)
+                {
+                    _alphaMonitor.EnableRaisingEvents = false;
+                    _alphaMonitor.Dispose();
+                }
             }
         }
 
@@ -311,35 +328,44 @@ namespace BFBMX.Desktop.ViewModels
         /// <returns>True if the path is set and exists.</returns>
         public bool CanInitAlphaMonitor()
         {
-            if (string.IsNullOrWhiteSpace(AlphaMonitorPath))
+            if (IsGoodPath(AlphaMonitorPath))
+            {
+                if (AlphaMonitorPath!.Equals(BravoMonitorPath)
+                    || AlphaMonitorPath.Equals(CharlieMonitorPath))
                 {
-                _logger.LogInformation("CanInitAlphaMonitor: Alpha Monitor path is null or empty, cannot initialize.");
+                    SetStatusMessage(AlphaMonitorName, "Path already set elsewhere. Choose another path.");
+                    _logger.LogWarning("CanInitAlphaMonitor: Path not unique. Returning false;");
+                    return false;
+                }
+
+                if (_alphaMonitor is null)
+                {
+                    _logger.LogInformation("CanInitAlphaMonitor: Monitor is null and path exists. Returning true.");
+                    SetStatusMessage(AlphaMonitorPath, string.Empty);
+                    return true;
+                }
+
+                _logger.LogInformation("CanInitAlphaMonitor: Monitor is not null but a path exists. Returning false.");
                 return false;
             }
             else
             {
-                _logger.LogInformation("CanInitAlphaMonitor: Returning true for path {alphaMonPath}", AlphaMonitorPath);
-                return true;
+                _logger.LogInformation("CanInitAlphaMonitor: Path is null or empty or does not exist. Returning false.");
+                return false;
             }
         }
 
         [RelayCommand(CanExecute = nameof(CanStartAlphaMonitor))]
         public void StartAlphaMonitor()
         {
-            try
-            {
-                _alphaMonitor!.EnableRaisingEvents = true;
-                AlphaMonitorStarted = _alphaMonitor!.IsStarted;
-                string startOrNot = AlphaMonitorStarted ? "successfully" : "not";
-                AlphaStatusMessage = $"Monitor {startOrNot} started for path.";
-                _logger.LogInformation("StartAlphaMonitor: Monitor {startOrNot} started for path {monitorPath}", startOrNot, AlphaMonitorPath);
-            }
-            catch (Exception ex)
-            {
-                AlphaStatusMessage = "Unable to start monitor! Check the logs and re-try initializing";
-                _logger.LogInformation("StartAlphaMonitor: Unable to enable raising events for {monitorPath}, exception msg: {exceptionMsg}",
-                                 AlphaMonitorPath, ex.Message);
-            }
+            _logger.LogInformation("StartAlphaMonitor: Button presed.");
+            _alphaMonitor!.EnableRaisingEvents = true;
+            AlphaMonitorPathEnabled = false;
+            AlphaMonitorInitialized = _alphaMonitor.IsInitialized;
+            AlphaMonitorStarted = _alphaMonitor.IsStarted;
+            AlphaMonitorStopped = _alphaMonitor.IsStopped;
+            SetStatusMessage(AlphaMonitorName, "Monitor is watching for new files at path.");
+            _logger.LogInformation("StartAlphaMonitor: Monitor started for path {monitorPath}", AlphaMonitorPath);
         }
 
         /// <summary>
@@ -350,46 +376,31 @@ namespace BFBMX.Desktop.ViewModels
         {
             if (_alphaMonitor is null)
             {
-                _logger.LogInformation("CanStartAlphaMonitor: Instance in null, return false.");
+                _logger.LogInformation("CanStartAlphaMonitor: Monitor is null. Returning false.");
                 return false;
             }
 
-            if (_alphaMonitor.EnableRaisingEvents == true)
+            if (_alphaMonitor.CanStart())
             {
-                _logger.LogInformation("CanStartAlphaMonitor: Already enabled to raise events, return false.");
-                return false;
+                _logger.LogInformation("CanStartAlphaMonitor: Monitor is not null and can start. Returning true.");
+                return true;
             }
 
-            if (_alphaMonitor.MonitoredPath != AlphaMonitorPath)
-            {
-                _logger.LogInformation("CanStartAlphaMonitor: Monitor Path {monActualPath} neq {monConfiguredPath}. Return false.",
-                    _alphaMonitor.MonitoredPath,
-                    AlphaMonitorPath);
-                return false;
-            }
-
-            _logger.LogInformation("CanStartAlphaMonitor: Instance not null, not already set to raise events, and path matches. Returning true.");
-            return true;
+            _logger.LogInformation("CanStartAlphaMonitor: Monitor is not null and any other state. Returning false.");
+            return false;
         }
 
         [RelayCommand(CanExecute = nameof(CanStopAlphaMonitor))]
         public void StopAlphaMonitor()
         {
-            try
-            {
-                _alphaMonitor!.EnableRaisingEvents = false;
-                AlphaMonitorStarted = _alphaMonitor!.IsStarted;
-                string stopOrNot = AlphaMonitorStarted ? "not" : "successfully";
-                AlphaStatusMessage = "Monitor stopped successfully.";
-                _logger.LogInformation("StopAlphaMonitor: Monitor {stopOrNot} stopped for path {monitorPath}", stopOrNot, AlphaMonitorPath);
-            }
-            catch (Exception ex)
-            {
-                AlphaStatusMessage = "Something bad happened, check the logs to diagnose.";
-                _logger.LogInformation("StopAlphaMonitor: Unable to disable raising events for {monitorPath}, exception msg: {exceptionMsg}",
-                                      AlphaMonitorPath,
-                                      ex.Message);
-            }
+            _logger.LogInformation("StopAlphaMonitor button pressed.");
+            _alphaMonitor!.EnableRaisingEvents = false;
+            AlphaMonitorPathEnabled = false;
+            AlphaMonitorInitialized = _alphaMonitor.IsInitialized;
+            AlphaMonitorStarted = _alphaMonitor.IsStarted;
+            AlphaMonitorStopped = _alphaMonitor.IsStopped;
+            SetStatusMessage(AlphaMonitorName, "Monitor no longer watching for new files.");
+            _logger.LogInformation("StopAlphaMonitor button: Monitor stopped for path {monitorPath}", AlphaMonitorPath);
         }
 
         /// <summary>
@@ -404,31 +415,33 @@ namespace BFBMX.Desktop.ViewModels
                 return false;
             }
 
-            if (_alphaMonitor.EnableRaisingEvents == false)
+            if (_alphaMonitor.IsStarted)
             {
-                _logger.LogInformation("CanStopAlphaMonitor: Already disabled to raise events, returning true.");
-                return false;
+                _logger.LogInformation("CanStopAlphaMonitor: Monitor is not null and is started. Returning true.");
+                return true;
             }
 
-            if (_alphaMonitor.MonitoredPath != AlphaMonitorPath)
-            {
-                _logger.LogInformation("CanStopAlphaMonitor: Monitor Path {monActualPath} neq {monConfiguredPath}. Return false.",
-                    _alphaMonitor.MonitoredPath,
-                    AlphaMonitorPath);
-                return false;
-            }
-
-            _logger.LogInformation("CanStopAlphaMonitor: Instance not null, is raising events, and path matches. Return true.");
-            return true;
+            _logger.LogInformation("CanStopAlphaMonitor: Is in any other state. Returning false.");
+            return false;
         }
 
         [RelayCommand(CanExecute = nameof(CanDestroyAlphaMonitor))]
         public void DestroyAlphaMonitor()
         {
             _logger.LogInformation("DestroyAlphaMonitor: Button pressed.");
-            ResetMonitor(_alphaMonitor);
-            AlphaStatusMessage = "Monitor has been reset.";
+            if (_alphaMonitor is not null)
+            {
+                _alphaMonitor.EnableRaisingEvents = false;
+                _alphaMonitor.Dispose();
+                _alphaMonitor = null;
+            }
+
             AlphaMonitorPathEnabled = true;
+            AlphaMonitorInitialized = false;
+            AlphaMonitorStarted = false;
+            AlphaMonitorStopped = false;
+            SetStatusMessage(AlphaMonitorName, "Monitor reset and must be reconfigured.");
+            _logger.LogInformation("DestroyAlphaMonitor button: Monitor destroyed.");
         }
 
         /// <summary>
@@ -440,22 +453,17 @@ namespace BFBMX.Desktop.ViewModels
         {
             if (_alphaMonitor is null)
             {
-                _logger.LogInformation("CanDestroyAlphaMonitor: Alpha Monitor already destroyed. Try to initialize new, instead.");
+                _logger.LogInformation("CanDestroyAlphaMonitor: Monitor is null and path is empty. Returning false.");
                 return false;
             }
 
-            if (_alphaMonitor.MonitoredPath != AlphaMonitorPath)
+            if (_alphaMonitor is null && !string.IsNullOrWhiteSpace(AlphaMonitorPath))
             {
-                _logger.LogInformation("CanDestroyAlphaMonitor: Monitor Path {monActualPath} neq {monConfiguredPath} but will return true anyway.",
-                                      _alphaMonitor.MonitoredPath,
-                                      AlphaMonitorPath);
+                _logger.LogInformation("CanDestroyAlphaMonitor: Monitor is null and path has be entered (not validated). Returning false.");
+                return false;
             }
 
-            if (_alphaMonitor.EnableRaisingEvents == false)
-            {
-                _logger.LogInformation("CanDestroyAlphaMonitor: Monitor is not raising events but will return true anyway.");
-            }
-
+            _logger.LogInformation("CanDestroyAlphaMonitor: Monitor exists and is initialized. Returning true.");
             return true;
         }
 
@@ -467,7 +475,7 @@ namespace BFBMX.Desktop.ViewModels
         private static FSWMonitor? _bravoMonitor;
 
         [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(InitBravoMonitorCommand), nameof(DestroyBravoMonitorCommand))]
+        [NotifyCanExecuteChangedFor(nameof(InitBravoMonitorCommand), nameof(StartBravoMonitorCommand), nameof(StopBravoMonitorCommand), nameof(DestroyBravoMonitorCommand))]
         public bool _bravoMonitorPathEnabled = true;
 
         [ObservableProperty]
@@ -491,99 +499,118 @@ namespace BFBMX.Desktop.ViewModels
         {
             _logger.LogInformation("InitBravoMonitor button pressed.");
 
-            if (_bravoMonitor is not null)
+            if (_bravoMonitor is null)
             {
-                _logger.LogInformation("InitBravoMonitor: Resetting existing Bravo Monitor.");
-                ResetMonitor(_bravoMonitor);
+                _bravoMonitor = FSWatcherFactory.Create(
+                    HandleFileCreatedAsync,
+                    HandleErrorBravo,
+                    BravoMonitorPath!,
+                    BravoMonitorName);
+            }
+            else
+            {
+                _bravoMonitor.EnableRaisingEvents = false;
+                _bravoMonitor.MonitoredPath = BravoMonitorPath!;
             }
 
             try
             {
-                _bravoMonitor = FSWatcherFactory.Create(HandleFileCreatedAsync, HandleErrorBravo, BravoMonitorPath!, BravoMonitorName);
-                BravoMonitorPathEnabled = false;
                 BravoMonitorInitialized = _bravoMonitor!.IsInitialized;
+                BravoMonitorStarted = _bravoMonitor.IsStarted;
+                BravoMonitorStopped = _bravoMonitor.IsStopped;
+                BravoMonitorPathEnabled = false;
                 string isOrNotInitialized = BravoMonitorInitialized ? "successfully" : "not";
-                SetStatusMessage(BravoMonitorName, "Monitor initialized.");
-                _logger.LogInformation("Bravo Monitor {isOrNotInit} initialized for path: {monitorPath}", isOrNotInitialized, BravoMonitorPath);
+                SetStatusMessage(BravoMonitorName, "Monitor initialized. Click Launch to start monitoring.");
+                _logger.LogInformation("Bravo Monitor {isOrNotInit} initialized for path: {monitorPath}",
+                    isOrNotInitialized,
+                    BravoMonitorPath);
             }
             catch (Exception ex)
             {
-                SetStatusMessage(BravoMonitorName, "Unable to initialize! Try the Destroy button, then input the path again.");
+                SetStatusMessage(BravoMonitorName, "Unable to initialize! Click Destroy, add the path, then click initialize.");
                 _logger.LogInformation("Bravo Monitor unable to initialize for {monitorPath}, exception msg: {exceptionMsg}",
-                                      BravoMonitorPath, ex.Message);
+                                       BravoMonitorPath, ex.Message);
                 BravoMonitorPathEnabled = true;
+
+                if (_bravoMonitor is not null)
+                {
+                    _bravoMonitor.EnableRaisingEvents = false;
+                    _bravoMonitor.Dispose();
+                }
             }
         }
 
         public bool CanInitBravoMonitor()
         {
-            if (string.IsNullOrWhiteSpace(BravoMonitorPath))
+            if (IsGoodPath(BravoMonitorPath))
+            {
+                if (BravoMonitorPath!.Equals(AlphaMonitorPath)
+                    || BravoMonitorPath.Equals(CharlieMonitorPath))
                 {
-                _logger.LogInformation("CanInitBravoMonitor: Bravo Monitor path is null or empty, cannot initialize.");
+                    SetStatusMessage(BravoMonitorName, "Path is already being monitored. Choose another path.");
+                    _logger.LogWarning("CanInitBravoMonitor: Path not unique. Returning false.");
+                    return false;
+                }
+
+                if (_charlieMonitor is null)
+                {
+                    _logger.LogInformation("CanInitBravoMonitor: Monitor is null and path exists. Returning true.");
+                    SetStatusMessage(BravoMonitorName, string.Empty);
+                    return true;
+                }
+
+                _logger.LogInformation("CanInitBravoMonitor: Monitor is not null but a path exists. Returning false.");
                 return false;
             }
             else
             {
-                _logger.LogInformation("CanInitBravoMonitor: Returning true for path {BravoMonPath}", BravoMonitorPath);
-                return true;
+                _logger.LogInformation("CanInitBravoMonitor: Path is null or empty or does not exist. Returning false.");
+                return false;
             }
         }
 
         [RelayCommand(CanExecute = nameof(CanStartBravoMonitor))]
         public void StartBravoMonitor()
         {
-            if (_bravoMonitor is not null && _bravoMonitor.CanStart())
-            {
-                _bravoMonitor.EnableRaisingEvents = true;
-                BravoMonitorStarted = _bravoMonitor.IsStarted;
-                string isOrNot = _bravoMonitor.IsStarted ? "successfully" : "not";
-                SetStatusMessage(BravoMonitorName, $"Monitor {isOrNot} started for path.");
-                _logger.LogInformation("StartBravoMonitor: Monitor {isOrNot} started for path {monitorPath}", isOrNot, BravoMonitorPath);
-            }
-            else
-            {
-                BravoMonitorStarted = false;
-                SetStatusMessage(BravoMonitorName, "Unable to start monitor! Check logs then try Destroy or Initialize instead.");
-                _logger.LogWarning("StartBravoMonitor: Unable to enable raising events for {monitorpath}!", BravoMonitorPath);
-            }
+            _logger.LogInformation("StartBravoMonitor button pressed.");
+            _bravoMonitor!.EnableRaisingEvents = true;
+            BravoMonitorPathEnabled = false;
+            BravoMonitorInitialized = _bravoMonitor.IsInitialized;
+            BravoMonitorStarted = _bravoMonitor.IsStarted;
+            BravoMonitorStopped = _bravoMonitor.IsStopped;
+            SetStatusMessage(BravoMonitorName, "Monitor is watching for new files at path.");
+            _logger.LogInformation("StartBravoMonitor button: Monitor started for path {monitorPath}", BravoMonitorPath);
         }
 
         public bool CanStartBravoMonitor()
         {
-            if (_bravoMonitor is not null && _bravoMonitor.CanStart())
+            if (_bravoMonitor is null)
             {
-                _logger.LogInformation("CanStartBravoMonitor: BravoMonitor is not null, is not enabled to raise events, and path matches. Returning true.");
-                return true;
-            }
-            else
-            {
-                bool isNull = _bravoMonitor is null;
-                bool isEnabled = _bravoMonitor?.EnableRaisingEvents == true;
-                bool pathMatches = _bravoMonitor?.MonitoredPath == BravoMonitorPath;
-                _logger.LogWarning("CanStartBravoMonitor: Monitor is null? {isnull}; isEnabled? {isenabled}; pathMatches? {pathmatches}.",
-                    isNull, isEnabled, pathMatches);
+                _logger.LogInformation("CanStartBravoMonitor: Monitor is null. Returning false.");
+                return false;
             }
 
+            if (_bravoMonitor.CanStart())
+            {
+                _logger.LogInformation("CanStartBravoMonitor: Monitor is not null and CanStart(). Returning true.");
+                return true;
+            }
+
+            _logger.LogInformation("CanStartBravoMonitor: Monitor is not null and any other state. Returning false.");
             return false;
         }
 
         [RelayCommand(CanExecute = nameof(CanStopBravoMonitor))]
         public void StopBravoMonitor()
         {
-            if (_bravoMonitor is not null && _bravoMonitor.IsStarted)
-            {
-                _bravoMonitor.EnableRaisingEvents = false;
-                BravoMonitorStarted = _bravoMonitor.IsStarted;
-                string isOrNot = _bravoMonitor.IsStarted ? "not" : "successfully";
-                BravoStatusMessage = "Monitor stopped successfully.";
-                _logger.LogInformation("StopBravoMonitor: Monitor {isOrNot} stopped for path {monitorPath}", isOrNot, AlphaMonitorPath);
-            }
-            else
-            {
-                BravoMonitorStarted = _bravoMonitor?.IsStarted ?? false;
-                BravoStatusMessage = "Unable to stop monitor! Check logs then try Destroy or Initialize instead.";
-                _logger.LogWarning("StopBravoMonitor: Unable to disable raising events for {monitorpath}!", BravoMonitorPath);
-            }
+            _logger.LogInformation("StopBravoMonitor button pressed.");
+            _bravoMonitor!.EnableRaisingEvents = false;
+            BravoMonitorPathEnabled = false;
+            BravoMonitorInitialized = _bravoMonitor.IsInitialized;
+            BravoMonitorStarted = _bravoMonitor.IsStarted;
+            BravoMonitorStopped = _bravoMonitor.IsStopped;
+            SetStatusMessage(BravoMonitorName, "Monitor no longer watching for new files.");
+            _logger.LogInformation("StopBravoMonitor button: Monitor stopped for path {monitorPath}", BravoMonitorPath);
         }
 
         public bool CanStopBravoMonitor()
@@ -719,7 +746,7 @@ namespace BFBMX.Desktop.ViewModels
                 if (CharlieMonitorPath!.Equals(AlphaMonitorPath)
                     || CharlieMonitorPath.Equals(BravoMonitorPath))
                 {
-                    SetStatusMessage(CharlieMonitorName, "Path is already being monitored. Choose another path.");
+                    SetStatusMessage(CharlieMonitorName, "Path already set elsewhere. Choose another path.");
                     _logger.LogWarning("CanInitCharlieMonitor: Path not unique. Returning false.");
                     return false;
                 }
@@ -727,6 +754,7 @@ namespace BFBMX.Desktop.ViewModels
                 if (_charlieMonitor is null)
                 {
                     _logger.LogInformation("CanInitCharlieMonitor: Monitor is null and path exists. Returning true.");
+                    SetStatusMessage(CharlieMonitorName, string.Empty);
                     return true;
                 }
 
