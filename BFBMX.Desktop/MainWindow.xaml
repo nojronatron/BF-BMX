@@ -79,7 +79,7 @@
         <StackPanel Orientation="Vertical"
                     Grid.Row="3"
                     Grid.Column="1"
-                    Margin="0,0,0,6">
+                    Margin="0,0,0,4">
             <Label HorizontalContentAlignment="Left"
                    Height="30"
                    Margin="2"
@@ -94,13 +94,12 @@
                     VerticalAlignment="Center"
                     HorizontalAlignment="Right"
                     Height="24" />
-            <TextBox x:Name="BravoMonitorPath"
-                    Height="24"
-                    Width="376"
-                    Margin="4"
-                    VerticalAlignment="Center"
-                    Validation.ErrorTemplate="{StaticResource errorTemplate}"
-                    IsEnabled="{Binding BravoMonitorPathEnabled}">
+            <TextBox Height="24"
+                     Width="376"
+                     Margin="4"
+                     VerticalAlignment="Center"
+                     Validation.ErrorTemplate="{StaticResource errorTemplate}"
+                     IsEnabled="{Binding BravoMonitorPathEnabled}">
                 <TextBox.Text>
                     <Binding Path="BravoMonitorPath" 
                              ValidatesOnDataErrors="True" 
@@ -132,7 +131,7 @@
         <StackPanel Orientation="Vertical"
                     Grid.Row="7"
                     Grid.Column="1"
-                    Margin="0,0,0,6">
+                    Margin="0,0,0,4">
             <Label HorizontalContentAlignment="Left"
                     Height="30"
                     Margin="2"
@@ -184,9 +183,9 @@
 
         <StackPanel Orientation="Vertical"
                     Grid.Row="11"
-                    Grid.Column="1">
-            <Label x:Name="CharlieStatusMessageLabel" 
-                   HorizontalContentAlignment="Left"
+                    Grid.Column="1"
+                    Margin="0,0,0,4">
+            <Label HorizontalContentAlignment="Left"
                    Height="30"
                    Margin="2"
                    Background="AntiqueWhite"
@@ -232,7 +231,7 @@
                         <GridViewColumn Header="File Path"
                                         DisplayMemberBinding="{Binding FullFilePath}"
                                         Width="288"/>
-                        <GridViewColumn Header="Timestamp"
+                        <GridViewColumn Header="File Created"
                                         DisplayMemberBinding="{Binding FileTimeStamp}"
                                         Width="100"/>
                     </GridView>
