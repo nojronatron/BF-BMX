@@ -13,8 +13,19 @@ namespace BFBMX.Service.Helpers
         private readonly ILogger<FileProcessor> _logger;
 
         private readonly string messageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
+        private readonly string dateTimeStampPattern = @"\d{1,2}\s\w{3}\s\d{4}\s\d{1,2}:\d{1,2}:\d{1,2}\s\+\d{4}";
         private readonly string strictBibPatternTabDelim = @"\b\d{1,3}\t(OUT|IN|DROP)\t\d{1,4}\t\d{1,2}\t\w{2}\b";
         private readonly string sloppyBibPatternTabDelim = @"\b\w{1,15}\t\w{1,5}\t\w{1,5}\t\w{1,3}\t\w{1,26}\b";
+
+        private static JsonSerializerOptions LocalJsonSerializerOptions => new()
+        {
+            WriteIndented = true,
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            PropertyNameCaseInsensitive = true
+        };
+
+        private static RegexOptions LocalRegexOptions => RegexOptions.IgnoreCase;
+        private static TimeSpan LocalRegexTimeout => new(0, 0, 1);
 
         public FileProcessor(ILogger<FileProcessor> logger)
         {
@@ -35,14 +46,7 @@ namespace BFBMX.Service.Helpers
             }
             else
             {
-                JsonSerializerOptions options = new()
-                {
-                    WriteIndented = true,
-                    NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
-                    PropertyNameCaseInsensitive = true
-                };
-
-                string json = JsonSerializer.Serialize<WinlinkMessageModel>(msg, options);
+                string json = JsonSerializer.Serialize<WinlinkMessageModel>(msg, LocalJsonSerializerOptions);
                 string prefixText = File.Exists(filepath) ? "," : string.Empty;
 
                 for (int tries = 3; tries > 0; tries--)
@@ -104,13 +108,19 @@ namespace BFBMX.Service.Helpers
                 return new WinlinkMessageModel();
             }
 
-            string winlinkMessageId = GetMessageId(RecordsArrayToString(fileData));
+            string recordArray = RecordsArrayToString(fileData);
+            string winlinkMessageId = GetMessageId(recordArray);
+            DateTime winlinkDateTimeStamp = GetWinlinkMessageDateTimeStamp(recordArray);
             List<FlaggedBibRecordModel> bibRecords = ProcessBibs(fileData, winlinkMessageId);
 
             if (bibRecords.Count > 0)
             {
                 // bib data was found so return a concrete object
-                return WinlinkMessageModel.GetWinlinkMessageInstance(winlinkMessageId, timestamp, machineName, bibRecords);
+                return WinlinkMessageModel.GetWinlinkMessageInstance(winlinkMessageId,
+                                                                     winlinkDateTimeStamp,
+                                                                     machineName,
+                                                                     winlinkDateTimeStamp,
+                                                                     bibRecords);
             }
 
             return new WinlinkMessageModel();
@@ -155,20 +165,62 @@ namespace BFBMX.Service.Helpers
         {
             if (string.IsNullOrWhiteSpace(fileData))
             {
-                return string.Empty;
-            }
-
-            Regex match = new(messageIdPattern, RegexOptions.IgnoreCase, new TimeSpan(0, 0, 2));
-            MatchCollection matches = match.Matches(fileData);
-
-            if (matches.Count > 0)
-            {
-                return matches[0].Groups["msgid"].Value;
+                _logger.LogWarning("FileProcessor: GetMessageId: Somehow an empty string was received. Returning an empty MessageID.");
             }
             else
             {
-                return string.Empty;
+                Regex match = new(messageIdPattern, LocalRegexOptions, LocalRegexTimeout);
+                MatchCollection matches = match.Matches(fileData);
+
+                if (matches.Count < 1)
+                {
+                    _logger.LogInformation("FileProcessor: GetMessageId: No Message-ID found in the data. Returning an empty MessageID.");
+                }
+
+                return matches[0].Groups["msgid"].Value;
             }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Finds the DateTime stamp in a Winlink message data string and returns the DateTime value.
+        /// </summary>
+        /// <param name="winlinkMessageData"></param>
+        /// <returns>Parsed DateTime value or if input was not parseable, Jan 1 0001.</returns>
+        public DateTime GetWinlinkMessageDateTimeStamp(string winlinkMessageData)
+        {
+            if (string.IsNullOrWhiteSpace(winlinkMessageData))
+            {
+                _logger.LogWarning("FileProcessor: GetWinlinkMessageDataTimeStamp: Somehow an empty string was received. Returning DateTime.MinValue!");
+            }
+            else
+            {
+                Regex match = new(dateTimeStampPattern, LocalRegexOptions, LocalRegexTimeout);
+                MatchCollection matches = match.Matches(winlinkMessageData);
+
+                if (matches.Count < 1)
+                {
+                    return DateTime.MinValue;
+                }
+
+                string dateStamp = matches[0].Value;
+
+                try
+                {
+                    DateTime parsedValue = DateTime.Parse(dateStamp);
+                    return parsedValue.ToUniversalTime();
+                }
+                catch (FormatException fmtEx)
+                {
+                    _logger.LogWarning(
+                        "FileProcessor: GetWinlinkMessageDateTimeStamp: A format exception was thrown ### msg {fmtEx} ### for the following message {msg}.", 
+                        fmtEx.Message, 
+                        winlinkMessageData);
+                }
+            }
+
+            return DateTime.MinValue;
         }
 
         /// <summary>
@@ -281,7 +333,7 @@ namespace BFBMX.Service.Helpers
                 {
                     try
                     {
-                        if (Regex.IsMatch(line, pattern, RegexOptions.IgnoreCase, new TimeSpan(0, 0, 2)))
+                        if (Regex.IsMatch(line, pattern, LocalRegexOptions, LocalRegexTimeout))
                         {
                             var fields = line.Split('\t');
                             FlaggedBibRecordModel bibRecord = FlaggedBibRecordModel.GetBibRecordInstance(fields);

@@ -8,17 +8,23 @@ public class WinlinkMessageModel
 {
     [Key]
     public string? WinlinkMessageId { get; set; } // max len appears to be 12
-    public DateTime MessageDateTime { get; set; } // datetime from Winlink message
+    public DateTime MessageDateStamp { get; set; } // datetime from Winlink message
     public string? ClientHostname { get; set; } // env:COMPUTERNAME (might not be necessary)
+    public DateTime FileCreatedTimeStamp { get; set; } // the time the file was created on the Desktop App
     public List<FlaggedBibRecordModel> BibRecords { get; set; } = new List<FlaggedBibRecordModel>();
 
-    public static WinlinkMessageModel GetWinlinkMessageInstance(string? winlinkMessageId, DateTime messageDateTime, string? clientHostname, List<FlaggedBibRecordModel> bibRecords)
+    public static WinlinkMessageModel GetWinlinkMessageInstance(string? winlinkMessageId,
+                                                                DateTime messageDateTime,
+                                                                string? clientHostname,
+                                                                DateTime fileCreatedDateTime,
+                                                                List<FlaggedBibRecordModel> bibRecords)
     {
         return new WinlinkMessageModel
         {
             WinlinkMessageId = winlinkMessageId,
-            MessageDateTime = messageDateTime,
+            MessageDateStamp = messageDateTime,
             ClientHostname = clientHostname,
+            FileCreatedTimeStamp = fileCreatedDateTime,
             BibRecords = bibRecords,
         };
     }
@@ -28,15 +34,16 @@ public class WinlinkMessageModel
         return BibRecords.Any(x => x.DataWarning);
     }
 
-    public string PrintableMsgDateTime()
+    public string PrintableMsgDateTime(DateTime dateTimeEntry)
     {
-        return MessageDateTime.ToString("yyyy-MM-ddTHH-mm-ss");
+        return dateTimeEntry.ToString("yyyy-MM-ddTHH-mm-ss");
     }
 
     public string ToFilename()
     {
         // learn.microsoft.com: 2009-06-15T13:45:30 (DateTimeKind.Local) -> 2009-06-15T13:45:30
-        string customFormatPattern = MessageDateTime.ToString("yyyy-MM-ddTHH-mm-ss");
+        //string customFormatPattern = PrintableMsgDateTime(MessageDateStamp);
+        string customFormatPattern = PrintableMsgDateTime(FileCreatedTimeStamp);
         return $"{WinlinkMessageId}-{customFormatPattern}.txt";
     }
 
@@ -48,7 +55,7 @@ public class WinlinkMessageModel
 
     public string ToAccessDatabaseTabbedString()
     {
-        string recordPrefix = $"{WinlinkMessageId}\t{PrintableMsgDateTime()}\t";
+        string recordPrefix = $"{WinlinkMessageId}\t{PrintableMsgDateTime(MessageDateStamp)}\t";
         StringBuilder sbBibData = new();
 
         foreach(var record in BibRecords)
@@ -78,8 +85,9 @@ public class WinlinkMessageModel
         if (obj is WinlinkMessageModel other)
         {
             return WinlinkMessageId == other.WinlinkMessageId
-                && MessageDateTime == other.MessageDateTime
+                && MessageDateStamp == other.MessageDateStamp
                 && ClientHostname == other.ClientHostname
+                && FileCreatedTimeStamp == other.FileCreatedTimeStamp
                 && (BibRecords?.Count == other.BibRecords?.Count);
         }
 
@@ -91,8 +99,9 @@ public class WinlinkMessageModel
     {
         int hash = 17;
         hash = hash * 23 + (WinlinkMessageId?.GetHashCode() ?? 0);
-        hash = hash * 23 + MessageDateTime.GetHashCode();
+        hash = hash * 23 + MessageDateStamp.GetHashCode();
         hash = hash * 23 + (ClientHostname?.GetHashCode() ?? 0);
+        hash = hash * 23 + FileCreatedTimeStamp.GetHashCode();
         hash = hash * 23 + (BibRecords?.Count.GetHashCode() ?? 0);
         return hash;
     }

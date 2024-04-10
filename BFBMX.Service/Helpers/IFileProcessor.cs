@@ -9,6 +9,7 @@ namespace BFBMX.Service.Helpers
         string GetMessageId(string fileData);
         HashSet<FlaggedBibRecordModel> GetSloppyMatches(string[] lines);
         HashSet<FlaggedBibRecordModel> GetStrictMatches(string[] lines);
+        DateTime GetWinlinkMessageDateTimeStamp(string winlinkMessageData);
         List<FlaggedBibRecordModel> ProcessBibs(string[] lines, string messageId);
         WinlinkMessageModel ProcessWinlinkMessageFile(DateTime timestamp, string machineName, string filePath);
         string RecordsArrayToString(string[] fileData);

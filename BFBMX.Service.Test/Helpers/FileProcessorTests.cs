@@ -13,6 +13,7 @@ public class FileProcessorTests
     private readonly Mock<ILogger<FileProcessor>> _mockLogger;
 
     public static string GenericWinlinkId { get => "ABC123DEF456"; }
+    public static string? GetTempDirectory => Environment.GetEnvironmentVariable("TEMP");
 
     public FileProcessorTests()
     {
@@ -32,11 +33,9 @@ public class FileProcessorTests
     [Fact]
     public void FileDoesExist_ReturnsPositiveCountList()
     {
-        string? tempDir = Environment.GetEnvironmentVariable("TEMP");
-
-        if (!string.IsNullOrWhiteSpace(tempDir))
+        if (!string.IsNullOrWhiteSpace(GetTempDirectory))
         {
-            var tempFile = Path.Combine(tempDir, "tempfiledata.txt");
+            var tempFile = Path.Combine(GetTempDirectory, "tempfiledata.txt");
             string tempfileData = "This is a test file.\nIt has four lines.\nIt is a test.\nIt is only a test.";
 
             if (File.Exists(tempFile))
@@ -253,7 +252,7 @@ public class FileProcessorTests
         var targetFolder = Environment.SpecialFolder.CommonDocuments;
         string fileName = "testFilePath";
         string filePath = Path.Combine(Environment.GetFolderPath(targetFolder), fileName);
-        Console.WriteLine("Target filepath is: ", filePath);
+        Console.WriteLine($"Target filepath is: {filePath}");
 
         FlaggedBibRecordModel mockBibRecord = new()
         {
@@ -269,7 +268,7 @@ public class FileProcessorTests
         {
             WinlinkMessageId = "ABC123DEF456",
             ClientHostname = "TestMachine",
-            MessageDateTime = DateTime.Now
+            MessageDateStamp = DateTime.Now
         };
 
         mockMessage.BibRecords.Add(mockBibRecord);
@@ -294,13 +293,13 @@ public class FileProcessorTests
         var targetFolder = Environment.SpecialFolder.CommonDocuments;
         string fileName = "testFilePath";
         string filePath = Path.Combine(Environment.GetFolderPath(targetFolder), fileName);
-        Console.WriteLine("Target filepath is: ", filePath);
+        Console.WriteLine($"Target filepath is: {filePath}");
 
         WinlinkMessageModel mockMessage = new()
         {
             WinlinkMessageId = "ABC123DEF456",
             ClientHostname = "TestMachine",
-            MessageDateTime = DateTime.Now
+            MessageDateStamp = DateTime.Now
         };
 
         // Act
@@ -351,11 +350,24 @@ public class FileProcessorTests
     }
 
     [Fact]
+    public void ProcessWinlinkMessageFile_HandleTimeStamps()
+    {
+        // single DateTime stamp in message header
+        DateTime expectedWinlinkTimestamp = new(2023, 8, 13, 19, 54, 29, DateTimeKind.Utc);
+        DateTime actualWlTimeStamp = _fileProcessor.GetWinlinkMessageDateTimeStamp(SampleMessages.ValidSingleMesageWithSevenBibRecords);
+        Assert.Equal(expectedWinlinkTimestamp, actualWlTimeStamp);
+
+        // two DateTime stamps in message (one in header, another in forwarded message)
+        DateTime expectedWinlinkTimestamp2 = new(2023,8, 13, 19, 54, 29, DateTimeKind.Utc);
+        DateTime actualWlTimeStamp2  = _fileProcessor.GetWinlinkMessageDateTimeStamp(SampleMessages.ValidMessageWithBibDataInReplyMessage);
+        Assert.Equal(expectedWinlinkTimestamp2, actualWlTimeStamp2);
+    }
+
+    [Fact]
     public void ProcessBibs_ProcessesBibsSuccessfully()
     {
         // Arrange
         int expectedCount = 5;
-        List<FlaggedBibRecordModel> bibRecords = new();
         string messageId = "ABC123DEF456";
 
         var lines = new string[] {
@@ -372,7 +384,7 @@ public class FileProcessorTests
         };
 
         // Act
-        bibRecords = _fileProcessor.ProcessBibs(lines, messageId);
+        List<FlaggedBibRecordModel> bibRecords = _fileProcessor.ProcessBibs(lines, messageId);
 
         // Assert
         Assert.NotEmpty(bibRecords);
