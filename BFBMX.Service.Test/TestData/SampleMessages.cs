@@ -133,8 +133,7 @@ Content-Type: text/plain; charset=""iso-8859-1""
 Content-Transfer-Encoding: quoted-printable
 
 
------ Message from X0LL was forwarded without change by C4LL at 2023-08-=
-13 19:53 UTC -----
+----- Message from X0LL was forwarded without change by C4LL at 2023-08-13 19:53 UTC -----
 
 Message ID: PIY0NSXF2JJ2
 Date: 2023/08/13 19:52
