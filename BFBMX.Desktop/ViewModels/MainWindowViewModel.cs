@@ -67,10 +67,10 @@ namespace BFBMX.Desktop.ViewModels
         /// <param name="e"></param>
         public async void HandleFileCreatedAsync(object sender, FileSystemEventArgs e)
         {
-            _logger.LogInformation("File creation detected, waiting 1 second before reading contents.");
             string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
-            _logger.LogInformation("Discovered file path {filepath}. Enqueuing to be processed.", discoveredFilepath);
             DiscoveredFileModel newFile = new(discoveredFilepath);
+            DateTime fileTimeStamp = newFile.FileTimeStamp;
+            _logger.LogInformation("Discovered file path {filepath} creation stamp {filedatetime} for processing.", discoveredFilepath, fileTimeStamp);
             await _discoveredFiles.EnqueueAsync(newFile);
 
             // insert the new item into the collection on the UI Thread (WPF requirement)
@@ -88,15 +88,13 @@ namespace BFBMX.Desktop.ViewModels
 
             _logger.LogInformation("Path {discoveredFilepath} sent to screen for display.", discoveredFilepath);
 
-            /***** moved from DiscoveredFilesCollection *****/
-
             // get machine name for File Processor
             string? hostname = Environment.MachineName;
             string machineName = string.IsNullOrWhiteSpace(hostname) ? "Unknown" : hostname;
 
             // process the file for bib records
             await Task.Delay(1000);
-            _logger.LogInformation("Sending file {newFile} to file processor.", newFile.FullFilePath);
+            _logger.LogInformation("Sending file {newFile} created at {fileTimeStamp} to file processor.", newFile.FullFilePath, newFile.FileTimeStamp);
             WinlinkMessageModel winlinkMessage = _fileProcessor.ProcessWinlinkMessageFile(newFile.FileTimeStamp, machineName, newFile.FullFilePath);
 
             // No bib reports found, log and return
