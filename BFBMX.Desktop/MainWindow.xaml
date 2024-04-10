@@ -51,7 +51,7 @@
                 <TextBox.Text>
                     <Binding Path="AlphaMonitorPath" 
                              ValidatesOnDataErrors="True" 
-                             UpdateSourceTrigger="PropertyChanged">
+                             UpdateSourceTrigger="LostFocus">
                         <Binding.ValidationRules>
                             <validators:FilepathRule MinimumCharacters="4"/>
                         </Binding.ValidationRules>
@@ -104,7 +104,7 @@
                 <TextBox.Text>
                     <Binding Path="BravoMonitorPath" 
                              ValidatesOnDataErrors="True" 
-                             UpdateSourceTrigger="PropertyChanged">
+                             UpdateSourceTrigger="LostFocus">
                         <Binding.ValidationRules>
                             <validators:FilepathRule MinimumCharacters="4"/>
                         </Binding.ValidationRules>
