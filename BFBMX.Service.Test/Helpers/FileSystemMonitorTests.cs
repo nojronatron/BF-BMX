@@ -58,8 +58,6 @@ namespace BFBMX.Service.Test.Helpers
             var expectedPath = tempPath;
 
             // capture the watcher object and ensure automatic disposal if a test fails
-            //using var actualWatcher =
-            //    FSWatcherFactory.Create(HandleFileCreated, HandleFileWatherError, expectedPath!);
             var actualWatcher = FSWatcherFactory.Create(HandleFileCreated, HandleFileWatherError, expectedPath!, BravoMonitorName);
 
             // verify starting conditions
