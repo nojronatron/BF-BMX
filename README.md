@@ -11,6 +11,17 @@ The overarching goal of this project is to create a synchronization tool that wi
 
 ## Project Status
 
+10-Apr-2024:
+
+- Added functional 3rd monitor.
+- Updated Monitor Status Message content and behavior.
+- Block configuring Monitors with duplicate file paths (although parent and child paths are allowed).
+- Added checks to fend against edge-case Monitor states.
+
+5-Apr-2024:
+
+- Added UI feature that displays latest detected file paths.
+
 4-Apr-2024:
 
 - Improved logging to capture more data server-side.

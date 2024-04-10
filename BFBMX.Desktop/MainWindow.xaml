@@ -6,30 +6,36 @@
         xmlns:local="clr-namespace:BFBMX.Desktop"
         xmlns:validators="clr-namespace:BFBMX.Desktop.XamlValidators"
         mc:Ignorable="d"
-        MinHeight="400" Height="440"
-        MinWidth="680" Width="680"
-        Title="Bigfoot BMX Desktop">
+        SizeToContent="WidthAndHeight"
+        Title="Bigfoot Bib Message eXtractor - Desktop">
     
     <Grid Background="Azure">
         <Grid.RowDefinitions>
+            <RowDefinition Height="2"/>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="2"/>
+            <RowDefinition Height="32"/>
             <RowDefinition Height="8"/>
-            <RowDefinition Height="34"/>
-            <RowDefinition Height="34"/>
-            <RowDefinition Height="34"/>
-            <RowDefinition Height="34"/>
-            <RowDefinition Height="34"/>
-            <RowDefinition Height="34"/>
-            <RowDefinition Height="180"/>
-            <RowDefinition Height="34"/>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="2"/>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="2"/>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="36"/>
+            <RowDefinition Height="4"/>
+            <RowDefinition Height="160"/>
             <RowDefinition Height="8"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="8"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="8"/>
-    </Grid.ColumnDefinitions>
+            <ColumnDefinition Width="4"/>
+            <ColumnDefinition Width="680"/>
+            <ColumnDefinition Width="4"/>
+        </Grid.ColumnDefinitions>
 
-    <StackPanel Orientation="Horizontal"
+        <StackPanel Orientation="Horizontal"
                     Grid.Row="1"
                     Grid.Column="1">
             <Label Content="Monitor 1 Path:"
@@ -37,57 +43,59 @@
                    HorizontalAlignment="Right"
                    Height="24"/>
             <TextBox Height="24"
-                     Width="320"
+                     Width="376"
                      Margin="4"
                      VerticalAlignment="Center"
                      Validation.ErrorTemplate="{StaticResource errorTemplate}"
                      IsEnabled="{Binding AlphaMonitorPathEnabled}">
                 <TextBox.Text>
-                <Binding Path="AlphaMonitorPath" 
-                         ValidatesOnDataErrors="True" 
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
+                    <Binding Path="AlphaMonitorPath" 
+                             ValidatesOnDataErrors="True" 
+                             UpdateSourceTrigger="LostFocus">
+                        <Binding.ValidationRules>
                             <validators:FilepathRule MinimumCharacters="4"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <Button x:Name="InitAlphaMonitorButton"
-                Command="{Binding InitAlphaMonitorCommand}"
-                Content="Initialize"
-                Padding="4"
-                Margin="4"
-                IsEnabled="{Binding AlphaMonitorStopped}"/>
-        <Button x:Name="LaunchAlphaMonitorButton"
-                Command="{Binding StartAlphaMonitorCommand}"
-                Content="Launch"
-                Padding="4"
-                Margin="4"
-                IsEnabled="{Binding AlphaMonitorInitialized}" />
-        <Button x:Name="StopAlphaMonitorButton"
-                Command="{Binding StopAlphaMonitorCommand}"
-                Content="Stop" 
-                Padding="4"
-                Margin="4" 
-                IsEnabled="{Binding AlphaMonitorStarted}" />
-        <Button x:Name="DestroyAlphaMonitorButton"
-                Command="{Binding DestroyAlphaMonitorCommand}"
-                Content="Destroy"
-                Padding="4"
-                Margin="4"
-                IsEnabled="{Binding AlphaMonitorInitialized}" />
-    </StackPanel>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <Button Command="{Binding InitAlphaMonitorCommand}"
+                    Content="Initialize"
+                    Padding="4"
+                    Margin="4"/>
+            <Button Command="{Binding StartAlphaMonitorCommand}"
+                    Content="Start"
+                    Padding="4"
+                    Margin="4"/>
+            <Button Command="{Binding StopAlphaMonitorCommand}"
+                    Content="Stop" 
+                    Padding="4"
+                    Margin="4"/>
+            <Button Command="{Binding DestroyAlphaMonitorCommand}"
+                    Content="Reset"
+                    Padding="4"
+                    Margin="4"/>
+        </StackPanel>
 
-    <StackPanel Orientation="Horizontal"
+        <StackPanel Orientation="Vertical"
                     Grid.Row="3"
+                    Grid.Column="1"
+                    Margin="0,0,0,4">
+            <Label HorizontalContentAlignment="Left"
+                   Height="30"
+                   Margin="2"
+                   Background="AntiqueWhite"
+                   Content="{Binding AlphaStatusMessage}"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal"
+                    Grid.Row="5"
                     Grid.Column="1">
             <Label Content="Monitor 2 Path:"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Right"
-                   Height="24" />
-            <TextBox x:Name="BravoMonitorPath"
-                     Height="24"
-                     Width="320"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Right"
+                    Height="24" />
+            <TextBox Height="24"
+                     Width="376"
                      Margin="4"
                      VerticalAlignment="Center"
                      Validation.ErrorTemplate="{StaticResource errorTemplate}"
@@ -95,158 +103,140 @@
                 <TextBox.Text>
                     <Binding Path="BravoMonitorPath" 
                              ValidatesOnDataErrors="True" 
-                             UpdateSourceTrigger="PropertyChanged">
+                             UpdateSourceTrigger="LostFocus">
+                        <Binding.ValidationRules>
+                            <validators:FilepathRule MinimumCharacters="4"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <Button Command="{Binding InitBravoMonitorCommand}"
+                    Content="Initialize"
+                    Padding="4"
+                    Margin="4"/>
+            <Button Command="{Binding StartBravoMonitorCommand}"
+                    Content="Start"
+                    Padding="4"
+                    Margin="4"/>
+            <Button Command="{Binding StopBravoMonitorCommand}"
+                    Content="Stop" 
+                    Padding="4"
+                    Margin="4"/>
+            <Button Command="{Binding DestroyBravoMonitorCommand}"
+                    Content="Reset"
+                    Padding="4"
+                    Margin="4"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical"
+                    Grid.Row="7"
+                    Grid.Column="1"
+                    Margin="0,0,0,4">
+            <Label HorizontalContentAlignment="Left"
+                    Height="30"
+                    Margin="2"
+                    Background="AntiqueWhite"
+                    Content="{Binding BravoStatusMessage}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal"
+                    Grid.Row="9"
+                    Grid.Column="1">
+            <Label Content="Monitor 3 Path:"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   Height="24" />
+            <TextBox Height="24"
+                     Width="376"
+                     Margin="4"
+                     VerticalAlignment="Center"
+                     Validation.ErrorTemplate="{StaticResource errorTemplate}"
+                     IsEnabled="{Binding CharlieMonitorPathEnabled}">
+                <TextBox.Text>
+                    <Binding Path="CharlieMonitorPath" 
+                             ValidatesOnDataErrors="True" 
+                             UpdateSourceTrigger="LostFocus">
                     <Binding.ValidationRules>
                         <validators:FilepathRule MinimumCharacters="4"/>
                     </Binding.ValidationRules>
                 </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <Button x:Name="InitBravoMonitorButton"
-                Command="{Binding InitBravoMonitorCommand}"
-                Content="Initialize"
-                Padding="4"
-                Margin="4"
-                IsEnabled="{Binding BravoMonitorStopped}"/>
-        <Button x:Name="LaunchBravoMonitorButton"
-                Command="{Binding StartBravoMonitorCommand}"
-                Content="Launch"
-                Padding="4"
-                Margin="4"
-                IsEnabled="{Binding BravoMonitorInitialized}"/>
-        <Button x:Name="StopBravoMonitorButton"
-                Command="{Binding StopBravoMonitorCommand}"
-                Content="Stop" 
-                Padding="4"
-                Margin="4"
-                IsEnabled="{Binding BravoMonitorStarted}"/>
-        <Button x:Name="DestroyBravoMonitorButton"
-                Command="{Binding DestroyBravoMonitorCommand}"
-                Content="Destroy"
-                Padding="4"
-                Margin="4"
-                IsEnabled="{Binding BravoMonitorInitialized}"/>
-    </StackPanel>
+                </TextBox.Text>
+            </TextBox>
+            <Button Command="{Binding InitCharlieMonitorCommand}"
+                    Content="Initialize"
+                    Padding="4"
+                    Margin="4"/>
+            <Button Command="{Binding StartCharlieMonitorCommand}"
+                    Content="Start"
+                    Padding="4"
+                    Margin="4"/>
+            <Button Command="{Binding StopCharlieMonitorCommand}"
+                    Content="Stop" 
+                    Padding="4"
+                    Margin="4"/>
+            <Button x:Name="DestroyCharlieMonitorButton"
+                    Command="{Binding DestroyCharlieMonitorCommand}"
+                    Content="Reset"
+                    Padding="4"
+                    Margin="4"/>
+        </StackPanel>
 
-    <StackPanel Orientation="Horizontal"
-                    Grid.Row="5"
-                    Grid.Column="1">
-            <Label Content="Monitor 2 Path:"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Right"
-                   Height="24" />
-            <TextBox x:Name="CharlieMonitorPath"
-                     Height="24"
-                     Width="320"
-                     Margin="4"
-                     VerticalAlignment="Center">
-                <TextBox.Text>"Placeholder: Directory path binding and Validation Rules"
-                    <!--<Binding Path="CharliePath" 
-                             ValidatesOnDataErrors="True" 
-                             UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <local:TextboxRule MinimumCharacters="4"/>
-                    </Binding.ValidationRules>
-                </Binding>-->
-            </TextBox.Text>
-        </TextBox>
-        <Button x:Name="InitCharlieMonitorButton"
-                Command="{Binding InitAlphaMonitorCommand}"
-                Content="Initialize"
-                Padding="4"
-                Margin="4" />
-        <Button x:Name="LaunchCharlieMonitorButton"
-                Command="{Binding InitAlphaMonitorCommand}"
-                Content="Launch"
-                Padding="4"
-                Margin="4"
-                IsEnabled="False" />
-        <Button x:Name="StopCharlieMonitorButton"
-                Command="{Binding InitAlphaMonitorCommand}"
-                Content="Stop" 
-                Padding="4"
-                Margin="4" 
-                IsEnabled="False"/>
-        <Button x:Name="DestroyCharlieMonitorButton"
-                Command="{Binding InitAlphaMonitorCommand}"
-                Content="Destroy"
-                Padding="4"
-                Margin="4"
-                IsEnabled="False" />
-    </StackPanel>
-
-    <StackPanel Orientation="Vertical"
-                Grid.Row="2"
-                Grid.Column="1">
-        <Label HorizontalContentAlignment="Left"
-               Height="30"
-               Width="540"
-               Margin="2"
-               Background="AntiqueWhite"
-               Content="{Binding AlphaStatusMessage}" />
-    </StackPanel>
-
-    <StackPanel Orientation="Vertical"
-                Grid.Row="4"
-                Grid.Column="1">
-        <Label HorizontalContentAlignment="Left"
-                Height="30"
-                Width="540"
-                Margin="2"
-                Background="AntiqueWhite"
-                Content="{Binding BravoStatusMessage}" />
-    </StackPanel>
-
-
-    <StackPanel Orientation="Vertical"
-                Grid.Row="6"
-                Grid.Column="1">
-        <Label x:Name="CharlieStatusMessageLabel" 
-            HorizontalContentAlignment="Left"
-            Height="30"
-            Width="540"
-            Margin="2"
-            Background="AntiqueWhite"
-            Content="{Binding CharlieStatusMessage}" />
-    </StackPanel>
+        <StackPanel Orientation="Vertical"
+                    Grid.Row="11"
+                    Grid.Column="1"
+                    Margin="0,0,0,4">
+            <Label HorizontalContentAlignment="Left"
+                   Height="30"
+                   Margin="2"
+                   Background="AntiqueWhite"
+                   Content="{Binding CharlieStatusMessage}" />
+        </StackPanel>
 
         <StackPanel Orientation="Horizontal"
-                    Grid.Row="7"
+                    Grid.Row="13"
                     Grid.Column="1"
-                    Margin="2">
-            <StackPanel Orientation="Vertical"
-                        Background="LightBlue"
-                        MinWidth="310"
-                        Margin="2">
-                <Label x:Name="DiscoveredFilesListView"
-                       Height="178"
-                       ScrollViewer.VerticalScrollBarVisibility="Visible"
-                       ScrollViewer.CanContentScroll="True"
-                       Content="DiscoveredFilesListView Placeholder" />
-            </StackPanel>
-            <StackPanel Orientation="Vertical"
-                        MinWidth="310"
-                        Background="LightBlue"
-                        Margin="2">
-                <Label HorizontalAlignment="Left"
-                       Height="26"
-                       Margin="2"
-                       Content="Logfile Path:"/>
-                <Label HorizontalContentAlignment="Left"
-                       Height="26"
-                       Margin="2"
-                       Background="Azure"
-                       Content="{Binding LogfilePath}" />
-                <Label HorizontalAlignment="Left"
-                       Height="24"
-                       Margin="2"
-                       Content="Server and Port:"/>
-                <Label HorizontalContentAlignment="Left"
-                       Height="24"
-                       Margin="2"
-                       Background="Azure"
-                       Content="{Binding ServerNamePort}" />
-            </StackPanel>
+                    Background="LightBlue">
+            <Label HorizontalAlignment="Left"
+                    Margin="2,4"
+                    Content="Logfile Path:"/>
+            <Label HorizontalContentAlignment="Left"
+                    Width="308"
+                    Margin="2,4"
+                    Background="Azure"
+                    Content="{Binding LogfilePath}" />
+            <Label HorizontalAlignment="Left"
+                    Margin="2,4"
+                    Content="Server, Port:"/>
+            <Label HorizontalContentAlignment="Left"
+                    Width="192"
+                    Margin="2,4"
+                    Background="Azure"
+                    Content="{Binding ServerNamePort}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical"
+                    Grid.Row="15"
+                    Grid.Column="1"
+                    Background="LightBlue">
+            <ListView ItemsSource="{Binding MostRecentItems}" 
+                      Background="White" d:ItemsSource="{d:SampleData ItemCount=9}"
+                      ScrollViewer.VerticalScrollBarVisibility="Visible"
+                      Margin="4"
+                      Height="150">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="File Name"
+                                        DisplayMemberBinding="{Binding FileName}" 
+                                        Width="152"/>
+                        <GridViewColumn Header="File Path"
+                                        DisplayMemberBinding="{Binding FullFilePath}"
+                                        Width="288"/>
+                        <GridViewColumn Header="File Created"
+                                        DisplayMemberBinding="{Binding FileTimeStamp}"
+                                        Width="100"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
         </StackPanel>
 
     </Grid>
