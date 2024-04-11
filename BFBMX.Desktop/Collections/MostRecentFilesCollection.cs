@@ -42,16 +42,23 @@ namespace BFBMX.Desktop.Collections
         /// <param name="discoveredFile"></param>
         public void AddFirst(DiscoveredFileModel discoveredFile)
         {
-            DiscoveredFileLinkedListNode newNode = new();
-            newNode.Value = discoveredFile;
-            newNode.Next = Head;
-            Head = newNode;
-            Count++;
-
-            while (Count > MAXCOUNT)
+            try
             {
-                _logger.LogInformation("Reducing Most Recent Files count from {currCount} to {maxCount}.", Count, MAXCOUNT);
-                _ = RemoveLast();
+                DiscoveredFileLinkedListNode newNode = new();
+                newNode.Value = discoveredFile;
+                newNode.Next = Head;
+                Head = newNode;
+                Count++;
+
+                while (Count > MAXCOUNT)
+                {
+                    _logger.LogInformation("Reducing Most Recent Files count from {currCount} to {maxCount}.", Count, MAXCOUNT);
+                    _ = RemoveLast();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("MostRecentFilesCollection: AddFirst discovered file {discoveredFile} threw execption {exMsg}.", discoveredFile.FullFilePath, ex.Message);
             }
         }
 
@@ -99,13 +106,22 @@ namespace BFBMX.Desktop.Collections
             List<DiscoveredFileModel> result = new();
             DiscoveredFileLinkedListNode? currentNode = Head;
 
-            while (currentNode is not null)
+            try
             {
-                result.Add(currentNode!.Value!);
-                currentNode = currentNode.Next;
+                while (currentNode is not null)
+                {
+                    result.Add(currentNode!.Value!);
+                    currentNode = currentNode.Next;
+                }
+
+                _logger.LogInformation("Returning list of {count} items from the queue.", result.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("MostRecentFilesCollection: GetList threw exception, message: {exMsg}", ex.Message);
+                //throw;
             }
 
-            _logger.LogInformation("Returning list of {count} items from the queue.", result.Count);
             return result;
         }
 

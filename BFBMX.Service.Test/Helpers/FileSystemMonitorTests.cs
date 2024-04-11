@@ -7,6 +7,9 @@ namespace BFBMX.Service.Test.Helpers
     {
         private readonly string? tempPath;
         private readonly string tempFilename;
+        private readonly string AlphaMonitorName = "AlphaMonitor";
+        private readonly string BravoMonitorName = "BravoMonitor";
+        private readonly string CharlieMonitorName = "CharlieMonitor";
 
         private string? FwmTempfileFound { get; set; }
         private string? FwmErrorCallbackMessage { get; set; }
@@ -27,17 +30,21 @@ namespace BFBMX.Service.Test.Helpers
             var expectedNotifyFilter = NotifyFilters.FileName
                                      | NotifyFilters.DirectoryName
                                      | NotifyFilters.CreationTime;
-            var expectedWatcher = new FileSystemWatcher(expectedPath!);
-            expectedWatcher.NotifyFilter = expectedNotifyFilter;
-            expectedWatcher.Filter = expectedFilter;
-            expectedWatcher.IncludeSubdirectories = expectedIncludeSubdirs;
+            var expectedWatcher = new FileSystemWatcher(expectedPath!)
+            {
+                NotifyFilter = expectedNotifyFilter,
+                Filter = expectedFilter,
+                IncludeSubdirectories = expectedIncludeSubdirs
+            };
 
-            var actualWatcher = FSWatcherFactory.Create((s, e) => { }, (s, e) => { }, expectedPath!);
+            var actualWatcher = FSWatcherFactory.Create((s, e) => { }, (s, e) => { }, expectedPath!, AlphaMonitorName);
 
-            Assert.Equal(expectedPath, actualWatcher.Path);
-            Assert.Equal(expectedFilter, actualWatcher.Filter);
-            Assert.Equal(expectedIncludeSubdirs, actualWatcher.IncludeSubdirectories);
-            Assert.Equal(expectedNotifyFilter, actualWatcher.NotifyFilter);
+            Assert.Equal(expectedPath, actualWatcher.MonitoredPath);
+            FileSystemWatcher? FSWInstance = actualWatcher.GetFileSystemWatcher;
+            Assert.NotNull(FSWInstance);
+            Assert.Equal(expectedFilter, FSWInstance!.Filter);
+            Assert.Equal(expectedIncludeSubdirs, FSWInstance.IncludeSubdirectories);
+            Assert.Equal(expectedNotifyFilter, FSWInstance.NotifyFilter);
             expectedWatcher.Dispose();
             actualWatcher.Dispose();
         }
@@ -53,11 +60,12 @@ namespace BFBMX.Service.Test.Helpers
             // capture the watcher object and ensure automatic disposal if a test fails
             //using var actualWatcher =
             //    FSWatcherFactory.Create(HandleFileCreated, HandleFileWatherError, expectedPath!);
-            using var actualWatcher =
-                FSWatcherFactory.Create(HandleFileCreated, HandleFileWatherError, expectedPath!);
+            var actualWatcher = FSWatcherFactory.Create(HandleFileCreated, HandleFileWatherError, expectedPath!, BravoMonitorName);
 
             // verify starting conditions
-            Assert.Equal(expectedPath, actualWatcher.Path);
+            FileSystemWatcher? FSWInstance = actualWatcher.GetFileSystemWatcher; 
+            Assert.NotNull(FSWInstance);
+            Assert.Equal(expectedPath, actualWatcher.MonitoredPath);
             Assert.True(string.IsNullOrEmpty(FwmTempfileFound));
             Assert.True(string.IsNullOrEmpty(FwmErrorCallbackMessage));
 

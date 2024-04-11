@@ -5,6 +5,7 @@ using BFBMX.Service.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using System.Collections.ObjectModel;
 using System.IO;
 
 namespace BFBMX.Desktop.ViewModels
@@ -18,14 +19,20 @@ namespace BFBMX.Desktop.ViewModels
         private static readonly object _lock = new();
 
         private readonly ILogger<MainWindowViewModel> _logger;
+        private readonly IFileProcessor _fileProcessor;
+        private readonly IApiClient _apiClient;
 
         public readonly IDiscoveredFilesCollection _discoveredFiles;
 
         public MainWindowViewModel(ILogger<MainWindowViewModel> logger,
+            IFileProcessor fileProcessor,
+            IApiClient apiClient,
             IDiscoveredFilesCollection discoveredFilesCollection,
             IMostRecentFilesCollection mostRecentFilesCollection)
         {
             _logger = logger;
+            _fileProcessor = fileProcessor;
+            _apiClient = apiClient;
             _discoveredFiles = discoveredFilesCollection;
             MostRecentFilesCollection = mostRecentFilesCollection;
             MostRecentItems = new();
@@ -49,26 +56,71 @@ namespace BFBMX.Desktop.ViewModels
         public IMostRecentFilesCollection _mostRecentFilesCollection;
 
         [ObservableProperty]
-        public List<DiscoveredFileModel> _mostRecentItems;
+        public ObservableCollection<DiscoveredFileModel> _mostRecentItems;
 
         /***** Global Monitor Functions *****/
+
+        /// <summary>
+        /// Event Handler for all three FileSystemWatcher calls when a file created event occurs.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public async void HandleFileCreatedAsync(object sender, FileSystemEventArgs e)
         {
             _logger.LogInformation("File creation detected, waiting 1 second before reading contents.");
-            await Task.Delay(1000);
             string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
-            _logger.LogInformation("Discovered file path is {filepath}", discoveredFilepath);
+            _logger.LogInformation("Discovered file path {filepath}. Enqueuing to be processed.", discoveredFilepath);
             DiscoveredFileModel newFile = new(discoveredFilepath);
             await _discoveredFiles.EnqueueAsync(newFile);
-            lock (_lock)
+
+            // insert the new item into the collection on the UI Thread (WPF requirement)
+            App.Current.Dispatcher.Invoke(() =>
             {
-                MostRecentFilesCollection.AddFirst(newFile);
-                MostRecentItems.Clear();
-                MostRecentItems = MostRecentFilesCollection.GetList();
+                MostRecentItems.Insert(0, newFile);
+                // update the UI by adding an item to the observable collection and maintaining a max of 12 items
+                int mostRecentItemsCount = MostRecentItems.Count;
+
+                if (mostRecentItemsCount > 12)
+                {
+                    MostRecentItems.RemoveAt(mostRecentItemsCount - 1);
+                }
+            });
+
+            _logger.LogInformation("Path {discoveredFilepath} sent to screen for display.", discoveredFilepath);
+
+            /***** moved from DiscoveredFilesCollection *****/
+
+            // get machine name for File Processor
+            string? hostname = Environment.MachineName;
+            string machineName = string.IsNullOrWhiteSpace(hostname) ? "Unknown" : hostname;
+
+            // process the file for bib records
+            await Task.Delay(1000);
+            _logger.LogInformation("Sending file {newFile} to file processor.", newFile.FullFilePath);
+            WinlinkMessageModel winlinkMessage = _fileProcessor.ProcessWinlinkMessageFile(newFile.FileTimeStamp, machineName, newFile.FullFilePath);
+
+            // No bib reports found, log and return
+            if (winlinkMessage is null || winlinkMessage.BibRecords.Count <= 0)
+            {
+                _logger.LogInformation("No bibrecords found in winlinkMessage {msgName}.", newFile.FullFilePath);
+                return;
             }
-            _logger.LogInformation("Enqueued path {discoveredFilepath}", discoveredFilepath);
+
+            // send bib reports to API and log to file
+            string logPathAndFilename = Path.Combine(DesktopEnvFactory.GetBfBmxLogPath(), DesktopEnvFactory.GetBibRecordsLogFileName());
+            _logger.LogInformation("Sending {wlMsgId} bib data to logfile and API.", winlinkMessage.WinlinkMessageId);
+            bool wroteToFile = _fileProcessor.WriteWinlinkMessageToFile(winlinkMessage, logPathAndFilename);
+            bool postedToApi = await _apiClient.PostWinlinkMessageAsync(winlinkMessage.ToJsonString());
+            _logger.LogInformation("Message ID: {wlMsgId} => Wrote to file? {wroteToFile}. Posted to API? {postedToApi}. Items stored in memory: {collectionCount}.", winlinkMessage.WinlinkMessageId, wroteToFile, postedToApi, winlinkMessage.BibRecords.Count);
+
+            /***** end moved from DiscoveredFilesCollection *****/
         }
 
+        /// <summary>
+        /// The first File Watcher will call this Event Handler if there was an error.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void HandleErrorAlpha(object sender, ErrorEventArgs e)
         {
             string errMsg = e.GetException().Message;
@@ -76,6 +128,11 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("HandleError called: {errmsg}", errMsg);
         }
 
+        /// <summary>
+        /// The second File Watcher will call this Event Handler if there was an error.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void HandleErrorBravo(object sender, ErrorEventArgs e)
         {
             string errMsg = e.GetException().Message;
@@ -83,6 +140,11 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("HandleError called: {errmsg}", errMsg);
         }
 
+        /// <summary>
+        /// The third File Watcher will call this Event Handler if there was an error.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void HandleErrorCharlie(object sender, ErrorEventArgs e)
         {
             string errMsg = e.GetException().Message;
@@ -90,21 +152,21 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("HandleError called: {errmsg}", errMsg);
         }
 
-        private bool IsGoodPath(string? directoryPath)
+        /// <summary>
+        /// Tests for null or whitespace directory path, then checks that the path exists and returns true only if both are true.
+        /// </summary>
+        /// <param name="directoryPath"></param>
+        /// <returns></returns>
+        private static bool IsGoodPath(string? directoryPath)
         {
-            if (string.IsNullOrWhiteSpace(directoryPath))
-            {
-                return false;
-            }
-
-            if (Directory.Exists(directoryPath))
-            {
-                return true;
-            }
-
-            return false;
+            return !string.IsNullOrWhiteSpace(directoryPath) && Directory.Exists(directoryPath);
         }
 
+        /// <summary>
+        /// Handle helper method to set the status message for the appropriate monitor.
+        /// </summary>
+        /// <param name="monitorName"></param>
+        /// <param name="message"></param>
         private void SetStatusMessage(string? monitorName, string? message)
         {
             switch (monitorName)
@@ -260,6 +322,10 @@ namespace BFBMX.Desktop.ViewModels
             }
         }
 
+        /// <summary>
+        /// Determines if the Alpha Monitor can be initialized based on the path being set.
+        /// </summary>
+        /// <returns>True if the path is set and exists.</returns>
         public bool CanInitAlphaMonitor()
         {
             if (IsGoodPath(AlphaMonitorPath))
@@ -302,6 +368,10 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("StartAlphaMonitor: Monitor started for path {monitorPath}", AlphaMonitorPath);
         }
 
+        /// <summary>
+        /// Determines if the Alpha Monitor can be started based on its current state.
+        /// </summary>
+        /// <returns>True if not null, is not already running, and the path matches.</returns>
         public bool CanStartAlphaMonitor()
         {
             if (_alphaMonitor is null)
@@ -333,6 +403,10 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("StopAlphaMonitor button: Monitor stopped for path {monitorPath}", AlphaMonitorPath);
         }
 
+        /// <summary>
+        /// Determines if Alpha Monitor can be stopped based on its current state.
+        /// </summary>
+        /// <returns>True if not null, is already set to raise events, and the path matches.</returns>
         public bool CanStopAlphaMonitor()
         {
             if (_alphaMonitor is null)
@@ -370,6 +444,11 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("DestroyAlphaMonitor button: Monitor destroyed.");
         }
 
+        /// <summary>
+        /// Determines if Alpha Monitor can be destroyed based on its current state.
+        /// This is more lenient than the other Can methods so the operator can recover from a bad or misbehaving Monitor.
+        /// </summary>
+        /// <returns>True in nearly any case except for null.</returns>
         public bool CanDestroyAlphaMonitor()
         {
             if (_alphaMonitor is null)

@@ -2,16 +2,29 @@ using BFBMX.Service.Helpers;
 using BFBMX.Service.Models;
 using BFBMX.Service.Test.TestData;
 using System.Diagnostics;
+using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace BFBMX.Service.Test.Helpers;
 
 public class FileProcessorTests
 {
+    private readonly IFileProcessor _fileProcessor;
+    private readonly Mock<ILogger<FileProcessor>> _mockLogger;
+
+    public static string GenericWinlinkId { get => "ABC123DEF456"; }
+
+    public FileProcessorTests()
+    {
+        _mockLogger = new Mock<ILogger<FileProcessor>>();
+        _fileProcessor = new FileProcessor(_mockLogger.Object);
+    }
+
     [Fact]
     public void FileDoesNotExist_ReturnsZeroCountList()
     {
         var expectedCount = 0;
-        var actualResult = FileProcessor.GetFileData("nonexistentfile.txt");
+        var actualResult = _fileProcessor.GetFileData("nonexistentfile.txt");
         var actualCount = actualResult.Length;
         Assert.Equal(expectedCount, actualCount);
     }
@@ -36,7 +49,7 @@ public class FileProcessorTests
             }
 
             var expectedCount = 4;
-            var actualResult = FileProcessor.GetFileData(tempFile);
+            var actualResult = _fileProcessor.GetFileData(tempFile);
             var actualCount = actualResult.Length;
             Assert.Equal(expectedCount, actualCount);
 
@@ -61,30 +74,24 @@ public class FileProcessorTests
           "196\tOUT\t2009\t11\tWR"
         };
 
-        List<FlaggedBibRecordModel> actualResult = new();
-        bool strictMatches = FileProcessor.ProcessBibs(actualResult, bibList);
-        Assert.True(strictMatches);
+        List<FlaggedBibRecordModel> actualResult = _fileProcessor.GetStrictMatches(bibList).ToList();
         Assert.NotNull(actualResult);
-        var actualCount = actualResult.Count;
-        Assert.Equal(expectedCount, actualCount);
+        Assert.Equal(expectedCount, actualResult.Count);
     }
 
     [Fact]
     public void CaptureThreeBibRecordsNotStrict()
     {
-        int expectedCount = 3;
+        int expectedCount = 2;
         var bibList = new string[] {
           "115	0UT	2oo9	II	WR",
           "195	OUT	2009	11	WR",
           "196	OUT	2009	11	WR"
         };
 
-        List<FlaggedBibRecordModel> actualResult = new();
-        bool strictMatches = FileProcessor.ProcessBibs(actualResult, bibList);
-        Assert.False(strictMatches);
+        List<FlaggedBibRecordModel> actualResult = _fileProcessor.GetStrictMatches(bibList).ToList();
         Assert.NotNull(actualResult);
-        var actualCount = actualResult.Count;
-        Assert.Equal(expectedCount, actualCount);
+        Assert.Equal(expectedCount, actualResult.Count);
     }
 
     [Fact]
@@ -92,7 +99,7 @@ public class FileProcessorTests
     {
         string sampleMsg = SampleMessages.ValidSingleMesageWithSevenBibRecords;
         string expectedResult = "0K3K2DET73LU";
-        var actualResult = FileProcessor.GetMessageId(sampleMsg);
+        var actualResult = _fileProcessor.GetMessageId(sampleMsg);
         Assert.Equal(expectedResult, actualResult);
     }
 
@@ -107,9 +114,9 @@ public class FileProcessorTests
         string expectedResultBravo = "3HPR0R1L20LD";
         string expectdResultCharlie = "0K3K2DET73LU";
 
-        string actualResultAlpha = FileProcessor.GetMessageId(messageAlpha);
-        string actualResultBravo = FileProcessor.GetMessageId(messageBravo);
-        string actualResultCharlie = FileProcessor.GetMessageId(messageCharlie);
+        string actualResultAlpha = _fileProcessor.GetMessageId(messageAlpha);
+        string actualResultBravo = _fileProcessor.GetMessageId(messageBravo);
+        string actualResultCharlie = _fileProcessor.GetMessageId(messageCharlie);
 
         Assert.Equal(expectedResultAlpha, actualResultAlpha);
         Assert.Equal(expectedResultBravo, actualResultBravo);
@@ -127,8 +134,8 @@ public class FileProcessorTests
         string badRecordCharlie = "123456789012	DROPP	09	33	WR";
         string[] bibInput = { bibAlpha, bibBravo, bibCharlie, badRecordAlpha, badRecordBravo, badRecordCharlie };
 
-        var strictResult = FileProcessor.GetStrictMatches(bibInput);
-        var sloppyResult = FileProcessor.GetSloppyMatches(bibInput);
+        var strictResult = _fileProcessor.GetStrictMatches(bibInput);
+        var sloppyResult = _fileProcessor.GetSloppyMatches(bibInput);
 
         Assert.True(strictResult.Count == 3);
         foreach(var result in strictResult)
@@ -159,29 +166,29 @@ public class FileProcessorTests
         int expectedCountDelta = 26;
 
         string[] alphaLines = messageAlpha.Split('\n');
-        List< FlaggedBibRecordModel> actualStrictResultListAlpha = FileProcessor.GetStrictMatches(alphaLines);
-        List<FlaggedBibRecordModel> actualSloppyResultListAlpha = FileProcessor.GetSloppyMatches(alphaLines);
+        List< FlaggedBibRecordModel> actualStrictResultListAlpha = _fileProcessor.GetStrictMatches(alphaLines).ToList();
+        List<FlaggedBibRecordModel> actualSloppyResultListAlpha = _fileProcessor.GetSloppyMatches(alphaLines).ToList();
 
         Assert.Equal(expectedCountAlpha, actualStrictResultListAlpha.Count);
         Assert.Equal(expectedCountAlpha, actualSloppyResultListAlpha.Count);
 
         string[] bravoLines = messageBravo.Split('\n');
-        List<FlaggedBibRecordModel> actualStrictResultListBravo = FileProcessor.GetStrictMatches(bravoLines);
-        List<FlaggedBibRecordModel> actualSloppyResultListBravo = FileProcessor.GetSloppyMatches(bravoLines);
+        List<FlaggedBibRecordModel> actualStrictResultListBravo = _fileProcessor.GetStrictMatches(bravoLines).ToList();
+        List<FlaggedBibRecordModel> actualSloppyResultListBravo = _fileProcessor.GetSloppyMatches(bravoLines).ToList();
 
         Assert.Equal(expectedCountBravo, actualStrictResultListBravo.Count);
         Assert.Equal(expectedCountBravo, actualSloppyResultListBravo.Count);
 
         string[] charlieLines = messageCharlie.Split('\n');
-        List<FlaggedBibRecordModel> actualStrictResultListCharlie = FileProcessor.GetStrictMatches(charlieLines);
-        List<FlaggedBibRecordModel> actualSloppyResultListCharlie = FileProcessor.GetSloppyMatches(charlieLines);
+        List<FlaggedBibRecordModel> actualStrictResultListCharlie = _fileProcessor.GetStrictMatches(charlieLines).ToList();
+        List<FlaggedBibRecordModel> actualSloppyResultListCharlie = _fileProcessor.GetSloppyMatches(charlieLines).ToList();
 
         Assert.Equal(expectedCountCharlie, actualStrictResultListCharlie.Count);
         Assert.Equal(expectedCountCharlie, actualSloppyResultListCharlie.Count);
 
         string[] deltaLines = messageDelta.Split('\n');
-        List<FlaggedBibRecordModel> actualStrictResultListDelta = FileProcessor.GetStrictMatches(deltaLines);
-        List<FlaggedBibRecordModel> actualSloppyResultListDelta = FileProcessor.GetSloppyMatches(deltaLines);
+        List<FlaggedBibRecordModel> actualStrictResultListDelta = _fileProcessor.GetStrictMatches(deltaLines).ToList();
+        List<FlaggedBibRecordModel> actualSloppyResultListDelta = _fileProcessor.GetSloppyMatches(deltaLines).ToList();
 
         Assert.Equal(expectedCountDelta, actualStrictResultListDelta.Count);
         Assert.Equal(expectedCountDelta, actualSloppyResultListDelta.Count);
@@ -194,8 +201,8 @@ public class FileProcessorTests
         int expectedSpaceDelimitedBibs = 0; // there are 5 space-delimited bibs in the sample msg
         string[] spaceDelimitedLines = spaceDelimitedMessages.Split('\n');
 
-        List<FlaggedBibRecordModel> actualStrictResultList = FileProcessor.GetStrictMatches(spaceDelimitedLines);
-        List<FlaggedBibRecordModel> actualSloppyResultList = FileProcessor.GetSloppyMatches(spaceDelimitedLines);
+        List<FlaggedBibRecordModel> actualStrictResultList = _fileProcessor.GetStrictMatches(spaceDelimitedLines).ToList();
+        List<FlaggedBibRecordModel> actualSloppyResultList = _fileProcessor.GetSloppyMatches(spaceDelimitedLines).ToList();
 
         Assert.Equal(expectedSpaceDelimitedBibs, actualStrictResultList.Count);
         Assert.Equal(expectedSpaceDelimitedBibs, actualSloppyResultList.Count);
@@ -208,8 +215,8 @@ public class FileProcessorTests
         int expectedCommaDelimitedBibs = 0; // there are 5 comma-delimited bibs in the sample msg
         string[] commaDelimitedLines = commaDelimitedMessages.Split('\n');
 
-        List<FlaggedBibRecordModel> actualStrictResult = FileProcessor.GetStrictMatches(commaDelimitedLines);
-        List<FlaggedBibRecordModel> actualSloppyResultList = FileProcessor.GetSloppyMatches(commaDelimitedLines);
+        List<FlaggedBibRecordModel> actualStrictResult = _fileProcessor.GetStrictMatches(commaDelimitedLines).ToList();
+        List<FlaggedBibRecordModel> actualSloppyResultList = _fileProcessor.GetSloppyMatches(commaDelimitedLines).ToList();
 
         Assert.Equal(expectedCommaDelimitedBibs, actualStrictResult.Count);
         Assert.Equal(expectedCommaDelimitedBibs, actualSloppyResultList.Count);
@@ -229,13 +236,163 @@ public class FileProcessorTests
                             "123456789012\tDROPP\t09\t33\tWR",
                             "one\tDROP\t1234\t23\tWR"};
 
-        List<FlaggedBibRecordModel> actualResult = FileProcessor.GetSloppyMatches(bibList);
+        List<FlaggedBibRecordModel> actualResult = _fileProcessor.GetSloppyMatches(bibList).ToList();
         Assert.Equal(expectedCount, actualResult.Count);
 
         for (int idx = 0; idx < expectedResult.Length; idx++)
         {
-            Debug.WriteLine($"Expected: {expectedResult[idx].ToString()}");
+            Debug.WriteLine($"Expected: {expectedResult[idx]}");
             Debug.WriteLine($"Actual: {actualResult[idx].ToTabbedString()}");
         }
+    }
+
+    [Fact]
+    public void WriteWinlinkMessageToFile_WritesFileSuccessfully()
+    {
+        // Arrange
+        var targetFolder = Environment.SpecialFolder.CommonDocuments;
+        string fileName = "testFilePath";
+        string filePath = Path.Combine(Environment.GetFolderPath(targetFolder), fileName);
+        Console.WriteLine("Target filepath is: ", filePath);
+
+        FlaggedBibRecordModel mockBibRecord = new()
+        {
+            BibNumber = 123,
+            Action = "OUT",
+            BibTimeOfDay = "1234",
+            DayOfMonth = 12,
+            Location = "KT",
+            DataWarning = false
+        };
+
+        WinlinkMessageModel mockMessage = new()
+        {
+            WinlinkMessageId = "ABC123DEF456",
+            ClientHostname = "TestMachine",
+            MessageDateTime = DateTime.Now
+        };
+
+        mockMessage.BibRecords.Add(mockBibRecord);
+
+        // Act
+        var result = _fileProcessor.WriteWinlinkMessageToFile(mockMessage, filePath);
+
+        if (File.Exists(filePath))
+        {
+            Thread.Sleep(150);
+            File.Delete(filePath);
+        }
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void WriteWinlinkMessageToFile_WontWriteFileIfNoBibs()
+    {
+        // Arrange
+        var targetFolder = Environment.SpecialFolder.CommonDocuments;
+        string fileName = "testFilePath";
+        string filePath = Path.Combine(Environment.GetFolderPath(targetFolder), fileName);
+        Console.WriteLine("Target filepath is: ", filePath);
+
+        WinlinkMessageModel mockMessage = new()
+        {
+            WinlinkMessageId = "ABC123DEF456",
+            ClientHostname = "TestMachine",
+            MessageDateTime = DateTime.Now
+        };
+
+        // Act
+        var result = _fileProcessor.WriteWinlinkMessageToFile(mockMessage, filePath);
+
+        if (File.Exists(filePath))
+        {
+            Thread.Sleep(150);
+            File.Delete(filePath);
+        }
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void RecordsArrayToString_ConvertsArrayToString()
+    {
+        // Arrange
+        var array = new string[] { "Hello", "World", "!" };
+
+        // Act
+        var result = _fileProcessor.RecordsArrayToString(array);
+
+        // Assert
+        Assert.Equal("Hello\nWorld\n!\n", result);
+    }
+
+    [Fact]
+    public void ProcessWinlinkMessageFile_ProcessesFileSuccessfully()
+    {
+        // Arrange
+        var timestamp = DateTime.Now;
+        var machineName = "TestMachine";
+        var filePath = "testFilePath.txt";
+
+        // Create a test file
+        File.WriteAllText(filePath, SampleMessages.ValidSingleMesageWithSevenBibRecords);
+
+        // Act
+        var result = _fileProcessor.ProcessWinlinkMessageFile(timestamp, machineName, filePath);
+
+        // Assert
+        Assert.NotNull(result);
+
+        // Clean up the test file
+        File.Delete(filePath);
+    }
+
+    [Fact]
+    public void ProcessBibs_ProcessesBibsSuccessfully()
+    {
+        // Arrange
+        int expectedCount = 5;
+        List<FlaggedBibRecordModel> bibRecords = new();
+        string messageId = "ABC123DEF456";
+
+        var lines = new string[] {
+        "Content-Transfer-Encoding: quoted - printable",
+        "",
+        "-",
+        "10\tOUT\t834\t13\tCH",
+        "10\tIN\t748\t13\tCH",
+        "34\tOUT\t449\t13\tCH",
+        "34\tIN\t406\t13\tCH",
+        "37\tOUT\t855\t13\tCH",
+        "-----",
+        "* The entries in this email are TAB delimited. This allows you to copy and =\r\npaste into a spreadsheet."
+        };
+
+        // Act
+        bibRecords = _fileProcessor.ProcessBibs(lines, messageId);
+
+        // Assert
+        Assert.NotEmpty(bibRecords);
+        Assert.Equal(expectedCount, bibRecords.Count);
+    }
+    [Fact]
+    public void FileProcessor_ProcessBibLikeMessageContentShouldFindNone()
+    {
+        int expectedCount = 0;
+        string messageId = "ABC123DEF456";
+
+        string[] lines =
+        {
+            "\r\n", "\r\n", "306\r\n", "317\r\n", "318\r\n", "322\r\n", "339\r\n", "343\r\n", "348\r\n", "351\r\n", "357\r\n", "359\r\n", "366\r\n", "372\r\n", "374\r\n",
+            "396\r\n", "402\r\n", "403\r\n", "404\r\n", "\r\n\r\nJ"
+        };
+
+        List<FlaggedBibRecordModel> actualResult = _fileProcessor.ProcessBibs(lines, messageId);
+
+        Assert.Empty(actualResult);
+        Assert.Equal(expectedCount, actualResult.Count);
     }
 }

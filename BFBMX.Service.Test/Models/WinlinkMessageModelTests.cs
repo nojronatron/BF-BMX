@@ -5,6 +5,9 @@ namespace BFBMX.Service.Test.Models;
 
 public class WinlinkMessageModelTests
 {
+    public string NoDataWarningText => "NOMINAL";
+    public string DataWarningText => "ALERT";
+
     [Fact]
     public void InstantiateAllFields()
     {
@@ -204,7 +207,7 @@ public class WinlinkMessageModelTests
             }
         };
 
-        var expected = "1\tIN\t1314\t2\ttest-location";
+        var expected = $"{NoDataWarningText}\t1\tIN\t1314\t2\ttest-location";
         var actual = sut.BibRecords[0].ToTabbedString();
         Assert.Equal(expected, actual);
     }
@@ -233,7 +236,7 @@ public class WinlinkMessageModelTests
             }
         };
 
-        var oneLineExpected = "ABCDEFGHIJKL\ttest-hostname\t1\tIN\t1314\t2\ttest-location\r\n";
+        var oneLineExpected = $"ABCDEFGHIJKL\ttest-hostname\t{NoDataWarningText}\t1\tIN\t1314\t2\ttest-location\r\n";
         var oneLineActual = sut.ToServerAuditTabbedString();
         Debug.WriteLine($"Expected:\r\n{oneLineExpected}\r\nActual:\r\n{oneLineActual}");
         Assert.Equal(oneLineExpected, oneLineActual);
@@ -249,7 +252,7 @@ public class WinlinkMessageModelTests
         };
         sut.BibRecords.Add(newRecord);
 
-        var twoLinesExpected = "ABCDEFGHIJKL\ttest-hostname\t1\tIN\t1314\t2\ttest-location\r\nABCDEFGHIJKL\ttest-hostname\t1\tOUTT\t2014\t2\ttest-location\tWarning\r\n";
+        var twoLinesExpected = $"ABCDEFGHIJKL\ttest-hostname\t{NoDataWarningText}\t1\tIN\t1314\t2\ttest-location\r\nABCDEFGHIJKL\ttest-hostname\t{DataWarningText}\t1\tOUTT\t2014\t2\ttest-location\r\n";
         string twoLinesActual = sut.ToServerAuditTabbedString();
         Debug.WriteLine($"Expected:\r\n{twoLinesExpected}\r\nActual:\r\n{twoLinesActual}");
         Assert.Equal(twoLinesExpected, twoLinesActual);
@@ -279,7 +282,7 @@ public class WinlinkMessageModelTests
             }
         };
 
-        var expected = "ABCDEFGHIJKL\ttest-hostname\t1\tIN\t1314\t2\ttest-location\tWarning\r\n";
+        var expected = $"ABCDEFGHIJKL\ttest-hostname\t{DataWarningText}\t1\tIN\t1314\t2\ttest-location\r\n";
         var oneLIneActual = sut.ToServerAuditTabbedString();
         Debug.WriteLine($"Expected:\r\n{expected}\r\nActual:\r\n{oneLIneActual}");
         Assert.Equal(expected, oneLIneActual);
@@ -310,7 +313,7 @@ public class WinlinkMessageModelTests
             }
         };
 
-        var oneLineExpected = "ABCDEFGHIJKL\t2024-01-02T13-12-11\t1\tIN\t1314\t2\ttest-location\r\n";
+        var oneLineExpected = $"ABCDEFGHIJKL\t2024-01-02T13-12-11\t{NoDataWarningText}\t1\tIN\t1314\t2\ttest-location\r\n";
         var oneLineActual = sut.ToAccessDatabaseTabbedString();
         Debug.WriteLine($"Expected:\r\n{oneLineExpected}\r\nActual:\r\n{oneLineActual}");
         Assert.Equal(oneLineExpected, oneLineActual);
@@ -326,7 +329,7 @@ public class WinlinkMessageModelTests
         };
         sut.BibRecords.Add(newRecord);
 
-        var twoLinesExpected = "ABCDEFGHIJKL\t2024-01-02T13-12-11\t1\tIN\t1314\t2\ttest-location\r\nABCDEFGHIJKL\t2024-01-02T13-12-11\t1\tOUTT\t2014\t2\ttest-location\tWarning\r\n";
+        var twoLinesExpected = $"ABCDEFGHIJKL\t2024-01-02T13-12-11\t{NoDataWarningText}\t1\tIN\t1314\t2\ttest-location\r\nABCDEFGHIJKL\t2024-01-02T13-12-11\t{DataWarningText}\t1\tOUTT\t2014\t2\ttest-location\r\n";
         string twoLinesActual = sut.ToAccessDatabaseTabbedString();
         Debug.WriteLine($"Expected:\r\n{twoLinesExpected}\r\nActual:\r\n{twoLinesActual}");
         Assert.Equal(twoLinesExpected, twoLinesActual);
