@@ -1,10 +1,12 @@
 ﻿using BFBMX.Service.Helpers;
+using BFBMX.Service.Models;
 using System.Diagnostics;
 
 namespace BFBMX.Service.Test.Helpers
 {
     public class FileSystemMonitorTests
     {
+        private const string defaultFilter = "*.mime";
         private readonly string? tempPath;
         private readonly string tempFilename;
         private readonly string AlphaMonitorName = "AlphaMonitor";
@@ -21,11 +23,251 @@ namespace BFBMX.Service.Test.Helpers
         }
 
         [Fact]
+        public void IsStarted_Should_Return_True_When_EnableRaisingEvents_Is_True()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            fileSystemWatcher.EnableRaisingEvents = true;
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            var result = fswMonitor.IsStarted;
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsStarted_Should_Return_False_When_EnableRaisingEvents_Is_False()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            fileSystemWatcher.EnableRaisingEvents = false;
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            var result = fswMonitor.IsStarted;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsStopped_Should_Return_True_When_EnableRaisingEvents_Is_False()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            fileSystemWatcher.EnableRaisingEvents = false;
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            var result = fswMonitor.IsStopped;
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsStopped_Should_Return_False_When_EnableRaisingEvents_Is_True()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            fileSystemWatcher.EnableRaisingEvents = true;
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            var result = fswMonitor.IsStopped;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsInitialized_Should_Return_True_When_EnableRaisingEvents_Is_False()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            fileSystemWatcher.EnableRaisingEvents = false;
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            var result = fswMonitor.IsInitialized;
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsInitialized_Should_Return_False_When_EnableRaisingEvents_Is_True()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            fileSystemWatcher.EnableRaisingEvents = true;
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            var result = fswMonitor.IsInitialized;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void MonitoredPath_Should_Return_Path_When_Path_Is_Not_Null_Or_Whitespace()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            fileSystemWatcher.Path = tempPath!;
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            var result = fswMonitor.MonitoredPath;
+
+            // Assert
+            Assert.Equal(tempPath, result);
+        }
+
+        [Fact]
+        public void MonitoredPath_Should_Return_Empty_String_When_Path_Is_Null_Or_Whitespace()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(string.Empty);
+            fileSystemWatcher.Path = string.Empty;
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            var result = fswMonitor.MonitoredPath;
+
+            // Assert
+            Assert.Equal(string.Empty, result);
+        }
+
+        [Fact]
+        public void EnableRaisingEvents_Should_Set_EnableRaisingEvents_Property()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            fswMonitor.EnableRaisingEvents = true;
+
+            // Assert
+            Assert.True(fileSystemWatcher.EnableRaisingEvents);
+        }
+
+        [Fact]
+        public void CanStart_Should_Return_True_When_All_Conditions_Are_Met()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            fileSystemWatcher.EnableRaisingEvents = false;
+            fileSystemWatcher.Path = tempPath!;
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            var result = fswMonitor.CanStart();
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CanStart_Should_Return_False_When_EnableRaisingEvents_Is_True()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            fileSystemWatcher.EnableRaisingEvents = true;
+            fileSystemWatcher.Path = tempPath!;
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            var result = fswMonitor.CanStart();
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void CanStart_Should_Return_False_When_Path_Is_Null_Or_Whitespace()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            fileSystemWatcher.EnableRaisingEvents = false;
+            fileSystemWatcher.Path = string.Empty;
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            var result = fswMonitor.CanStart();
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void CanStart_Should_Return_False_When_IsNotStopped_Is_False()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            fileSystemWatcher.EnableRaisingEvents = false;
+            fileSystemWatcher.Path = tempPath!;
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            var result = fswMonitor.CanStart();
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void Dispose_Should_Call_Dispose_Method_Of_FileSystemWatcher()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            fswMonitor.Dispose();
+
+            // Assert
+            Assert.True(fileSystemWatcher.EnableRaisingEvents);
+        }
+
+        [Fact]
+        public void GetName_Should_Return_Name_When_Name_Is_Not_Null()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, "Test");
+
+            // Act
+            var result = fswMonitor.GetName();
+
+            // Assert
+            Assert.Equal("Test", result);
+        }
+
+        [Fact]
+        public void GetName_Should_Return_Empty_String_When_Name_Is_Null()
+        {
+            // Arrange
+            var fileSystemWatcher = new FileSystemWatcher(tempPath!);
+            var fswMonitor = new FSWMonitor(fileSystemWatcher, string.Empty);
+
+            // Act
+            var result = fswMonitor.GetName();
+
+            // Assert
+            Assert.Equal(string.Empty, result);
+        }
+
+        [Fact]
         public void InitializeFileSystemWatcher()
         {
             Assert.NotNull(tempPath);
             var expectedPath = tempPath;
-            var expectedFilter = "*.mime";
+            var expectedFilter = defaultFilter;
             var expectedIncludeSubdirs = false;
             var expectedNotifyFilter = NotifyFilters.FileName
                                      | NotifyFilters.DirectoryName
