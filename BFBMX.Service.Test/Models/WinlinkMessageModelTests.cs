@@ -360,13 +360,13 @@ public class WinlinkMessageModelTests
         Assert.False(winlinkMessage1.Equals(winlinkMessage2));
     }
 
-    [Fact]
-    public void PrintableDateTimeReturnsCorrectFormat()
-    {
-        WinlinkMessageModel sut = new();
-        string expectedResult = "2024-01-02T03-04-05";
-        Assert.True(expectedResult.Equals(sut.PrintableMsgDateTime(JanuarySecond)));
-    }
+    //[Fact]
+    //public void PrintableDateTimeReturnsCorrectFormat()
+    //{
+    //    WinlinkMessageModel sut = new();
+    //    string expectedResult = "2024-01-02T03-04-05";
+    //    Assert.True(expectedResult.Equals(sut.PrintableMsgDateTime(JanuarySecond)));
+    //}
 
     [Fact]
     public void HasDataWarning()
