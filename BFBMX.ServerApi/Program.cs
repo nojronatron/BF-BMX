@@ -81,25 +81,16 @@ app.MapPost("/WinlinkMessage", (WinlinkMessageModel request) =>
     bool loggedInTabDelimitedFormat = false;
     try
     {
-        loggedInTabDelimitedFormat = bibRecordLogger.LogFlaggedRecordsTabDelimited(request);
+        //loggedInTabDelimitedFormat = bibRecordLogger.LogFlaggedRecordsTabDelimited(request);
+        loggedInTabDelimitedFormat = bibRecordLogger.LogWinlinkMessagePayloadToTabDelimitedFile(request);
     }
     catch (Exception ex)
     {
         app.Logger.LogWarning("MapPost Exception caught at LogFlaggedRecordsTabDelimited(request) call! {exceptionMessage}\n{exceptionTrace}", ex.Message, ex.StackTrace);
     }
 
-    bool wroteToJsonAuditFile = false;
-    try
-    {
-        wroteToJsonAuditFile = bibRecordLogger.LogWinlinkMessagePayloadToJsonAuditFile(request);
-    }
-        catch (Exception ex)
-    {
-        app.Logger.LogWarning("MapPost Exception caught at LogWinlinkMessagePayloadToJsonAuditFile(request) call! {exceptionMessage}\n{exceptionTrace}", ex.Message, ex.StackTrace);
-    }
-
     // return 200 OK or 400 Bad Request
-    if (addedRecordsToCollection && loggedInTabDelimitedFormat && wroteToJsonAuditFile)
+    if (addedRecordsToCollection && loggedInTabDelimitedFormat)
     {
         Results.Ok();
     }
