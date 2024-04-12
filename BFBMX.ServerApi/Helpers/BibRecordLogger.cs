@@ -55,7 +55,66 @@ namespace BFBMX.ServerApi.Helpers
         }
 
         /// <summary>
-        /// Writes Winlink Message payload to a JSON formatted file for auditing.
+        /// Write a Winlink Message payload to a tab-delimited file named after the Winlink ID, for AccessDB importing.
+        /// </summary>
+        /// <param name="wlMessagePayload"></param>
+        /// <returns>True if able to open a new file and write contents, otherwise false.</returns>
+        public bool LogWinlinkMessagePayloadToTabDelimitedFile(WinlinkMessageModel wlMessagePayload)
+        {
+            string? bfBmxLogPath = string.Empty;
+
+            try
+            {
+                if (ValidateServerVariables(out bfBmxLogPath))
+                {
+                    string bfBmxLogFilePath = Path.Combine(bfBmxLogPath!, wlMessagePayload.ToFilename()); // ABC123CDE456.txt
+
+                    lock (LockObject)
+                    {
+                        using (StreamWriter file = File.AppendText(bfBmxLogFilePath))
+                        {
+                            file.Write(wlMessagePayload.ToAccessDatabaseTabbedString());
+                        }
+                    }
+
+                    _logger.LogInformation("Wrote 1 Winlink Message payload to Access DB file {logFile}", bfBmxLogFilePath);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogError("Unable to get path for logging Access DB file! Check Environment Variables and restart the server in order to log Winlink Message payloads!");
+                }    
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning("An unexpected error occurred while attempting to log the Winlink Message payload to the Access DB file: {ex}", ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning("An agument was incorrect or null while attempting to log the Winlink Message payload to the Access DB file: {ex}", ex.Message);
+            }
+            catch (PathTooLongException ex)
+            {
+                _logger.LogWarning("Path {bfbmxpath} is too long! Set the Environment Variable and restart the server in order to log Winlink Message payloads!", bfBmxLogPath);
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                _logger.LogWarning("Path {bfbmxpath} was not found! Set the Environment Variable to a directory that exists and restart the server in order to log Winlink Message payloads!", bfBmxLogPath);
+            }
+            catch (NotSupportedException ex)
+            {
+                _logger.LogWarning("Unable to read, seek, or write to the Access DB file: {bfBmxLogPath}. Set the Environment Variable to a directory that you have read and write access to and restart the server to try again.", bfBmxLogPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("An unexpected error occurred while attempting to log the Winlink Message payload to the Access DB file: {ex}", ex.Message);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// DEPRECATED! Writes Winlink Message payload to a JSON formatted file for auditing.
         /// </summary>
         /// <param name="wlMessagePayload"></param>
         /// <returns></returns>
@@ -110,7 +169,7 @@ namespace BFBMX.ServerApi.Helpers
         }
 
         /// <summary>
-        /// Writes a Winlink Message payload to a tab-delimited log file for AccessDB importing.
+        /// DEPRECATED! Writes a Winlink Message payload to a tab-delimited log file for AccessDB importing.
         /// </summary>
         /// <param name="wlMessagePayload"></param>
         /// <returns></returns>
