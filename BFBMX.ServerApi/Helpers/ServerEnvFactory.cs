@@ -2,7 +2,7 @@
 {
     public class ServerEnvFactory : IServerEnvFactory
     {
-        public string GetuserProfilePath()
+        public string GetUserProfilePath()
         {
             string? userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
             string upPath = string.IsNullOrWhiteSpace(userProfilePath) ? @"C:\" : userProfilePath;
@@ -25,7 +25,7 @@
 
         public string GetServerLogPath()
         {
-            string userProfilePath = GetuserProfilePath();
+            string userProfilePath = GetUserProfilePath();
             string logDirectory = GetServerFolderName();
             string serverLogPath = System.IO.Path.Combine(userProfilePath, "Documents", logDirectory);
             return serverLogPath;

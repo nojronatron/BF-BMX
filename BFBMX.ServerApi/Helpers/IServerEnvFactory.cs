@@ -6,6 +6,6 @@
         string GetServerBackupFileNameAndPath();
         string GetServerFolderName();
         string GetServerLogPath();
-        string GetuserProfilePath();
+        string GetUserProfilePath();
     }
 }
