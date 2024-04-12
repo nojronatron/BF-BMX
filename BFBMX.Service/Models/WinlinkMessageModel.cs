@@ -52,7 +52,7 @@ public class WinlinkMessageModel
     /// </summary>
     /// <param name="dateTimeEntry"></param>
     /// <returns></returns>
-    public string PrintableMsgDateTime(DateTime dateTimeEntry)
+    public static string PrintableMsgDateTime(DateTime dateTimeEntry)
     {
         return dateTimeEntry.ToString("yyyy-MM-ddTHH-mm-ss");
     }
@@ -63,9 +63,6 @@ public class WinlinkMessageModel
     /// <returns>String concatenation of this.WinlinkMessageId with file extension ".txt"</returns>
     public string ToFilename()
     {
-        // learn.microsoft.com: 2009-06-15T13:45:30 (DateTimeKind.Local) -> 2009-06-15T13:45:30
-        //string customFormatPattern = PrintableMsgDateTime(MessageDateStamp);
-        //string customFormatPattern = PrintableMsgDateTime(FileCreatedTimeStamp);
         return $"{WinlinkMessageId}.txt";
     }
 
