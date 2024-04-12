@@ -21,9 +21,7 @@ namespace BFBMX.ServerApi.Helpers
         /// <returns>True if able to open a new file and write contents, otherwise false.</returns>
         public bool LogWinlinkMessagePayloadToTabDelimitedFile(WinlinkMessageModel wlMessagePayload)
         {
-            string bfBmxLogPath = Path.Combine(_serverEnvFactory.GetUserProfilePath(),
-                                               _serverEnvFactory.GetServerLogPath(),
-                                               _serverEnvFactory.GetServerFolderName()); ;
+            string bfBmxLogPath = _serverEnvFactory.GetServerLogPath();
 
             string bfBmxLogFilePath = Path.Combine(bfBmxLogPath!, wlMessagePayload.ToFilename()); // ABC123CDE456.txt
 
