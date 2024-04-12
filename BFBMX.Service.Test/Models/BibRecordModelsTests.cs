@@ -188,5 +188,99 @@ namespace BFBMX.Service.Test.Models
 
             Assert.Equal(expectedWarningData, actualWarningData);
         }
+
+        [Fact]
+        public void ZeroHundredHourBibTimeIncludesLeadingZeros()
+        {
+            // arrange
+            string expectedResult = "NOMINAL\t1\tIN\t0001\t2\tTL";
+
+            FlaggedBibRecordModel bibEntry = new()
+            {
+                BibNumber = 1,
+                Action = "IN",
+                BibTimeOfDay = "0001",
+                DayOfMonth = 2,
+                Location = "TL",
+                DataWarning = false
+            };
+
+            // act
+            string actualResult = bibEntry.ToTabbedString();
+
+            // assert
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+        [Fact]
+        public void ZeroHundredTenHourBibTimeIncludesLeadingZeros()
+        {
+            // arrange
+            string expectedResult = "NOMINAL\t1\tIN\t0010\t2\tTL";
+
+            FlaggedBibRecordModel bibEntry = new()
+            {
+                BibNumber = 1,
+                Action = "IN",
+                BibTimeOfDay = "0010",
+                DayOfMonth = 2,
+                Location = "TL",
+                DataWarning = false
+            };
+
+            // act
+            string actualResult = bibEntry.ToTabbedString();
+
+            // assert
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+        [Fact]
+        public void SloppyBibTimeIncludesLeadingZeros()
+        {
+            // arrange
+            string expectedResult = "ALERT\t1\tIN\t0E01\t2\tTL";
+
+            FlaggedBibRecordModel bibEntry = new()
+            {
+                BibNumber = 1,
+                Action = "IN",
+                BibTimeOfDay = "0E01",
+                DayOfMonth = 2,
+                Location = "TL",
+                DataWarning = true
+            };
+
+            // act
+            string actualResult = bibEntry.ToTabbedString();
+
+            // assert
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+        [Fact]
+        public void SloppyBibTime27Characters()
+        {
+            // note: the Matcher methods have the character limit restriction
+            // arrange
+            string expectedResult = "ALERT\t1\tIN\t0123456789ABCDEFGHIJ123456\t2\tTL";
+
+            FlaggedBibRecordModel bibEntry = new()
+            {
+                BibNumber = 1,
+                Action = "IN",
+                BibTimeOfDay = "0123456789ABCDEFGHIJ123456",
+                DayOfMonth = 2,
+                Location = "TL",
+                DataWarning = true
+            };
+
+            // act
+            string actualResult = bibEntry.ToTabbedString();
+
+            // assert
+            Assert.Equal(expectedResult, actualResult);
+        }
+
     }
 }
