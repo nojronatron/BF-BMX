@@ -9,18 +9,20 @@ namespace BFBMX.ServerApi.Helpers;
 /// </summary>
 public class DataExImService : IDataExImService
 {
+    private readonly IServerEnvFactory _serverEnvFactory;
     private readonly ILogger<DataExImService> _logger;
 
-    public DataExImService(ILogger<DataExImService> logger)
+    public DataExImService(ILogger<DataExImService> logger, IServerEnvFactory serverEnvFactory)
     {
         _logger = logger;
+        _serverEnvFactory = serverEnvFactory;
     }
 
     public List<WinlinkMessageModel> ImportFileData()
     {
         List<WinlinkMessageModel> result = new();
 
-        string backupFilePath = Path.Combine(ServerEnvFactory.GetServerBackupFileNameAndPath());
+        string backupFilePath = Path.Combine(_serverEnvFactory.GetServerBackupFileNameAndPath());
 
         _logger.LogInformation("Attempting to read backup file {backupFilePath}.", backupFilePath);
 
@@ -55,7 +57,7 @@ public class DataExImService : IDataExImService
 
         if (data.Count > 0)
         {
-            string fileNameAndPath = ServerEnvFactory.GetServerBackupFileNameAndPath();
+            string fileNameAndPath = _serverEnvFactory.GetServerBackupFileNameAndPath();
             _logger.LogInformation("Backup Filename {filenameAndPath} set.", fileNameAndPath);
 
             try

@@ -1,29 +1,29 @@
 ﻿namespace BFBMX.ServerApi.Helpers
 {
-    public static class ServerEnvFactory
+    public class ServerEnvFactory : IServerEnvFactory
     {
-        public static string GetuserProfilePath()
+        public string GetuserProfilePath()
         {
             string? userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
             string upPath = string.IsNullOrWhiteSpace(userProfilePath) ? @"C:\" : userProfilePath;
             return upPath;
         }
 
-        public static string GetServerFolderName()
+        public string GetServerFolderName()
         {
             string? logDirectory = Environment.GetEnvironmentVariable("BFBMX_SERVER_FOLDER_NAME");
             string sfName = string.IsNullOrWhiteSpace(logDirectory) ? "BFBMX" : logDirectory;
             return sfName;
         }
 
-        public static string GetServerBackupFilename()
+        public string GetServerBackupFilename()
         {
             string? bbBackupFilename = Environment.GetEnvironmentVariable("BFBMX_BACKUP_FILE_NAME");
             string backupFileName = string.IsNullOrWhiteSpace(bbBackupFilename) ? "BFBMX-LocalDb-Backup.txt" : bbBackupFilename;
             return backupFileName;
         }
 
-        public static string GetServerLogPath()
+        public string GetServerLogPath()
         {
             string userProfilePath = GetuserProfilePath();
             string logDirectory = GetServerFolderName();
@@ -31,11 +31,11 @@
             return serverLogPath;
         }
 
-        public static string GetServerBackupFileNameAndPath()
+        public string GetServerBackupFileNameAndPath()
         {
             string backupFilePathAndName = Path.Combine(
-                ServerEnvFactory.GetServerLogPath(),
-                ServerEnvFactory.GetServerBackupFilename()
+                GetServerLogPath(),
+                GetServerBackupFilename()
                 );
             return backupFilePathAndName;
         }
