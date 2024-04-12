@@ -11,6 +11,16 @@ The overarching goal of this project is to create a synchronization tool that wi
 
 ## Project Status
 
+10-Apr-2024:
+
+- Added functional 3rd monitor.
+- Updated Monitor Status Message content and behavior.
+- Block configuring Monitors with duplicate file paths (although parent and child paths are allowed).
+- Added checks to fend against edge-case Monitor states.
+- Updated BibRecord detection pattern and processing.
+- Rearranged BibRecord logging format to be tab-delimited entries: `[Winlink ID] [DateTime] [WarningFlag] [Bib Number] [Bib Action] [Bib Time] [Day Of Month] [Location]`
+- Fixed concurrency bugs in Monitor processing.
+
 5-Apr-2024:
 
 - Added UI feature that displays latest detected file paths.
@@ -142,12 +152,14 @@ How to Set Environment Variables so they survive logout/restart:
 11. Click `OK`.
 12. Repeat steps 8-11 until all environment variable names and values have been entered.
 13. `Close` the Environment Variables window and the System Properties window.
-14. Start the BF-BMX Desktop application and/or Server.
 
+The computer operator(s) can then start the BF-BMX Desktop application(s) and Server Service.
 
 ## Notes and Limitations
 
-- Messages can be forwarded by intermediary stations. This is different than an RMS _relay_ where message content is not changed. When an intermediary operator clicks "Forward" the original message body is not changed but new headers are added: Date-Time, From, Message-ID, etc, and the Subject line is modified - prefixed with "FW: ". The Message ID that this program tracks is the one that is attached to the outermost message header, not any attachments or forwarded headers. This should make it easier to sift through Winlink Message IDs at the receiving station to find a message with possible data problems.
+- There is no way to ensure that a human-forwarded message is not altered in some. This software will not detect that type of change, and will assume the forwarded message is a valid candidate for processing a direct P2P or RMS-relayed Winlink Message.
+- This software is designed to work specifically with tab-delimimted data. In the future, other delimiters may become available and will be documented here.
+- There are conditions under which this software may not detect a newly created file in a monitored folder. While the author has made every effort to minimize these events from happening, it is not outside the realm of possibility. It is up to the Desktop App operator and the Server Service operator to review log files to ensure data is being processed as expected.
 
 ## Timeline
 
