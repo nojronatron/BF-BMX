@@ -259,7 +259,7 @@ public class WinlinkMessageModelTests
     }
 
     [Fact]
-    public void MessageToStringWithWarning()
+    public void MessageToServerAuditTabbedWithWarning()
     {
         var bibEntry = new FlaggedBibRecordModel
         {
