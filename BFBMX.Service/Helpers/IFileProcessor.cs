@@ -4,7 +4,7 @@ namespace BFBMX.Service.Helpers
 {
     public interface IFileProcessor
     {
-        HashSet<FlaggedBibRecordModel> GetBibMatches(string[] fileDataLines, string pattern);
+        HashSet<FlaggedBibRecordModel> GetBibMatches(string[] fileDataLines, string pattern, bool flag=false);
         string[] GetFileData(string fullFilePath);
         string GetMessageId(string fileData);
         HashSet<FlaggedBibRecordModel> GetSloppyMatches(string[] lines);
