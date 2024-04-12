@@ -13,6 +13,15 @@ public class WinlinkMessageModel
     public DateTime FileCreatedTimeStamp { get; set; } // the time the file was created on the Desktop App
     public List<FlaggedBibRecordModel> BibRecords { get; set; } = new List<FlaggedBibRecordModel>();
 
+    /// <summary>
+    /// Guaranteed returns a fully hydrated Winlink Message entity with the provided parameters.
+    /// </summary>
+    /// <param name="winlinkMessageId"></param>
+    /// <param name="messageDateTime"></param>
+    /// <param name="clientHostname"></param>
+    /// <param name="fileCreatedDateTime"></param>
+    /// <param name="bibRecords"></param>
+    /// <returns></returns>
     public static WinlinkMessageModel GetWinlinkMessageInstance(string? winlinkMessageId,
                                                                 DateTime messageDateTime,
                                                                 string? clientHostname,
@@ -29,30 +38,51 @@ public class WinlinkMessageModel
         };
     }
 
+    /// <summary>
+    /// Tests if this Winlink Message entity has any Bib Records with Data Warnings.
+    /// </summary>
+    /// <returns></returns>
     public bool HasDataWarning()
     {
         return BibRecords.Any(x => x.DataWarning);
     }
 
+    /// <summary>
+    /// Generates a printable string representation of the DateTime parameter provided in yyyy-MM-ddTHH-mm-ss format.
+    /// </summary>
+    /// <param name="dateTimeEntry"></param>
+    /// <returns></returns>
     public string PrintableMsgDateTime(DateTime dateTimeEntry)
     {
         return dateTimeEntry.ToString("yyyy-MM-ddTHH-mm-ss");
     }
 
+    /// <summary>
+    /// Converts WinlinkID to a filename for storing a Winlink Message entity to disk.
+    /// </summary>
+    /// <returns>String concatenation of this.WinlinkMessageId with file extension ".txt"</returns>
     public string ToFilename()
     {
         // learn.microsoft.com: 2009-06-15T13:45:30 (DateTimeKind.Local) -> 2009-06-15T13:45:30
         //string customFormatPattern = PrintableMsgDateTime(MessageDateStamp);
-        string customFormatPattern = PrintableMsgDateTime(FileCreatedTimeStamp);
-        return $"{WinlinkMessageId}-{customFormatPattern}.txt";
+        //string customFormatPattern = PrintableMsgDateTime(FileCreatedTimeStamp);
+        return $"{WinlinkMessageId}.txt";
     }
 
+    /// <summary>
+    /// Returns a Json serialized representation of this Winlink Message entity, used for web POSTing and auditing.
+    /// </summary>
+    /// <returns></returns>
     public string ToJsonString()
     {
-        // for sending data over the wire
         return JsonSerializer.Serialize<WinlinkMessageModel>(this);
     }
 
+
+    /// <summary>
+    /// Generate a plain text, tab delimited representation of Bib Records within this Winlink Message entity for consumption by MS Access project.
+    /// </summary>
+    /// <returns></returns>
     public string ToAccessDatabaseTabbedString()
     {
         string recordPrefix = $"{WinlinkMessageId}\t{PrintableMsgDateTime(MessageDateStamp)}\t";
@@ -66,20 +96,11 @@ public class WinlinkMessageModel
         return sbBibData.ToString();
     }
 
-    public string ToServerAuditTabbedString()
-    {
-        string sbHeader = $"{WinlinkMessageId}\t{ClientHostname}\t";
-        StringBuilder sbBibData = new();
-        
-        foreach (var record in BibRecords)
-        {
-            sbBibData.Append(sbHeader).AppendLine(record.ToTabbedString());
-        }
-
-        return sbBibData.ToString();
-    }
-
-    // for sake of comparing entities
+    /// <summary>
+    /// Equals method override used for comparing Winlink Message Entities for equality.
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
     public override bool Equals(object? obj)
     {
         if (obj is WinlinkMessageModel other)
@@ -94,7 +115,10 @@ public class WinlinkMessageModel
         return false;
     }
 
-    // for sake of comparing entities
+    /// <summary>
+    /// GetHashCode override used for comparing Winlink Message Entities for equality.
+    /// </summary>
+    /// <returns></returns>
     public override int GetHashCode()
     {
         int hash = 17;
