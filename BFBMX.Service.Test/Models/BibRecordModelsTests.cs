@@ -259,6 +259,121 @@ namespace BFBMX.Service.Test.Models
         }
 
         [Fact]
+        public void BibTimeFieldSingleCharacterLeftPadsWith3Zeros()
+        {
+            // arrange
+            string expectedResult = "NOMINAL\t1\tIN\t0001\t2\tTL";
+
+            FlaggedBibRecordModel bibEntry = new()
+            {
+                BibNumber = 1,
+                Action = "IN",
+                BibTimeOfDay = "1",
+                DayOfMonth = 2,
+                Location = "TL",
+                DataWarning = false
+            };
+
+            // act
+            string actualResult = bibEntry.ToTabbedString();
+
+            // assert
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+        [Fact]
+        public void BibTimeFieldTenMintuesCharactersLeftPadsWith2Zeros()
+        {
+            // arrange
+            string expectedResult = "NOMINAL\t1\tIN\t0010\t2\tTL";
+
+            FlaggedBibRecordModel bibEntry = new()
+            {
+                BibNumber = 1,
+                Action = "IN",
+                BibTimeOfDay = "10",
+                DayOfMonth = 2,
+                Location = "TL",
+                DataWarning = false
+            };
+
+            // act
+            string actualResult = bibEntry.ToTabbedString();
+
+            // assert
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+        [Fact]
+        public void BibTimeFieldSingleHoursCharacterLeftPadsWith1Zero()
+        {
+            // arrange
+            string expectedResult = "NOMINAL\t1\tIN\t0100\t2\tTL";
+
+            FlaggedBibRecordModel bibEntry = new()
+            {
+                BibNumber = 1,
+                Action = "IN",
+                BibTimeOfDay = "100",
+                DayOfMonth = 2,
+                Location = "TL",
+                DataWarning = false
+            };
+
+            // act
+            string actualResult = bibEntry.ToTabbedString();
+
+            // assert
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+        [Fact]
+        public void BibTimeFieldTensHoursCharacterNotPadded()
+        {
+            // arrange
+            string expectedResult = "NOMINAL\t1\tIN\t1000\t2\tTL";
+
+            FlaggedBibRecordModel bibEntry = new()
+            {
+                BibNumber = 1,
+                Action = "IN",
+                BibTimeOfDay = "1000",
+                DayOfMonth = 2,
+                Location = "TL",
+                DataWarning = false
+            };
+
+            // act
+            string actualResult = bibEntry.ToTabbedString();
+
+            // assert
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+        [Fact]
+        public void BibTimeFieldFiveCharacterTimeNotPadded()
+        {
+            // arrange
+            string expectedResult = "ALERT\t1\tIN\t11000\t2\tTL";
+
+            FlaggedBibRecordModel bibEntry = new()
+            {
+                BibNumber = 1,
+                Action = "IN",
+                BibTimeOfDay = "11000",
+                DayOfMonth = 2,
+                Location = "TL",
+                DataWarning = true
+            };
+
+            // act
+            string actualResult = bibEntry.ToTabbedString();
+
+            // assert
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+        [Fact]
         public void SloppyBibTime27Characters()
         {
             // note: the Matcher methods have the character limit restriction
