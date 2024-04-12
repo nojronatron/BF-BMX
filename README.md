@@ -170,3 +170,4 @@ The computer operator(s) can then start the BF-BMX Desktop application(s) and Se
 
 - [file-sync-win](https://github.com/nojronatron/file-sync-win)
 - [Bigfoot-Bib-Report-WL-Form](https://github.com/nojronatron/Bigfoot-Bib-Report-WL-Form)
+- learn.microsoft.com: 2009-06-15T13:45:30 (DateTimeKind.Local) -> 2009-06-15T13:45:30
