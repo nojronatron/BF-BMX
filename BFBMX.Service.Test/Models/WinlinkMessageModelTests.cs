@@ -286,7 +286,7 @@ public class WinlinkMessageModelTests
     }
 
     [Fact]
-    public void GetHashCodeReturnsUniqueHashCode()
+    public void MessageToStringWithWarning()
     {
         var winlinkMessage1 = new WinlinkMessageModel
         {

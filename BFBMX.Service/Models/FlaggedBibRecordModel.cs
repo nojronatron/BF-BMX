@@ -79,7 +79,8 @@ namespace BFBMX.Service.Models
         {
             // Set DataWarning as a string: ALERT if true, NOMINAL if false
             string dwText = DataWarning ? "ALERT" : "NOMINAL";
-            return $"{dwText}\t{BibNumber}\t{Action}\t{BibTimeOfDay}\t{DayOfMonth}\t{Location}";
+            string? paddedBibTime = BibTimeOfDay?.Length < 4 ? BibTimeOfDay.PadLeft(4, '0') : BibTimeOfDay;
+            return $"{dwText}\t{BibNumber}\t{Action}\t{paddedBibTime}\t{DayOfMonth}\t{Location}";
         }
 
         public string ToJsonString()
