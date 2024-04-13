@@ -221,8 +221,7 @@ Template version 1.1.7
 --boundaryOTJvbw==--
 ";
 
-        public static string ValidMessageWith5SpaceDelimitedBibs => @"
-        public static string MessageWith26ValidBibs => @""Date: Mon, 14 Aug 2023 01:25:57 +0000
+        public static string ValidMessageWith5SpaceDelimitedBibs => @"Date: Mon, 14 Aug 2023 01:25:57 +0000
 From: C4LL@winlink.org
 Reply-To: C4LL@winlink.org
 Subject: Bigfoot 200 2023 Chain of Lakes Message #4
@@ -255,11 +254,9 @@ Winlink Express Sender C4LL=20
 Template version 1.1.7
 
 --boundaryOTJvbw==--
-"";
 ";
 
-        public static string ValidMessageWithCommaDelimintedBibs => @"        public static string ValidMessageWith5SpaceDelimitedBibs => @""
-        public static string MessageWith26ValidBibs => @""""Date: Mon, 14 Aug 2023 01:25:57 +0000
+        public static string ValidMessageWithCommaDelimitedBibs => @"Date: Mon, 14 Aug 2023 01:25:57 +0000
 From: C4LL@winlink.org
 Reply-To: C4LL@winlink.org
 Subject: Bigfoot 200 2023 Chain of Lakes Message #4
@@ -270,10 +267,10 @@ X-Source: C4LL
 X-Location: 46.293940N, 121.594845W (GPS)
 MIME-Version: 1.0
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary=""""""""boundaryOTJvbw==""""""""
+Content-Type: multipart/mixed; boundary=""""boundaryOTJvbw==""""
 
 --boundaryOTJvbw==
-Content-Type: text/plain; charset=""""""""iso-8859-1""""""""
+Content-Type: text/plain; charset=""""iso-8859-1""""
 Content-Transfer-Encoding: quoted-printable
 
 -
@@ -292,8 +289,6 @@ Winlink Express Sender C4LL=20
 Template version 1.1.7
 
 --boundaryOTJvbw==--
-"""";
-"";
 ";
     }
 }

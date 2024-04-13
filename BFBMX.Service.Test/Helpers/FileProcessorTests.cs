@@ -64,33 +64,63 @@ public class FileProcessorTests
     }
 
     [Fact]
-    public void CaptureThreeBibRecordsStrict()
+    public void CaptureThreeBibRecordsTabsStrict()
     {
         int expectedCount = 3;
-        var bibList = new string[] {
+        var bibListTabs = new string[] {
           "115\tOUT\t2009\t11\tWR",
           "195\tOUT\t2009\t11\tWR",
           "196\tOUT\t2009\t11\tWR"
         };
 
-        List<FlaggedBibRecordModel> actualResult = _fileProcessor.GetStrictMatches(bibList).ToList();
+        List<FlaggedBibRecordModel> actualResult = _fileProcessor.GetStrictMatches(bibListTabs).ToList();
         Assert.NotNull(actualResult);
         Assert.Equal(expectedCount, actualResult.Count);
     }
 
     [Fact]
-    public void CaptureThreeBibRecordsNotStrict()
+    public void CaptureThreeBibRecordsCommasStrict()
+    {  
+        int expectedCount = 3;
+        var bibListCommas = new string[] {
+          "115,OUT,2009,11,WR",
+          "195,OUT,2009,11,WR",
+          "196,OUT,2009,11,WR"
+        };
+
+        List<FlaggedBibRecordModel> actualCommaDelmitedResult = _fileProcessor.GetStrictMatches(bibListCommas).ToList();
+        Assert.NotNull(actualCommaDelmitedResult);
+        Assert.Equal(expectedCount, actualCommaDelmitedResult.Count);
+    }
+
+    [Fact]
+    public void CaptureThreeBibRecordsTabsSloppy()
     {
-        int expectedCount = 2;
-        var bibList = new string[] {
+        int expectedCount = 3;
+        var bibListTabs = new string[] {
           "115	0UT	2oo9	II	WR",
           "195	OUT	2009	11	WR",
           "196	OUT	2009	11	WR"
         };
 
-        List<FlaggedBibRecordModel> actualResult = _fileProcessor.GetStrictMatches(bibList).ToList();
-        Assert.NotNull(actualResult);
-        Assert.Equal(expectedCount, actualResult.Count);
+        List<FlaggedBibRecordModel> actualTabDelimitedResult = _fileProcessor.GetSloppyMatches(bibListTabs).ToList();
+        Assert.NotNull(actualTabDelimitedResult);
+        Assert.Equal(expectedCount, actualTabDelimitedResult.Count);
+    }
+
+    [Fact]
+    public void CaptureThreeBibRecordsCommasSloppy()
+    {
+        int expectedCount = 3;
+        var bibListCommas = new string[] {
+          "115 , 0UT,2oo9, II ,WR",
+          "195,OUT,2009,11,WR",
+          "196, OUT ,2009 , 11,  WR"
+        };
+
+        List<FlaggedBibRecordModel> actualCommaDelimitedResult = _fileProcessor.GetSloppyMatches(bibListCommas).ToList();
+        Assert.NotNull(actualCommaDelimitedResult);
+        Assert.Equal(expectedCount, actualCommaDelimitedResult.Count);
     }
 
     [Fact]
@@ -208,17 +238,20 @@ public class FileProcessorTests
     }
 
     [Fact]
-    public void MatchersFailToMatchCommaDelimintedBibsInValidMessage()
+    public void MatchersMatchCommaDelimintedBibs_ValidMessage()
     {
-        string commaDelimitedMessages = SampleMessages.ValidMessageWithCommaDelimintedBibs;
-        int expectedCommaDelimitedBibs = 0; // there are 5 comma-delimited bibs in the sample msg
+        string commaDelimitedMessages = SampleMessages.ValidMessageWithCommaDelimitedBibs;
+
+        // there are 5 comma-delimited bibs in the sample msg
+        int expectedStrictCount = 1;
+        int expectedLooseCount = 5;
         string[] commaDelimitedLines = commaDelimitedMessages.Split('\n');
 
         List<FlaggedBibRecordModel> actualStrictResult = _fileProcessor.GetStrictMatches(commaDelimitedLines).ToList();
         List<FlaggedBibRecordModel> actualSloppyResultList = _fileProcessor.GetSloppyMatches(commaDelimitedLines).ToList();
 
-        Assert.Equal(expectedCommaDelimitedBibs, actualStrictResult.Count);
-        Assert.Equal(expectedCommaDelimitedBibs, actualSloppyResultList.Count);
+        Assert.Equal(expectedStrictCount, actualStrictResult.Count);
+        Assert.Equal(expectedLooseCount, actualSloppyResultList.Count);
     }
 
     [Fact]
@@ -390,6 +423,36 @@ public class FileProcessorTests
         Assert.NotEmpty(bibRecords);
         Assert.Equal(expectedCount, bibRecords.Count);
     }
+
+    [Fact]
+    public void ProcessBibs_ProcessesCommaDelimBibsSuccessfully()
+    {
+        // Arrange
+        int expectedCount = 5;
+        List<FlaggedBibRecordModel> bibRecords = new();
+        string messageId = "ABC123DEF456";
+
+        var lines = new string[] {
+        "Content-Transfer-Encoding: quoted - printable",
+        "",
+        "-",
+        "10,OUT,834,13,CH",
+        "10,IN,748,13,CH",
+        "34,OUT,449,13,CH",
+        "34,IN,406,13,CH",
+        "37,OUT,855,13,CH",
+        "-----",
+        "* The entries in this email are TAB delimited. This allows you to copy and =\r\npaste into a spreadsheet."
+        };
+
+        // Act
+        bibRecords = _fileProcessor.ProcessBibs(lines, messageId);
+
+        // Assert
+        Assert.NotEmpty(bibRecords);
+        Assert.Equal(expectedCount, bibRecords.Count);
+    }
+
     [Fact]
     public void FileProcessor_ProcessBibLikeMessageContentShouldFindNone()
     {

@@ -13,9 +13,8 @@ namespace BFBMX.Service.Helpers
         private readonly ILogger<FileProcessor> _logger;
 
         private readonly string messageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
-        private readonly string dateTimeStampPattern = @"\d{1,2}\s\w{3}\s\d{4}\s\d{1,2}:\d{1,2}:\d{1,2}\s\+\d{4}";
-        private readonly string strictBibPatternTabDelim = @"\b\d{1,3}\t(OUT|IN|DROP)\t\d{1,4}\t\d{1,2}\t\w{2}\b";
-        private readonly string sloppyBibPatternTabDelim = @"\b\w{1,15}\t\w{1,5}\t\w{1,5}\t\w{1,3}\t\w{1,26}\b";
+        private readonly string strictBibPattern = @"\b\d{1,3}[,|\t](OUT|IN|DROP)[,|\t]\d{1,4}[,|\t]\d{1,2}[,|\t]\w{2}\b";
+        private readonly string sloppyBibPattern = @"\b\w{1,26}(?:\s*[,|\t]\s*\w{1,26}){4}\b";
 
         private static JsonSerializerOptions LocalJsonSerializerOptions => new()
         {
@@ -278,18 +277,14 @@ namespace BFBMX.Service.Helpers
         /// <returns>List of FlaggedBibRecordModel instances</returns>
         public HashSet<FlaggedBibRecordModel> GetSloppyMatches(string[] lines)
         {
+            HashSet<FlaggedBibRecordModel> foundBibRecords = new();
+
             if (lines is null || lines.Length < 1)
             {
-                return new HashSet<FlaggedBibRecordModel>();
+                return foundBibRecords;
             }
 
-            HashSet<FlaggedBibRecordModel> foundBibRecords = GetBibMatches(lines, sloppyBibPatternTabDelim);
-
-            foreach(FlaggedBibRecordModel bibRecord in foundBibRecords)
-            {
-                bibRecord.DataWarning = true;
-            }
-
+            foundBibRecords = GetBibMatches(lines, sloppyBibPattern, true);
             return foundBibRecords;
         }
 
@@ -300,59 +295,72 @@ namespace BFBMX.Service.Helpers
         /// <returns>List of FlaggedBibRecordModel instances</returns>
         public HashSet<FlaggedBibRecordModel> GetStrictMatches(string[] lines)
         {
+            HashSet<FlaggedBibRecordModel> foundBibRecords = new();
+
             if (lines is null || lines.Length < 1)
             {
-                return new HashSet<FlaggedBibRecordModel>();
+                return foundBibRecords;
             }
 
-            return GetBibMatches(lines, strictBibPatternTabDelim);
+            foundBibRecords = GetBibMatches(lines, strictBibPattern, false);
+            return foundBibRecords;
         }
 
         /// <summary>
-        /// Identifies data matches in array of potential bib records usinga RegEx pattern.
-        /// Data Warning flags could be set on any FlaggedBibRecordModel that cannot be fully parsed.
+        /// Identifies data matches in an array of potential bib records using a 
+        /// strict RegEx pattern that follows the BibFoot Bib Report Form format.
         /// </summary>
-        /// <param name="emptyBibList"></param>
         /// <param name="fileDataLines"></param>
         /// <param name="pattern"></param>
-        /// <returns>true if any matches are found, false in any other case.</returns>
-        public HashSet<FlaggedBibRecordModel> GetBibMatches(string[] fileDataLines, string pattern)
+        /// <returns></returns>
+        public HashSet<FlaggedBibRecordModel> GetBibMatches(string[] fileDataLines,
+                                                               string pattern,
+                                                               bool setWarning = false)
         {
-            HashSet<FlaggedBibRecordModel> emptyBibList = new();
+            HashSet<FlaggedBibRecordModel> resultBibList = new();
 
-            if (
-                fileDataLines is null || fileDataLines.Length < 1
-                || string.IsNullOrWhiteSpace(pattern)
-                )
+            if (fileDataLines is null || fileDataLines.Length < 1 || string.IsNullOrWhiteSpace(pattern))
             {
-                return emptyBibList;
+                return resultBibList;
             }
             else
             {
+                Regex regex = new(pattern, RegexOptions.IgnoreCase, new TimeSpan(0, 0, 2));
+
                 foreach (var line in fileDataLines)
                 {
-                    try
-                    {
-                        if (Regex.IsMatch(line, pattern, LocalRegexOptions, LocalRegexTimeout))
-                        {
-                            var fields = line.Split('\t');
-                            FlaggedBibRecordModel bibRecord = FlaggedBibRecordModel.GetBibRecordInstance(fields);
+                    var fields = line.Split('\t', ',');
 
-                            if (bibRecord is not null)
+                    if (fields.Length == 5)
+                    {
+                        try
+                        {
+                            if (regex.IsMatch(line))
+
                             {
-                                emptyBibList.Add(bibRecord);
+                                FlaggedBibRecordModel bibRecord = FlaggedBibRecordModel.GetBibRecordInstance(fields);
+
+                                if (bibRecord is not null)
+                                {
+                                    if (setWarning)
+                                    {
+                                        bibRecord.DataWarning = true;
+                                    }
+
+                                    resultBibList.Add(bibRecord);
+                                }
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError("FileProcessor GetBibMatches: RegEx operation could not match {pattern} to {line}!", pattern, line);
-                        _logger.LogError("FileProcessor GetBibMatches: Exception message is {exMessage}.", ex.Message);
-                        _logger.LogError("FileProcessor GetBibMatches: Operations will continue but an audit should be performed.");
+                        catch (Exception ex)
+                        {
+                            _logger.LogError("FileProcessor GetBibMatches: RegEx operation could not match {pattern} to {line}!", pattern, line);
+                            _logger.LogError("FileProcessor GetBibMatches: Exception message is {exMessage}.", ex.Message);
+                            _logger.LogError("FileProcessor GetBibMatches: Operations will continue but an audit should be performed.");
+                        }
                     }
                 }
 
-                return emptyBibList;
+                return resultBibList;
             }
         }
     }
