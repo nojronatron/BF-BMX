@@ -9,11 +9,11 @@ namespace BFBMX.Service.Models
         [JsonIgnore]
         [Key]
         public int? Id { get; set; }
-        public int BibNumber { get; set; } = -1; // max/min int value is [-] 2_147_483_647
-        public string? @Action { get; set; } = "MISSING"; // IN, OUT, DROP
+        public string? BibNumber { get; set; }
+        public string? @Action { get; set; } // IN, OUT, DROP
         public string? BibTimeOfDay { get; set; } // format: HHMM
-        public int DayOfMonth { get; set; } = -1; // digit count range(1-31)
-        public string? Location { get; set; } = "MISSING"; // max len 26 (as defined by select element in form)
+        public string? DayOfMonth { get; set; } // digit count range(1-31)
+        public string? Location { get; set; } // max len 26 (as defined by select element in form)
         public bool DataWarning { get; set; } = true;
 
         /// <summary>
@@ -25,10 +25,10 @@ namespace BFBMX.Service.Models
         /// <param name="dayOfMonth"></param>
         /// <param name="location"></param>
         /// <returns></returns>
-        public static FlaggedBibRecordModel GetBibRecordInstance(int bibNumber,
+        public static FlaggedBibRecordModel GetBibRecordInstance(string? bibNumber,
                                                                  string? action,
                                                                  string? bibTimeOfDay,
-                                                                 int dayOfMonth,
+                                                                 string? dayOfMonth,
                                                                  string? location)
         {
             return new FlaggedBibRecordModel
@@ -45,7 +45,7 @@ namespace BFBMX.Service.Models
         /// Generate a new instance based on collection of strings and actively sets DataWarning bit if any field is not parsable.
         /// </summary>
         /// <param name="fields"></param>
-        /// <returns></returns>
+        /// <returns>New FlaggedBibRecordModel instance</returns>
         public static FlaggedBibRecordModel GetBibRecordInstance(string[] fields)
         {
             if (fields.Length < 5 )
@@ -54,11 +54,11 @@ namespace BFBMX.Service.Models
                 return new FlaggedBibRecordModel();
             }
 
-            int bibNum = int.TryParse(fields[0], out bibNum) ? bibNum : -1;
-            string action = string.IsNullOrWhiteSpace(fields[1]) ? "MISSING" : fields[1].Trim();
-            string bibTimeOfDay = string.IsNullOrWhiteSpace(fields[2]) ? "MISSING" : fields[2].Trim();
-            int dayOfMonth = int.TryParse(fields[3], out dayOfMonth) ? dayOfMonth : -1;
-            string location = string.IsNullOrWhiteSpace(fields[4]) ? "MISSING" : fields[4].Trim();
+            string bibNum = string.IsNullOrWhiteSpace(fields[0]) ? string.Empty : fields[0].Trim();
+            string action = string.IsNullOrWhiteSpace(fields[1]) ? string.Empty : fields[1].Trim();
+            string bibTimeOfDay = string.IsNullOrWhiteSpace(fields[2]) ? string.Empty : fields[2].Trim();
+            string dayOfMonth = string.IsNullOrWhiteSpace(fields[3]) ? string.Empty : fields[3].Trim();
+            string location = string.IsNullOrWhiteSpace(fields[4]) ? string.Empty : fields[4].Trim();
 
 
             var result = FlaggedBibRecordModel.GetBibRecordInstance(bibNumber: bibNum,
@@ -66,12 +66,31 @@ namespace BFBMX.Service.Models
                                                                     bibTimeOfDay: bibTimeOfDay,
                                                                     dayOfMonth: dayOfMonth,
                                                                     location: location);
-            // actively set Data Warning if any of the fields are missing or could not be parsed
-            result.DataWarning = action.Equals("MISSING") 
-                                || bibTimeOfDay.Equals("MISSING") 
-                                || dayOfMonth < 1 
-                                || dayOfMonth > 31 
-                                || location.Equals("MISSING");
+
+            // actively set Data Warning if any of the fields are missing or can not be parsed
+            result.DataWarning = string.IsNullOrWhiteSpace(bibNum) 
+                                || string.IsNullOrWhiteSpace(action) 
+                                || string.IsNullOrWhiteSpace(bibTimeOfDay) 
+                                || string.IsNullOrWhiteSpace(dayOfMonth) 
+                                || string.IsNullOrWhiteSpace(location);
+
+            if (int.TryParse(bibNum, out int parsedBibNum))
+            {
+                result.DataWarning = parsedBibNum < 1 || parsedBibNum > int.MaxValue;
+            }
+            else
+            {
+                result.DataWarning = true;
+            }
+
+            if (int.TryParse(dayOfMonth, out int parsedDayOfMonth))
+            {
+                result.DataWarning = parsedDayOfMonth < 1 || parsedDayOfMonth > 31;
+            }
+            else
+            {
+                result.DataWarning = true;
+            }
             return result;
         }
 
@@ -95,10 +114,10 @@ namespace BFBMX.Service.Models
         public override int GetHashCode()
         {
             int hash = 17;
-            hash = hash * 23 + BibNumber.GetHashCode();
+            hash = hash * 23 + (BibNumber is not null ? BibNumber.GetHashCode() : 0);
             hash = hash * 23 + (Action != null ? Action.GetHashCode() : 0);
             hash = hash * 23 + (BibTimeOfDay != null ? BibTimeOfDay.GetHashCode() : 0);
-            hash = hash * 23 + DayOfMonth.GetHashCode();
+            hash = hash * 23 + (DayOfMonth is not null ? DayOfMonth.GetHashCode() : 0);
             hash = hash * 23 + (Location != null ? Location.GetHashCode() : 0);
             return hash;
         }
