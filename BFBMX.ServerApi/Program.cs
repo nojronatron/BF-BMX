@@ -35,7 +35,6 @@ builder.Services.AddLogging();
 builder.Services.AddSingleton<IServerEnvFactory, ServerEnvFactory>();
 builder.Services.AddScoped<IBibReportsCollection, BibReportsCollection>();
 builder.Services.AddScoped<IBibRecordLogger, BibRecordLogger>();
-builder.Services.AddScoped<IDataExImService, DataExImService>();
 
 var app = builder.Build();
 
@@ -46,11 +45,6 @@ app.Logger.LogInformation("API Server starting up.");
 var scope = app.Services.CreateScope();
 var bibReportPayloadsCollection = scope.ServiceProvider.GetRequiredService<IBibReportsCollection>();
 var bibRecordLogger = scope.ServiceProvider.GetRequiredService<IBibRecordLogger>();
-
-// Locate backup file and import it if found otherwise assume new and continue
-bool restoreSucceeded = bibReportPayloadsCollection.RestoreFromBackupFile();
-string restoreMsg = restoreSucceeded ? "Backup file restored." : "No backup file found or no data in file.";
-app.Logger.LogWarning("API Server auto-restore process: {msg}", restoreMsg);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -1,5 +1,4 @@
 ﻿using BFBMX.ServerApi.EF;
-using BFBMX.ServerApi.Helpers;
 using BFBMX.Service.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel;
@@ -11,17 +10,14 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
     private static Object LockObject = new();
     private readonly IDbContextFactory<BibMessageContext> _dbContextFactory;
     private readonly ILogger<BibReportsCollection> _logger;
-    private readonly IDataExImService _dataExImService;
 
     public BibReportsCollection(
         IDbContextFactory<BibMessageContext> dbContextFactory,
-        ILogger<BibReportsCollection> logger,
-        IDataExImService dataExImService
+        ILogger<BibReportsCollection> logger
         )
     {
         _dbContextFactory = dbContextFactory;
         _logger = logger;
-        _dataExImService = dataExImService;
     }
 
     public bool AddEntityToCollection(WinlinkMessageModel wlMessagePayload)
@@ -78,60 +74,5 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
         }
 
         return savedEntityCount > 0;
-    }
-
-    public int BackupCollection()
-    {
-        int itemsCount = 0;
-
-        if (this.Count > 0)
-        {
-            List<WinlinkMessageModel> items = new();
-
-            lock(LockObject)
-            {
-                items = this.ToList<WinlinkMessageModel>();
-            }
-
-            _logger.LogInformation("Going to store {num} captured Winlink Messages to a file.", items.Count);
-            itemsCount = _dataExImService.ExportDataToFile(items);
-        }
-        else
-        {
-            _logger.LogInformation("There are no items in memory to back up.");
-            return itemsCount;
-        }
-
-        return itemsCount;
-    }
-
-    public bool RestoreFromBackupFile()
-    {
-        int saveCount = 0;
-        List<WinlinkMessageModel> winlinkMessages = _dataExImService.ImportFileData();
-
-        if (winlinkMessages.Count > 0)
-        {
-            lock(LockObject)
-            {
-                Clear();
-            }
-
-            foreach (WinlinkMessageModel message in winlinkMessages)
-            {
-                if (AddEntityToCollection(message))
-                {
-                    saveCount++;
-                }
-            }
-
-            _logger.LogInformation("Restored {num} items from backup file.", saveCount);
-            return true;
-        }
-        else
-        {
-            _logger.LogInformation("No data to restore from backup file.");
-            return false;
-        }
     }
 }
