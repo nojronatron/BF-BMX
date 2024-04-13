@@ -289,10 +289,10 @@ public class FileProcessorTests
 
         FlaggedBibRecordModel mockBibRecord = new()
         {
-            BibNumber = 123,
+            BibNumber = "123",
             Action = "OUT",
             BibTimeOfDay = "1234",
-            DayOfMonth = 12,
+            DayOfMonth = "12",
             Location = "KT",
             DataWarning = false
         };
