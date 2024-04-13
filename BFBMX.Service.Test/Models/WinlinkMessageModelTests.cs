@@ -20,10 +20,10 @@ public class WinlinkMessageModelTests
       {
           new FlaggedBibRecordModel
           {
-          BibNumber = 1,
+          BibNumber = "1",
           @Action = "IN",
           BibTimeOfDay = "1314",
-          DayOfMonth = 2,
+          DayOfMonth = "2",
           Location = "test-location",
           DataWarning = false,
           }
@@ -50,10 +50,7 @@ public class WinlinkMessageModelTests
     [Fact]
     public void InstantiateWithNulls()
     {
-        var bibNum = -1;
-        var dayOfMonth = -1;
-
-        var sut = new WinlinkMessageModel
+        WinlinkMessageModel sut = new()
         {
             WinlinkMessageId = null,
             MessageDateTime = new DateTime(),
@@ -69,14 +66,13 @@ public class WinlinkMessageModelTests
         // If client datetime is null there is nothing this code could do about it
         Assert.Null(sut.ClientHostname);
         Assert.True(sut.BibRecords.Count > 0);
-
-        Assert.Equal("MISSING", sut.BibRecords[0].Action);
+        Assert.Null(sut.BibRecords[0].Action);
         Assert.Null(sut.BibRecords[0].BibTimeOfDay);
-        Assert.Equal("MISSING", sut.BibRecords[0].Location);
+        Assert.Null(sut.BibRecords[0].Location);
+        Assert.Null(sut.BibRecords[0]!.BibNumber);
+        Assert.Null(sut.BibRecords[0].DayOfMonth);
 
         // tests NON-nullable fields
-        Assert.Equal(bibNum, sut.BibRecords[0].BibNumber);
-        Assert.Equal(dayOfMonth, sut.BibRecords[0].DayOfMonth);
         Assert.True(sut.BibRecords[0].DataWarning);
     }
 
@@ -92,10 +88,10 @@ public class WinlinkMessageModelTests
       {
             new FlaggedBibRecordModel
             {
-            BibNumber = 1,
+            BibNumber = "1",
             @Action = "IN",
             BibTimeOfDay = "1314",
-            DayOfMonth = 2,
+            DayOfMonth = "2",
             Location = "test-location",
             DataWarning = false,
             }
@@ -118,10 +114,10 @@ public class WinlinkMessageModelTests
             {
                 new FlaggedBibRecordModel
                 {
-                    BibNumber = 1,
+                    BibNumber = "1",
                     @Action = "IN",
                     BibTimeOfDay = "1314",
-                    DayOfMonth = 2,
+                    DayOfMonth = "2",
                     Location = "test-location",
                     DataWarning = false,
                 }
@@ -129,7 +125,7 @@ public class WinlinkMessageModelTests
         };
 
         var singleBibExpected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[" +
-            "{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":false}]}";
+            "{\"BibNumber\":\"1\",\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":\"2\",\"Location\":\"test-location\",\"DataWarning\":false}]}";
         var singleBibActual = sut.ToJsonString();
         
         Debug.WriteLine($"singleBibExpected:\r\n{singleBibExpected}");
@@ -138,10 +134,10 @@ public class WinlinkMessageModelTests
 
         var newRecord = new FlaggedBibRecordModel
         {
-            BibNumber = 1,
+            BibNumber = "1",
             @Action = "OUTT",
             BibTimeOfDay = "2014",
-            DayOfMonth = 2,
+            DayOfMonth = "2",
             Location = "test-location",
             DataWarning = true
         };
@@ -149,8 +145,8 @@ public class WinlinkMessageModelTests
         sut.BibRecords.Add(newRecord);
 
         var twoBibsExpected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[" +
-            "{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":false}," +
-            "{\"BibNumber\":1,\"Action\":\"OUTT\",\"BibTimeOfDay\":\"2014\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":true}]}";
+            "{\"BibNumber\":\"1\",\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":\"2\",\"Location\":\"test-location\",\"DataWarning\":false}," +
+            "{\"BibNumber\":\"1\",\"Action\":\"OUTT\",\"BibTimeOfDay\":\"2014\",\"DayOfMonth\":\"2\",\"Location\":\"test-location\",\"DataWarning\":true}]}";
         var twoBibsActual = sut.ToJsonString();
 
         Debug.WriteLine($"twobibsExpected:\r\n{twoBibsExpected}");
@@ -170,17 +166,18 @@ public class WinlinkMessageModelTests
             {
                 new FlaggedBibRecordModel
                 {
-                    BibNumber = 1,
+                    BibNumber = "1",
                     @Action = "IN",
                     BibTimeOfDay = "13145",
-                    DayOfMonth = 2,
+                    DayOfMonth = "2",
                     Location = "test-location",
                     DataWarning = true,
                 }
             }
         };
 
-        var expected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"13145\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":true}]}";
+        var expected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\"," +
+            "\"BibRecords\":[{\"BibNumber\":\"1\",\"Action\":\"IN\",\"BibTimeOfDay\":\"13145\",\"DayOfMonth\":\"2\",\"Location\":\"test-location\",\"DataWarning\":true}]}";
         var actual = sut.ToJsonString();
         Assert.Equal(expected, actual);
     }
@@ -197,10 +194,10 @@ public class WinlinkMessageModelTests
             {
                 new FlaggedBibRecordModel
                 {
-                    BibNumber = 1,
+                    BibNumber = "1",
                     @Action = "IN",
                     BibTimeOfDay = "1314",
-                    DayOfMonth = 2,
+                    DayOfMonth = "2",
                     Location = "test-location",
                     DataWarning = false,
                 }
@@ -217,10 +214,10 @@ public class WinlinkMessageModelTests
     {
         var bibEntry = new FlaggedBibRecordModel
         {
-            BibNumber = 1,
+            BibNumber = "1",
             @Action = "IN",
             BibTimeOfDay = "1314",
-            DayOfMonth = 2,
+            DayOfMonth = "2",
             Location = "test-location",
             DataWarning = false,
         };
@@ -243,10 +240,10 @@ public class WinlinkMessageModelTests
 
         var newRecord = new FlaggedBibRecordModel()
         {
-            BibNumber = 1,
+            BibNumber = "1",
             Action = "OUTT",
             BibTimeOfDay = "2014",
-            DayOfMonth = 2,
+            DayOfMonth = "2",
             Location = "test-location",
             DataWarning = true
         };
@@ -263,10 +260,10 @@ public class WinlinkMessageModelTests
     {
         var bibEntry = new FlaggedBibRecordModel
         {
-            BibNumber = 1,
+            BibNumber = "1",
             @Action = "IN",
             BibTimeOfDay = "1314",
-            DayOfMonth = 2,
+            DayOfMonth = "2",
             Location = "test-location",
             DataWarning = true,
         };
@@ -294,10 +291,10 @@ public class WinlinkMessageModelTests
     {
         var bibEntry = new FlaggedBibRecordModel
         {
-            BibNumber = 1,
+            BibNumber = "1",
             @Action = "IN",
             BibTimeOfDay = "1314",
-            DayOfMonth = 2,
+            DayOfMonth = "2",
             Location = "test-location",
             DataWarning = false,
         };
@@ -320,10 +317,10 @@ public class WinlinkMessageModelTests
 
         var newRecord = new FlaggedBibRecordModel
         {
-            BibNumber = 1,
+            BibNumber = "1",
             @Action = "OUTT",
             BibTimeOfDay = "2014",
-            DayOfMonth = 2,
+            DayOfMonth = "2",
             Location = "test-location",
             DataWarning = true
         };
