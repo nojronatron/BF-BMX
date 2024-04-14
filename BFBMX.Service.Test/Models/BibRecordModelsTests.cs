@@ -208,10 +208,10 @@ namespace BFBMX.Service.Test.Models
 
             FlaggedBibRecordModel bibEntry = new()
             {
-                BibNumber = 1,
+                BibNumber = "1",
                 Action = "IN",
                 BibTimeOfDay = "0001",
-                DayOfMonth = 2,
+                DayOfMonth = "2",
                 Location = "TL",
                 DataWarning = false
             };
@@ -231,10 +231,10 @@ namespace BFBMX.Service.Test.Models
 
             FlaggedBibRecordModel bibEntry = new()
             {
-                BibNumber = 1,
+                BibNumber = "1",
                 Action = "IN",
                 BibTimeOfDay = "0010",
-                DayOfMonth = 2,
+                DayOfMonth = "2",
                 Location = "TL",
                 DataWarning = false
             };
@@ -254,10 +254,10 @@ namespace BFBMX.Service.Test.Models
 
             FlaggedBibRecordModel bibEntry = new()
             {
-                BibNumber = 1,
+                BibNumber = "1",
                 Action = "IN",
                 BibTimeOfDay = "0E01",
-                DayOfMonth = 2,
+                DayOfMonth = "2",
                 Location = "TL",
                 DataWarning = true
             };
@@ -277,10 +277,10 @@ namespace BFBMX.Service.Test.Models
 
             FlaggedBibRecordModel bibEntry = new()
             {
-                BibNumber = 1,
+                BibNumber = "1",
                 Action = "IN",
                 BibTimeOfDay = "1",
-                DayOfMonth = 2,
+                DayOfMonth = "2",
                 Location = "TL",
                 DataWarning = false
             };
@@ -300,10 +300,10 @@ namespace BFBMX.Service.Test.Models
 
             FlaggedBibRecordModel bibEntry = new()
             {
-                BibNumber = 1,
+                BibNumber = "1",
                 Action = "IN",
                 BibTimeOfDay = "10",
-                DayOfMonth = 2,
+                DayOfMonth = "2",
                 Location = "TL",
                 DataWarning = false
             };
@@ -323,10 +323,10 @@ namespace BFBMX.Service.Test.Models
 
             FlaggedBibRecordModel bibEntry = new()
             {
-                BibNumber = 1,
+                BibNumber = "1",
                 Action = "IN",
                 BibTimeOfDay = "100",
-                DayOfMonth = 2,
+                DayOfMonth = "2",
                 Location = "TL",
                 DataWarning = false
             };
@@ -346,10 +346,10 @@ namespace BFBMX.Service.Test.Models
 
             FlaggedBibRecordModel bibEntry = new()
             {
-                BibNumber = 1,
+                BibNumber = "1",
                 Action = "IN",
                 BibTimeOfDay = "1000",
-                DayOfMonth = 2,
+                DayOfMonth = "2",
                 Location = "TL",
                 DataWarning = false
             };
@@ -369,10 +369,10 @@ namespace BFBMX.Service.Test.Models
 
             FlaggedBibRecordModel bibEntry = new()
             {
-                BibNumber = 1,
+                BibNumber = "1",
                 Action = "IN",
                 BibTimeOfDay = "11000",
-                DayOfMonth = 2,
+                DayOfMonth = "2",
                 Location = "TL",
                 DataWarning = true
             };
@@ -393,10 +393,10 @@ namespace BFBMX.Service.Test.Models
 
             FlaggedBibRecordModel bibEntry = new()
             {
-                BibNumber = 1,
+                BibNumber = "1",
                 Action = "IN",
                 BibTimeOfDay = "0123456789ABCDEFGHIJ123456",
-                DayOfMonth = 2,
+                DayOfMonth = "2",
                 Location = "TL",
                 DataWarning = true
             };

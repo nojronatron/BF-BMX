@@ -133,8 +133,8 @@ public class WinlinkMessageModelTests
             }
         };
 
-        var singleBibExpected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[" +
-            "{\"BibNumber\":\"1\",\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":\"2\",\"Location\":\"test-location\",\"DataWarning\":false}]}";
+        var singleBibExpected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateStamp\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"FileCreatedTimeStamp\":\"2023-08-13T23:22:21\"," +
+            "\"BibRecords\":[{\"BibNumber\":\"1\",\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":\"2\",\"Location\":\"test-location\",\"DataWarning\":false}]}";
         var singleBibActual = sut.ToJsonString();
 
         Debug.WriteLine($"singleBibExpected:\r\n{singleBibExpected}");
@@ -153,7 +153,8 @@ public class WinlinkMessageModelTests
 
         sut.BibRecords.Add(newRecord);
 
-        var twoBibsExpected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[" +
+        var twoBibsExpected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateStamp\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"FileCreatedTimeStamp\":\"2023-08-13T23:22:21\"," +
+            "\"BibRecords\":[" +
             "{\"BibNumber\":\"1\",\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":\"2\",\"Location\":\"test-location\",\"DataWarning\":false}," +
             "{\"BibNumber\":\"1\",\"Action\":\"OUTT\",\"BibTimeOfDay\":\"2014\",\"DayOfMonth\":\"2\",\"Location\":\"test-location\",\"DataWarning\":true}]}";
         var twoBibsActual = sut.ToJsonString();
@@ -186,7 +187,7 @@ public class WinlinkMessageModelTests
             }
         };
 
-        var expected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\"," +
+        var expected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateStamp\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"FileCreatedTimeStamp\":\"2023-08-13T23:22:21\"," +
             "\"BibRecords\":[{\"BibNumber\":\"1\",\"Action\":\"IN\",\"BibTimeOfDay\":\"13145\",\"DayOfMonth\":\"2\",\"Location\":\"test-location\",\"DataWarning\":true}]}";
         var actual = sut.ToJsonString();
         Assert.Equal(expected, actual);
@@ -365,10 +366,10 @@ public class WinlinkMessageModelTests
 
         FlaggedBibRecordModel bravo = new()
         {
-            BibNumber = 2,
+            BibNumber = "2",
             @Action = "OUT",
             BibTimeOfDay = "2014",
-            DayOfMonth = 2,
+            DayOfMonth = "2",
             Location = "test-location",
             DataWarning = true,
         };
@@ -401,10 +402,10 @@ public class WinlinkMessageModelTests
         {
             new FlaggedBibRecordModel
             {
-                BibNumber = 1,
+                BibNumber = "1",
                 @Action = "IN",
                 BibTimeOfDay = "1314",
-                DayOfMonth = 2,
+                DayOfMonth = "2",
                 Location = "test-location",
                 DataWarning = false,
             }
@@ -418,6 +419,6 @@ public class WinlinkMessageModelTests
         Assert.Equal(clientHostname, sut.ClientHostname);
         Assert.Equal(fileCreatedDateTime, sut.FileCreatedTimeStamp);
         Assert.Single(sut.BibRecords);
-        Assert.Equal(1, sut.BibRecords[0].BibNumber);
+        Assert.Equal("1", sut.BibRecords[0].BibNumber);
     }
 }

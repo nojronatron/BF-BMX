@@ -12,6 +12,7 @@ namespace BFBMX.Service.Helpers
         private static readonly object _lock = new();
         private readonly ILogger<FileProcessor> _logger;
 
+        private readonly string dateTimeStampPattern = @"\d{1,2}\s\w{3}\s\d{4}\s\d{1,2}:\d{1,2}:\d{1,2}\s\+\d{4}"; 
         private readonly string messageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
         private readonly string strictBibPattern = @"\b\d{1,3}[,|\t](OUT|IN|DROP)[,|\t]\d{1,4}[,|\t]\d{1,2}[,|\t]\w{2}\b";
         private readonly string sloppyBibPattern = @"\b\w{1,26}(?:\s*[,|\t]\s*\w{1,26}){4}\b";
