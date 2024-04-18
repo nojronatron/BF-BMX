@@ -31,14 +31,43 @@ namespace BFBMX.Service.Models
                                                                  string? dayOfMonth,
                                                                  string? location)
         {
-            return new FlaggedBibRecordModel
+
+            // actively set Data Warning if any of the fields are missing or can not be parsed
+            bool dataWarning = string.IsNullOrWhiteSpace(bibNumber)
+                                || string.IsNullOrWhiteSpace(action)
+                                || string.IsNullOrWhiteSpace(bibTimeOfDay)
+                                || string.IsNullOrWhiteSpace(dayOfMonth)
+                                || string.IsNullOrWhiteSpace(location);
+
+            if (int.TryParse(bibNumber, out int parsedBibNum))
             {
+                dataWarning = dataWarning == false && parsedBibNum < 1;
+            }
+            else
+            {
+                dataWarning = true;
+            }
+
+            if (dataWarning is false && int.TryParse(dayOfMonth, out int parsedDayOfMonth))
+            {
+                dataWarning = dataWarning == false && parsedDayOfMonth < 1;
+            }
+            else
+            {
+                dataWarning = true;
+            }
+
+            FlaggedBibRecordModel result = new()
+            { 
                 BibNumber = bibNumber,
                 Action = action,
                 BibTimeOfDay = bibTimeOfDay,
                 DayOfMonth = dayOfMonth,
                 Location = location,
+                DataWarning = dataWarning
             };
+
+            return result;
         }
 
         /// <summary>
@@ -61,39 +90,18 @@ namespace BFBMX.Service.Models
             string location = string.IsNullOrWhiteSpace(fields[4]) ? string.Empty : fields[4].Trim();
 
 
-            var result = FlaggedBibRecordModel.GetBibRecordInstance(bibNumber: bibNum,
+            return FlaggedBibRecordModel.GetBibRecordInstance(bibNumber: bibNum,
                                                                     action: action,
                                                                     bibTimeOfDay: bibTimeOfDay,
                                                                     dayOfMonth: dayOfMonth,
                                                                     location: location);
-
-            // actively set Data Warning if any of the fields are missing or can not be parsed
-            result.DataWarning = string.IsNullOrWhiteSpace(bibNum) 
-                                || string.IsNullOrWhiteSpace(action) 
-                                || string.IsNullOrWhiteSpace(bibTimeOfDay) 
-                                || string.IsNullOrWhiteSpace(dayOfMonth) 
-                                || string.IsNullOrWhiteSpace(location);
-
-            if (int.TryParse(bibNum, out int parsedBibNum))
-            {
-                result.DataWarning = parsedBibNum < 1 || parsedBibNum > int.MaxValue;
-            }
-            else
-            {
-                result.DataWarning = true;
-            }
-
-            if (int.TryParse(dayOfMonth, out int parsedDayOfMonth))
-            {
-                result.DataWarning = parsedDayOfMonth < 1 || parsedDayOfMonth > 31;
-            }
-            else
-            {
-                result.DataWarning = true;
-            }
-            return result;
         }
 
+        /// <summary>
+        /// Format this Bib Record as a tab-delimited output string of 
+        /// Warning Status, BibNumber, Action, BibTimeOfDay, DayOfMonth, and Location.
+        /// </summary>
+        /// <returns></returns>
         public string ToTabbedString()
         {
             // Set DataWarning as a string: ALERT if true, NOMINAL if false
@@ -102,6 +110,20 @@ namespace BFBMX.Service.Models
             return $"{dwText}\t{BibNumber}\t{Action}\t{paddedBibTime}\t{DayOfMonth}\t{Location}";
         }
 
+        /// <summary>
+        /// Format BibTimeOfDay as a printable string in 4-character, 24-hour format.
+        /// </summary>
+        /// <param name="timeOfDay"></param>
+        /// <returns>0006 for 12:06 AM</returns>
+        public static string PrintableBibTimeOfDay(string timeOfDay)
+        {
+            return timeOfDay.Length == 4 ? $"{timeOfDay.Substring(0, 2)}:{timeOfDay.Substring(2, 2)}" : timeOfDay;
+        }
+
+        /// <summary>
+        /// Use JsonSerializer to return this Bib Record as a JSON string.
+        /// </summary>
+        /// <returns></returns>
         public string ToJsonString()
         {
             // serialize to json
