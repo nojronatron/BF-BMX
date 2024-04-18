@@ -33,47 +33,46 @@ namespace BFBMX.Service.Helpers
         }
 
         /// <summary>
-        /// Writes a non-null WinilnkMessageModel instance to a file at filepath.
+        /// Writes a non-null Winlink Message instance and its Flagged Bib Records to a file at filepath.
         /// </summary>
         /// <param name="msg"></param>
         /// <param name="filepath"></param>
         /// <returns>True if succeeds writing to file, otherwise False</returns>
         public bool WriteWinlinkMessageToFile(WinlinkMessageModel msg, string filepath)
         {
-            if (msg is null || msg.BibRecords.Count < 1 || string.IsNullOrWhiteSpace(filepath))
+            if (msg.BibRecords.Count < 1)
             {
+                _logger.LogInformation("FileProcessor: WriteWinlinkMessageToFile: No bibs found in message ID {msgid}.", msg.WinlinkMessageId);
                 return false;
             }
-            else
+            if (string.IsNullOrWhiteSpace(filepath))
             {
-                string json = JsonSerializer.Serialize<WinlinkMessageModel>(msg, LocalJsonSerializerOptions);
-                string prefixText = File.Exists(filepath) ? "," : string.Empty;
+                _logger.LogError("FileProcessor: WriteWinlinkMessageToFile: No filepath provided by the caller!");
+                return false;
+            }
 
-                for (int tries = 3; tries > 0; tries--)
+            string bibData = msg.ToAccessDatabaseTabbedString();
+
+            try
+            {
+                lock (_lock)
                 {
-                    try
-                    {
-                        lock (_lock)
-                        {
 #pragma warning disable IDE0063 // Use simple 'using' statement
-                            using (StreamWriter file = File.AppendText(filepath))
-                            {
-                                file.WriteLine(prefixText);
-                                file.WriteLine(json);
-                            }
-#pragma warning restore IDE0063 // Use simple 'using' statement
-                        }
-
-                        return true;
-                    }
-                    catch (Exception)
+                    using (StreamWriter file = File.AppendText(filepath))
                     {
-                        _logger.LogWarning("WriteWinlinkMessageToFile: Attempt number {tries} - Could not write to {filepath}.", tries, filepath);
+                        file.WriteLine(bibData);
                     }
+#pragma warning restore IDE0063 // Use simple 'using' statement
                 }
 
-                return false;
+                return true;
             }
+            catch (Exception)
+            {
+                _logger.LogWarning("FileProcessor: WriteWinlinkMessageToFile: Could not write to {filepath}.", filepath);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -247,18 +246,18 @@ namespace BFBMX.Service.Helpers
 
             switch(strictCount, sloppyCount)
             {
-                case (0, 0):
+                case (0, 0): // no matches
                     _logger.LogInformation("ProcessBibs: Neither strict nor relaxed matches found in Message ID {msgId}, returning empty list.", messageId);
                     break;
-                case (0, > 0):
+                case (0, > 0): // only sloppy matches
                     bibRecords = sloppyMatches.ToList();
                     _logger.LogWarning("ProcessBibs: No strict matches and {sloppyCount} relaxed matches found in Message ID {msgId}.", sloppyCount, messageId);
                     break;
-                case (> 0, 0):
+                case (> 0, 0): // only strict matches
                     bibRecords = strictMatches.ToList();
                     _logger.LogWarning("ProcessBibs: {strictCount} strict matches and no relaxed matches found in Message ID {msgId}.", strictCount, messageId);
                     break;
-                case (> 0, > 0):
+                case (> 0, > 0): // both strict and sloppy matches, will maintain strict and add only unique sloppy matches
                     strictMatches.UnionWith(sloppyMatches);
                     bibRecords = strictMatches.ToList();
                     _logger.LogWarning("ProcessBibs: Will union {strictCount} strict matches with {sloppyCount} relaxed matches, favoring found strict matches in Message ID {msgId}.", strictCount, sloppyCount, messageId);
