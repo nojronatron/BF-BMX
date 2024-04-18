@@ -268,8 +268,42 @@ public class WinlinkMessageModelTests
         Assert.Equal(twoLinesExpected, twoLinesActual);
     }
 
+    [Theory]
+    [InlineData("", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0000\t2\tTL\r\n")]
+    [InlineData("0", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0000\t2\tTL\r\n")]
+    [InlineData("00", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0000\t2\tTL\r\n")]
+    [InlineData("000", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0000\t2\tTL\r\n")]
+    [InlineData("5", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0005\t2\tTL\r\n")]
+    [InlineData("010", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0010\t2\tTL\r\n")]
+    [InlineData("100", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0100\t2\tTL\r\n")]
+    [InlineData("0105", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0105\t2\tTL\r\n")]
+    [InlineData("110", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0110\t2\tTL\r\n")]
+    [InlineData("1000", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t1000\t2\tTL\r\n")]
+    [InlineData("55", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0055\t2\tTL\r\n")]
+    [InlineData("555", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0555\t2\tTL\r\n")]
+    [InlineData("961", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0961\t2\tTL\r\n")]
+    [InlineData("999", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0999\t2\tTL\r\n")]
+    public void MessageToAccessDatabaseString_BibRecordTimesHaveLeadingZerosIfLessThanFourCharacters(string inputTime, string expectedPrintableText)
+    {
+        FlaggedBibRecordModel bibRecord = FlaggedBibRecordModel.GetBibRecordInstance("1", "IN", inputTime, "2", "TL");
+        
+        WinlinkMessageModel sut = new()
+        {
+            WinlinkMessageId = "ABCDEFGHIJKL",
+            MessageDateStamp = new DateTime(2024, 01, 02, 13, 12, 11),
+            ClientHostname = "test-hostname",
+            FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
+            BibRecords = new List<FlaggedBibRecordModel>
+            {
+                bibRecord
+            }
+        };
+
+        Assert.Equal(expectedPrintableText, sut.ToAccessDatabaseTabbedString());
+    }
+
     [Fact]
-    public void MessageToStringWithWarning()
+    public void MessagesWithDifferentDataReturnDifferentHashCodes()
     {
         var winlinkMessage1 = new WinlinkMessageModel
         {
