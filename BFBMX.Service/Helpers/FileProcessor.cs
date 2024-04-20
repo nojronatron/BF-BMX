@@ -239,23 +239,23 @@ namespace BFBMX.Service.Helpers
             switch(strictCount, sloppyCount)
             {
                 case (0, 0): // no matches
-                    _logger.LogInformation("ProcessBibs: Neither strict nor relaxed matches found in Message ID {msgId}. Returning empty list.", messageId);
+                    _logger.LogInformation("ProcessBibs: Neither strict nor relaxed matches found in Message ID {msgId}. Returning 0 items.", messageId);
                     break;
                 case (0, > 0): // only sloppy matches
                     bibRecords = sloppyMatches.ToList();
-                    _logger.LogInformation("ProcessBibs: No strict matches found. Will return {sloppyCount} relaxed matches found in Message ID {msgId}.", sloppyCount, messageId);
+                    _logger.LogInformation("ProcessBibs: Found no strict bib records but {sloppyCount} records matched in Message ID {msgId}. Returning {sloppyCount} items.", sloppyCount, messageId, sloppyCount);
                     break;
                 case (> 0, 0): // only strict matches
                     bibRecords = strictMatches.ToList();
-                    _logger.LogInformation("ProcessBibs: {strictCount} strict matches and no relaxed matches found in Message ID {msgId}. Returning {msgCount} items.", strictCount, messageId, strictCount);
+                    _logger.LogInformation("ProcessBibs: Found {strictCount} strict matches but no relaxed matches in Message ID {msgId}. Returning {msgCount} items.", strictCount, messageId, strictCount);
                     break;
                 case (> 0, > 0): // both strict and sloppy matches, will maintain strict and add only unique sloppy matches
                     strictMatches.UnionWith(sloppyMatches);
                     bibRecords = strictMatches.ToList();
-                    _logger.LogInformation("ProcessBibs: {strictCount} matches and {sloppyCOunt} matches found in Message ID {msgId}. Will union strict matches with relaxed matches for a total of {unionCount} items.", strictCount, sloppyCount, messageId, bibRecords.Count);
+                    _logger.LogInformation("ProcessBibs: Found {strictCount} strict and {sloppyCOunt} relaxed matches in Message ID {msgId}. Returning {unionCount} items.", strictCount, sloppyCount, messageId, bibRecords.Count);
                     break;
                 default:
-                    _logger.LogError("ProcessBibs: An unexpected error occurred while trying to process bib records in Message ID {msgId}. Returning an empty list.", messageId);
+                    _logger.LogError("ProcessBibs: An unexpected error occurred while trying to process bib records in Message ID {msgId}. Returning 0 items.", messageId);
                     break;
             }
 
