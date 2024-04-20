@@ -1,8 +1,6 @@
 using BFBMX.Service.Models;
 using Microsoft.Extensions.Logging;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace BFBMX.Service.Helpers
@@ -12,9 +10,14 @@ namespace BFBMX.Service.Helpers
         private static readonly object _lock = new();
         private readonly ILogger<FileProcessor> _logger;
 
-        private readonly string messageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
-        private readonly string strictBibPatternTabDelim = @"\b\d{1,3}\t(OUT|IN|DROP)\t\d{1,4}\t\d{1,2}\t\w{2}\b";
-        private readonly string sloppyBibPatternTabDelim = @"\b\w{1,15}\t\w{1,5}\t\w{1,5}\t\w{1,3}\t\w{1,26}\b";
+        private readonly string DateTimeStampPattern = @"\d{1,2}\s\w{3}\s\d{4}\s\d{1,2}:\d{1,2}:\d{1,2}\s\+\d{4}"; 
+        private readonly string MessageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
+        private readonly string CommaDelimitedPattern = @"\b\d{1,3}(?:\s?,\s?)(?:IN|OUT|DROP)(?:\s?,\s?)\d{1,4}(?:\s?,\s?)\d{1,2}(?:\s?,\s?)\w{2}\b";
+        private readonly string TabDelimitedPattern = @"\b\d{1,3}(?:\s?\t\s?)(?:IN|OUT|DROP)(?:\s?\t\s?)\d{1,4}(?:\s?\t\s?)\d{1,2}(?:\s?\t\s?)\w{2}\b";
+        private readonly string StrictBibPattern = @"\b\d{1,3}[,|\t](OUT|IN|DROP)[,|\t]\d{1,4}[,|\t]\d{1,2}[,|\t]\w{2}\b";
+        private readonly string SloppyBibPattern = @"\b\w{1,26}(?:\s*[,|\t]\s*\w{1,26}){4}\b"; // match 5 words with length 1-26 characters, separated by commas or tabs padded with 0 or more spaces
+        private static RegexOptions LocalRegexOptions => RegexOptions.IgnoreCase;
+        private static TimeSpan LocalRegexTimeout => new(0, 0, 1); // after timeout Regex pattern match will stop to fend against mischeveous input
 
         public FileProcessor(ILogger<FileProcessor> logger)
         {
@@ -22,54 +25,46 @@ namespace BFBMX.Service.Helpers
         }
 
         /// <summary>
-        /// Writes a non-null WinilnkMessageModel instance to a file at filepath.
+        /// Writes a non-null Winlink Message instance and its Flagged Bib Records to a file at filepath.
         /// </summary>
         /// <param name="msg"></param>
         /// <param name="filepath"></param>
         /// <returns>True if succeeds writing to file, otherwise False</returns>
         public bool WriteWinlinkMessageToFile(WinlinkMessageModel msg, string filepath)
         {
-            if (msg is null || msg.BibRecords.Count < 1 || string.IsNullOrWhiteSpace(filepath))
+            if (msg.BibRecords.Count < 1)
             {
+                _logger.LogInformation("FileProcessor: WriteWinlinkMessageToFile: No bibs found in message ID {msgid}.", msg.WinlinkMessageId);
                 return false;
             }
-            else
+            if (string.IsNullOrWhiteSpace(filepath))
             {
-                JsonSerializerOptions options = new()
-                {
-                    WriteIndented = true,
-                    NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
-                    PropertyNameCaseInsensitive = true
-                };
+                _logger.LogError("FileProcessor: WriteWinlinkMessageToFile: No filepath provided by the caller!");
+                return false;
+            }
 
-                string json = JsonSerializer.Serialize<WinlinkMessageModel>(msg, options);
-                string prefixText = File.Exists(filepath) ? "," : string.Empty;
+            string bibData = msg.ToAccessDatabaseTabbedString();
 
-                for (int tries = 3; tries > 0; tries--)
+            try
+            {
+                lock (_lock)
                 {
-                    try
-                    {
-                        lock (_lock)
-                        {
 #pragma warning disable IDE0063 // Use simple 'using' statement
-                            using (StreamWriter file = File.AppendText(filepath))
-                            {
-                                file.WriteLine(prefixText);
-                                file.WriteLine(json);
-                            }
-#pragma warning restore IDE0063 // Use simple 'using' statement
-                        }
-
-                        return true;
-                    }
-                    catch (Exception)
+                    using (StreamWriter file = File.AppendText(filepath))
                     {
-                        _logger.LogWarning("WriteWinlinkMessageToFile: Attempt number {tries} - Could not write to {filepath}.", tries, filepath);
+                        file.WriteLine(bibData);
                     }
+#pragma warning restore IDE0063 // Use simple 'using' statement
                 }
 
-                return false;
+                return true;
             }
+            catch (Exception)
+            {
+                _logger.LogWarning("FileProcessor: WriteWinlinkMessageToFile: Could not write to {filepath}.", filepath);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -104,13 +99,19 @@ namespace BFBMX.Service.Helpers
                 return new WinlinkMessageModel();
             }
 
-            string winlinkMessageId = GetMessageId(RecordsArrayToString(fileData));
+            string recordArray = RecordsArrayToString(fileData);
+            string winlinkMessageId = GetMessageId(recordArray);
+            DateTime winlinkDateTimeStamp = GetWinlinkMessageDateTimeStamp(recordArray);
             List<FlaggedBibRecordModel> bibRecords = ProcessBibs(fileData, winlinkMessageId);
 
             if (bibRecords.Count > 0)
             {
                 // bib data was found so return a concrete object
-                return WinlinkMessageModel.GetWinlinkMessageInstance(winlinkMessageId, timestamp, machineName, bibRecords);
+                return WinlinkMessageModel.GetWinlinkMessageInstance(winlinkMessageId,
+                                                                     winlinkDateTimeStamp,
+                                                                     machineName,
+                                                                     winlinkDateTimeStamp,
+                                                                     bibRecords);
             }
 
             return new WinlinkMessageModel();
@@ -155,20 +156,62 @@ namespace BFBMX.Service.Helpers
         {
             if (string.IsNullOrWhiteSpace(fileData))
             {
-                return string.Empty;
-            }
-
-            Regex match = new(messageIdPattern, RegexOptions.IgnoreCase, new TimeSpan(0, 0, 2));
-            MatchCollection matches = match.Matches(fileData);
-
-            if (matches.Count > 0)
-            {
-                return matches[0].Groups["msgid"].Value;
+                _logger.LogWarning("FileProcessor: GetMessageId: Somehow an empty string was received. Returning an empty MessageID.");
             }
             else
             {
-                return string.Empty;
+                Regex match = new(MessageIdPattern, LocalRegexOptions, LocalRegexTimeout);
+                MatchCollection matches = match.Matches(fileData);
+
+                if (matches.Count < 1)
+                {
+                    _logger.LogInformation("FileProcessor: GetMessageId: No Message-ID found in the data. Returning an empty MessageID.");
+                }
+
+                return matches[0].Groups["msgid"].Value;
             }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Finds the DateTime stamp in a Winlink message data string and returns the DateTime value.
+        /// </summary>
+        /// <param name="winlinkMessageData"></param>
+        /// <returns>Parsed DateTime value or if input was not parseable, Jan 1 0001.</returns>
+        public DateTime GetWinlinkMessageDateTimeStamp(string winlinkMessageData)
+        {
+            if (string.IsNullOrWhiteSpace(winlinkMessageData))
+            {
+                _logger.LogWarning("FileProcessor: GetWinlinkMessageDataTimeStamp: Somehow an empty string was received. Returning DateTime.MinValue!");
+            }
+            else
+            {
+                Regex match = new(DateTimeStampPattern, LocalRegexOptions, LocalRegexTimeout);
+                MatchCollection matches = match.Matches(winlinkMessageData);
+
+                if (matches.Count < 1)
+                {
+                    return DateTime.MinValue;
+                }
+
+                string dateStamp = matches[0].Value;
+
+                try
+                {
+                    DateTime parsedValue = DateTime.Parse(dateStamp);
+                    return parsedValue.ToUniversalTime();
+                }
+                catch (FormatException fmtEx)
+                {
+                    _logger.LogWarning(
+                        "FileProcessor: GetWinlinkMessageDateTimeStamp: A format exception was thrown ### msg {fmtEx} ### for the following message {msg}.", 
+                        fmtEx.Message, 
+                        winlinkMessageData);
+                }
+            }
+
+            return DateTime.MinValue;
         }
 
         /// <summary>
@@ -195,24 +238,24 @@ namespace BFBMX.Service.Helpers
 
             switch(strictCount, sloppyCount)
             {
-                case (0, 0):
-                    _logger.LogInformation("ProcessBibs: Neither strict nor relaxed matches found in Message ID {msgId}, returning empty list.", messageId);
+                case (0, 0): // no matches
+                    _logger.LogInformation("ProcessBibs: Neither strict nor relaxed matches found in Message ID {msgId}. Returning 0 items.", messageId);
                     break;
-                case (0, > 0):
+                case (0, > 0): // only sloppy matches
                     bibRecords = sloppyMatches.ToList();
-                    _logger.LogWarning("ProcessBibs: No strict matches and {sloppyCount} relaxed matches found in Message ID {msgId}.", sloppyCount, messageId);
+                    _logger.LogInformation("ProcessBibs: Found no strict bib records but {sloppyCount} records matched in Message ID {msgId}. Returning {sloppyCount} items.", sloppyCount, messageId, sloppyCount);
                     break;
-                case (> 0, 0):
+                case (> 0, 0): // only strict matches
                     bibRecords = strictMatches.ToList();
-                    _logger.LogWarning("ProcessBibs: {strictCount} strict matches and no relaxed matches found in Message ID {msgId}.", strictCount, messageId);
+                    _logger.LogInformation("ProcessBibs: Found {strictCount} strict matches but no relaxed matches in Message ID {msgId}. Returning {msgCount} items.", strictCount, messageId, strictCount);
                     break;
-                case (> 0, > 0):
+                case (> 0, > 0): // both strict and sloppy matches, will maintain strict and add only unique sloppy matches
                     strictMatches.UnionWith(sloppyMatches);
                     bibRecords = strictMatches.ToList();
-                    _logger.LogWarning("ProcessBibs: Will union {strictCount} strict matches with {sloppyCount} relaxed matches, favoring found strict matches in Message ID {msgId}.", strictCount, sloppyCount, messageId);
+                    _logger.LogInformation("ProcessBibs: Found {strictCount} strict and {sloppyCOunt} relaxed matches in Message ID {msgId}. Returning {unionCount} items.", strictCount, sloppyCount, messageId, bibRecords.Count);
                     break;
                 default:
-                    _logger.LogError("ProcessBibs: An unexpected combination of strict and relaxed records matching occurred when processing bib records in Message ID {msgId}. Returning an empty list.", messageId);
+                    _logger.LogError("ProcessBibs: An unexpected error occurred while trying to process bib records in Message ID {msgId}. Returning 0 items.", messageId);
                     break;
             }
 
@@ -226,18 +269,14 @@ namespace BFBMX.Service.Helpers
         /// <returns>List of FlaggedBibRecordModel instances</returns>
         public HashSet<FlaggedBibRecordModel> GetSloppyMatches(string[] lines)
         {
+            HashSet<FlaggedBibRecordModel> foundBibRecords = new();
+
             if (lines is null || lines.Length < 1)
             {
-                return new HashSet<FlaggedBibRecordModel>();
+                return foundBibRecords;
             }
 
-            HashSet<FlaggedBibRecordModel> foundBibRecords = GetBibMatches(lines, sloppyBibPatternTabDelim);
-
-            foreach(FlaggedBibRecordModel bibRecord in foundBibRecords)
-            {
-                bibRecord.DataWarning = true;
-            }
-
+            foundBibRecords = GetBibMatches(lines, SloppyBibPattern, true);
             return foundBibRecords;
         }
 
@@ -248,59 +287,75 @@ namespace BFBMX.Service.Helpers
         /// <returns>List of FlaggedBibRecordModel instances</returns>
         public HashSet<FlaggedBibRecordModel> GetStrictMatches(string[] lines)
         {
+            HashSet<FlaggedBibRecordModel> foundBibRecords = new();
+
             if (lines is null || lines.Length < 1)
             {
-                return new HashSet<FlaggedBibRecordModel>();
+                return foundBibRecords;
             }
 
-            return GetBibMatches(lines, strictBibPatternTabDelim);
+            //foundBibRecords = GetBibMatches(lines, StrictBibPattern, false);
+            HashSet<FlaggedBibRecordModel> csvMatches = GetBibMatches(lines, CommaDelimitedPattern, false);
+            foundBibRecords = GetBibMatches(lines, TabDelimitedPattern, false);
+            foundBibRecords.UnionWith(csvMatches);
+            return foundBibRecords;
         }
 
         /// <summary>
-        /// Identifies data matches in array of potential bib records usinga RegEx pattern.
-        /// Data Warning flags could be set on any FlaggedBibRecordModel that cannot be fully parsed.
+        /// Identifies data matches in an array of potential bib records using a 
+        /// strict RegEx pattern that follows the BibFoot Bib Report Form format.
         /// </summary>
-        /// <param name="emptyBibList"></param>
         /// <param name="fileDataLines"></param>
         /// <param name="pattern"></param>
-        /// <returns>true if any matches are found, false in any other case.</returns>
-        public HashSet<FlaggedBibRecordModel> GetBibMatches(string[] fileDataLines, string pattern)
+        /// <returns></returns>
+        public HashSet<FlaggedBibRecordModel> GetBibMatches(string[] fileDataLines,
+                                                               string pattern,
+                                                               bool setWarning = false)
         {
-            HashSet<FlaggedBibRecordModel> emptyBibList = new();
+            HashSet<FlaggedBibRecordModel> resultBibList = new();
 
-            if (
-                fileDataLines is null || fileDataLines.Length < 1
-                || string.IsNullOrWhiteSpace(pattern)
-                )
+            if (fileDataLines is null || fileDataLines.Length < 1 || string.IsNullOrWhiteSpace(pattern))
             {
-                return emptyBibList;
+                return resultBibList;
             }
             else
             {
+                Regex regex = new(pattern, LocalRegexOptions, LocalRegexTimeout);
+
                 foreach (var line in fileDataLines)
                 {
-                    try
-                    {
-                        if (Regex.IsMatch(line, pattern, RegexOptions.IgnoreCase, new TimeSpan(0, 0, 2)))
-                        {
-                            var fields = line.Split('\t');
-                            FlaggedBibRecordModel bibRecord = FlaggedBibRecordModel.GetBibRecordInstance(fields);
+                    var fields = line.Split('\t', ',');
 
-                            if (bibRecord is not null)
+                    if (fields.Length == 5)
+                    {
+                        try
+                        {
+                            if (regex.IsMatch(line))
+
                             {
-                                emptyBibList.Add(bibRecord);
+                                FlaggedBibRecordModel bibRecord = FlaggedBibRecordModel.GetBibRecordInstance(fields);
+
+                                if (bibRecord is not null)
+                                {
+                                    if (setWarning)
+                                    {
+                                        bibRecord.DataWarning = true;
+                                    }
+
+                                    resultBibList.Add(bibRecord);
+                                }
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError("FileProcessor GetBibMatches: RegEx operation could not match {pattern} to {line}!", pattern, line);
-                        _logger.LogError("FileProcessor GetBibMatches: Exception message is {exMessage}.", ex.Message);
-                        _logger.LogError("FileProcessor GetBibMatches: Operations will continue but an audit should be performed.");
+                        catch (Exception ex)
+                        {
+                            _logger.LogError("FileProcessor GetBibMatches: RegEx operation could not match {pattern} to {line}!", pattern, line);
+                            _logger.LogError("FileProcessor GetBibMatches: Exception message is {exMessage}.", ex.Message);
+                            _logger.LogError("FileProcessor GetBibMatches: Operations will continue but an audit should be performed.");
+                        }
                     }
                 }
 
-                return emptyBibList;
+                return resultBibList;
             }
         }
     }

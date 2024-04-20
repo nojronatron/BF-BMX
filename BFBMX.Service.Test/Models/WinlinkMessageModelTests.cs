@@ -7,6 +7,9 @@ public class WinlinkMessageModelTests
 {
     public string NoDataWarningText => "NOMINAL";
     public string DataWarningText => "ALERT";
+    public static DateTime JanuarySecond => new DateTime(2024,01,02,03,04,05);
+    public static DateTime FebruaryThird => new DateTime(2024,02,03,04,05,06);
+    public static DateTime MarchFourth => new DateTime(2024, 03, 04, 05, 06, 07);
 
     [Fact]
     public void InstantiateAllFields()
@@ -14,16 +17,17 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = "ABCDEFGHIJKL",
-            MessageDateTime = new DateTime(2024, 01, 02, 12, 11, 10),
+            MessageDateStamp = new DateTime(2024, 01, 02, 12, 11, 10),
             ClientHostname = "test-hostname",
+            FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
             BibRecords = new List<FlaggedBibRecordModel>
       {
           new FlaggedBibRecordModel
           {
-          BibNumber = 1,
+          BibNumber = "1",
           @Action = "IN",
           BibTimeOfDay = "1314",
-          DayOfMonth = 2,
+          DayOfMonth = "2",
           Location = "test-location",
           DataWarning = false,
           }
@@ -50,14 +54,12 @@ public class WinlinkMessageModelTests
     [Fact]
     public void InstantiateWithNulls()
     {
-        var bibNum = -1;
-        var dayOfMonth = -1;
-
-        var sut = new WinlinkMessageModel
+        WinlinkMessageModel sut = new()
         {
             WinlinkMessageId = null,
-            MessageDateTime = new DateTime(),
+            MessageDateStamp = new DateTime(),
             ClientHostname = null,
+            FileCreatedTimeStamp = new DateTime(),
             BibRecords = new List<FlaggedBibRecordModel>
             {
                 new FlaggedBibRecordModel()
@@ -66,17 +68,16 @@ public class WinlinkMessageModelTests
 
         // test nullable fields
         Assert.Null(sut.WinlinkMessageId);
-        // If client datetime is null there is nothing this code could do about it
+        // DateTime type properties cannot be null
         Assert.Null(sut.ClientHostname);
         Assert.True(sut.BibRecords.Count > 0);
-
-        Assert.Equal("MISSING", sut.BibRecords[0].Action);
+        Assert.Null(sut.BibRecords[0].Action);
         Assert.Null(sut.BibRecords[0].BibTimeOfDay);
-        Assert.Equal("MISSING", sut.BibRecords[0].Location);
+        Assert.Null(sut.BibRecords[0].Location);
+        Assert.Null(sut.BibRecords[0]!.BibNumber);
+        Assert.Null(sut.BibRecords[0].DayOfMonth);
 
         // tests NON-nullable fields
-        Assert.Equal(bibNum, sut.BibRecords[0].BibNumber);
-        Assert.Equal(dayOfMonth, sut.BibRecords[0].DayOfMonth);
         Assert.True(sut.BibRecords[0].DataWarning);
     }
 
@@ -86,22 +87,25 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = "ABCDEFGHIJKL",
-            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
+            MessageDateStamp = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
+            FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
             BibRecords = new List<FlaggedBibRecordModel>
       {
             new FlaggedBibRecordModel
             {
-            BibNumber = 1,
+            BibNumber = "1",
             @Action = "IN",
             BibTimeOfDay = "1314",
-            DayOfMonth = 2,
+            DayOfMonth = "2",
             Location = "test-location",
             DataWarning = false,
             }
-        }
+            }
         };
-        var expected = "ABCDEFGHIJKL-2024-01-02T13-12-11.txt";
+
+        // todo: Should it be Message date-time, or file created date-time?
+        var expected = "ABCDEFGHIJKL.txt";
         var actual = sut.ToFilename();
         Assert.Equal(expected, actual);
     }
@@ -112,45 +116,47 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = "ABCDEFGHIJKL",
-            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
+            MessageDateStamp = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
+            FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
             BibRecords = new List<FlaggedBibRecordModel>
             {
                 new FlaggedBibRecordModel
                 {
-                    BibNumber = 1,
+                    BibNumber = "1",
                     @Action = "IN",
                     BibTimeOfDay = "1314",
-                    DayOfMonth = 2,
+                    DayOfMonth = "2",
                     Location = "test-location",
                     DataWarning = false,
                 }
             }
         };
 
-        var singleBibExpected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[" +
-            "{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":false}]}";
+        var singleBibExpected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateStamp\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"FileCreatedTimeStamp\":\"2023-08-13T23:22:21\"," +
+            "\"BibRecords\":[{\"BibNumber\":\"1\",\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":\"2\",\"Location\":\"test-location\",\"DataWarning\":false}]}";
         var singleBibActual = sut.ToJsonString();
-        
+
         Debug.WriteLine($"singleBibExpected:\r\n{singleBibExpected}");
         Debug.WriteLine($"singleBibActual:\r\n{singleBibActual}");
         Assert.Equal(singleBibExpected, singleBibActual);
 
         var newRecord = new FlaggedBibRecordModel
         {
-            BibNumber = 1,
+            BibNumber = "1",
             @Action = "OUTT",
             BibTimeOfDay = "2014",
-            DayOfMonth = 2,
+            DayOfMonth = "2",
             Location = "test-location",
             DataWarning = true
         };
 
         sut.BibRecords.Add(newRecord);
 
-        var twoBibsExpected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[" +
-            "{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":false}," +
-            "{\"BibNumber\":1,\"Action\":\"OUTT\",\"BibTimeOfDay\":\"2014\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":true}]}";
+        var twoBibsExpected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateStamp\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"FileCreatedTimeStamp\":\"2023-08-13T23:22:21\"," +
+            "\"BibRecords\":[" +
+            "{\"BibNumber\":\"1\",\"Action\":\"IN\",\"BibTimeOfDay\":\"1314\",\"DayOfMonth\":\"2\",\"Location\":\"test-location\",\"DataWarning\":false}," +
+            "{\"BibNumber\":\"1\",\"Action\":\"OUTT\",\"BibTimeOfDay\":\"2014\",\"DayOfMonth\":\"2\",\"Location\":\"test-location\",\"DataWarning\":true}]}";
         var twoBibsActual = sut.ToJsonString();
 
         Debug.WriteLine($"twobibsExpected:\r\n{twoBibsExpected}");
@@ -164,23 +170,25 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = "ABCDEFGHIJKL",
-            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
+            MessageDateStamp = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
+            FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
             BibRecords = new List<FlaggedBibRecordModel>
             {
                 new FlaggedBibRecordModel
                 {
-                    BibNumber = 1,
+                    BibNumber = "1",
                     @Action = "IN",
                     BibTimeOfDay = "13145",
-                    DayOfMonth = 2,
+                    DayOfMonth = "2",
                     Location = "test-location",
                     DataWarning = true,
                 }
             }
         };
 
-        var expected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateTime\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"BibRecords\":[{\"BibNumber\":1,\"Action\":\"IN\",\"BibTimeOfDay\":\"13145\",\"DayOfMonth\":2,\"Location\":\"test-location\",\"DataWarning\":true}]}";
+        var expected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateStamp\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"FileCreatedTimeStamp\":\"2023-08-13T23:22:21\"," +
+            "\"BibRecords\":[{\"BibNumber\":\"1\",\"Action\":\"IN\",\"BibTimeOfDay\":\"13145\",\"DayOfMonth\":\"2\",\"Location\":\"test-location\",\"DataWarning\":true}]}";
         var actual = sut.ToJsonString();
         Assert.Equal(expected, actual);
     }
@@ -191,16 +199,17 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = "ABCDEFGHIJKL",
-            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
+            MessageDateStamp = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
+            FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
             BibRecords = new List<FlaggedBibRecordModel>
             {
                 new FlaggedBibRecordModel
                 {
-                    BibNumber = 1,
+                    BibNumber = "1",
                     @Action = "IN",
                     BibTimeOfDay = "1314",
-                    DayOfMonth = 2,
+                    DayOfMonth = "2",
                     Location = "test-location",
                     DataWarning = false,
                 }
@@ -213,91 +222,14 @@ public class WinlinkMessageModelTests
     }
 
     [Fact]
-    public void MessageToServerAuditTabbedString()
-    {
-        var bibEntry = new FlaggedBibRecordModel
-        {
-            BibNumber = 1,
-            @Action = "IN",
-            BibTimeOfDay = "1314",
-            DayOfMonth = 2,
-            Location = "test-location",
-            DataWarning = false,
-        };
-
-        var sut = new WinlinkMessageModel
-        {
-            WinlinkMessageId = "ABCDEFGHIJKL",
-            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
-            ClientHostname = "test-hostname",
-            BibRecords = new List<FlaggedBibRecordModel>
-            {
-                bibEntry
-            }
-        };
-
-        var oneLineExpected = $"ABCDEFGHIJKL\ttest-hostname\t{NoDataWarningText}\t1\tIN\t1314\t2\ttest-location\r\n";
-        var oneLineActual = sut.ToServerAuditTabbedString();
-        Debug.WriteLine($"Expected:\r\n{oneLineExpected}\r\nActual:\r\n{oneLineActual}");
-        Assert.Equal(oneLineExpected, oneLineActual);
-
-        var newRecord = new FlaggedBibRecordModel()
-        {
-            BibNumber = 1,
-            Action = "OUTT",
-            BibTimeOfDay = "2014",
-            DayOfMonth = 2,
-            Location = "test-location",
-            DataWarning = true
-        };
-        sut.BibRecords.Add(newRecord);
-
-        var twoLinesExpected = $"ABCDEFGHIJKL\ttest-hostname\t{NoDataWarningText}\t1\tIN\t1314\t2\ttest-location\r\nABCDEFGHIJKL\ttest-hostname\t{DataWarningText}\t1\tOUTT\t2014\t2\ttest-location\r\n";
-        string twoLinesActual = sut.ToServerAuditTabbedString();
-        Debug.WriteLine($"Expected:\r\n{twoLinesExpected}\r\nActual:\r\n{twoLinesActual}");
-        Assert.Equal(twoLinesExpected, twoLinesActual);
-    }
-
-    [Fact]
-    public void MessageToStringWithWarning()
-    {
-        var bibEntry = new FlaggedBibRecordModel
-        {
-            BibNumber = 1,
-            @Action = "IN",
-            BibTimeOfDay = "1314",
-            DayOfMonth = 2,
-            Location = "test-location",
-            DataWarning = true,
-        };
-
-        var sut = new WinlinkMessageModel
-        {
-            WinlinkMessageId = "ABCDEFGHIJKL",
-            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
-            ClientHostname = "test-hostname",
-            BibRecords = new List<FlaggedBibRecordModel>
-            {
-                bibEntry
-            }
-        };
-
-        var expected = $"ABCDEFGHIJKL\ttest-hostname\t{DataWarningText}\t1\tIN\t1314\t2\ttest-location\r\n";
-        var oneLIneActual = sut.ToServerAuditTabbedString();
-        Debug.WriteLine($"Expected:\r\n{expected}\r\nActual:\r\n{oneLIneActual}");
-        Assert.Equal(expected, oneLIneActual);
-    }
-
-
-    [Fact]
     public void MessageToAccessDatabaseTabbedString()
     {
         var bibEntry = new FlaggedBibRecordModel
         {
-            BibNumber = 1,
+            BibNumber = "1",
             @Action = "IN",
             BibTimeOfDay = "1314",
-            DayOfMonth = 2,
+            DayOfMonth = "2",
             Location = "test-location",
             DataWarning = false,
         };
@@ -305,8 +237,9 @@ public class WinlinkMessageModelTests
         var sut = new WinlinkMessageModel
         {
             WinlinkMessageId = "ABCDEFGHIJKL",
-            MessageDateTime = new DateTime(2024, 01, 02, 13, 12, 11),
+            MessageDateStamp = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
+            FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
             BibRecords = new List<FlaggedBibRecordModel>
             {
                 bibEntry
@@ -320,10 +253,10 @@ public class WinlinkMessageModelTests
 
         var newRecord = new FlaggedBibRecordModel
         {
-            BibNumber = 1,
-            @Action = "OUTT",
+            BibNumber = "1",
+            Action = "OUTT",
             BibTimeOfDay = "2014",
-            DayOfMonth = 2,
+            DayOfMonth = "2",
             Location = "test-location",
             DataWarning = true
         };
@@ -333,5 +266,193 @@ public class WinlinkMessageModelTests
         string twoLinesActual = sut.ToAccessDatabaseTabbedString();
         Debug.WriteLine($"Expected:\r\n{twoLinesExpected}\r\nActual:\r\n{twoLinesActual}");
         Assert.Equal(twoLinesExpected, twoLinesActual);
+    }
+
+    [Theory]
+    [InlineData("", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0000\t2\tTL\r\n")]
+    [InlineData("0", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0000\t2\tTL\r\n")]
+    [InlineData("00", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0000\t2\tTL\r\n")]
+    [InlineData("000", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0000\t2\tTL\r\n")]
+    [InlineData("5", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0005\t2\tTL\r\n")]
+    [InlineData("010", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0010\t2\tTL\r\n")]
+    [InlineData("100", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0100\t2\tTL\r\n")]
+    [InlineData("0105", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0105\t2\tTL\r\n")]
+    [InlineData("110", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0110\t2\tTL\r\n")]
+    [InlineData("1000", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t1000\t2\tTL\r\n")]
+    [InlineData("55", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0055\t2\tTL\r\n")]
+    [InlineData("555", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0555\t2\tTL\r\n")]
+    [InlineData("961", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0961\t2\tTL\r\n")]
+    [InlineData("999", "ABCDEFGHIJKL\t2024-01-02T13-12-11\tNOMINAL\t1\tIN\t0999\t2\tTL\r\n")]
+    public void MessageToAccessDatabaseString_BibRecordTimesHaveLeadingZerosIfLessThanFourCharacters(string inputTime, string expectedPrintableText)
+    {
+        FlaggedBibRecordModel bibRecord = FlaggedBibRecordModel.GetBibRecordInstance("1", "IN", inputTime, "2", "TL");
+        
+        WinlinkMessageModel sut = new()
+        {
+            WinlinkMessageId = "ABCDEFGHIJKL",
+            MessageDateStamp = new DateTime(2024, 01, 02, 13, 12, 11),
+            ClientHostname = "test-hostname",
+            FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
+            BibRecords = new List<FlaggedBibRecordModel>
+            {
+                bibRecord
+            }
+        };
+
+        Assert.Equal(expectedPrintableText, sut.ToAccessDatabaseTabbedString());
+    }
+
+    [Fact]
+    public void MessagesWithDifferentDataReturnDifferentHashCodes()
+    {
+        var winlinkMessage1 = new WinlinkMessageModel
+        {
+            WinlinkMessageId = "ABC123",
+            MessageDateStamp = MarchFourth,
+            ClientHostname = "localhost",
+            FileCreatedTimeStamp = MarchFourth.AddDays(1),
+            BibRecords = new List<FlaggedBibRecordModel>()
+        };
+
+        var winlinkMessage2 = new WinlinkMessageModel
+        {
+            WinlinkMessageId = "XYZ789",
+            MessageDateStamp = MarchFourth.AddDays(1),
+            ClientHostname = "localhost",
+            FileCreatedTimeStamp = MarchFourth.AddDays(1),
+            BibRecords = new List<FlaggedBibRecordModel>()
+        };
+
+        var hashCode1 = winlinkMessage1.GetHashCode();
+        var hashCode2 = winlinkMessage2.GetHashCode();
+
+        Assert.NotEqual(hashCode1, hashCode2);
+    }
+
+    [Fact]
+    public void OverrideEqualsReturnsTrueForEqualObjects()
+    {
+        var winlinkMessage1 = new WinlinkMessageModel
+        {
+            WinlinkMessageId = "ABC123",
+            MessageDateStamp = MarchFourth.AddDays(-1),
+            ClientHostname = "localhost",
+            FileCreatedTimeStamp = MarchFourth,
+            BibRecords = new List<FlaggedBibRecordModel>()
+        };
+
+        var winlinkMessage2 = new WinlinkMessageModel
+        {
+            WinlinkMessageId = "ABC123",
+            MessageDateStamp = MarchFourth.AddDays(-1),
+            ClientHostname = "localhost",
+            FileCreatedTimeStamp = MarchFourth,
+            BibRecords = new List<FlaggedBibRecordModel>()
+        };
+
+        Assert.True(winlinkMessage1.Equals(winlinkMessage2));
+    }
+
+    [Fact]
+    public void OverrideEqualsReturnsFalseForNotEqualObjects()
+    {
+        var winlinkMessage1 = new WinlinkMessageModel
+        {
+            WinlinkMessageId = "ABC123DEF456",
+            MessageDateStamp = JanuarySecond,
+            ClientHostname = "localhost",
+            FileCreatedTimeStamp = FebruaryThird,
+            BibRecords = new List<FlaggedBibRecordModel>()
+        };
+
+        var winlinkMessage2 = new WinlinkMessageModel
+        {
+            WinlinkMessageId = "ABC123DEF856",
+            MessageDateStamp = MarchFourth,
+            ClientHostname = "localhost",
+            FileCreatedTimeStamp = JanuarySecond,
+            BibRecords = new List<FlaggedBibRecordModel>()
+        };
+
+        Assert.False(winlinkMessage1.Equals(winlinkMessage2));
+    }
+
+    //[Fact]
+    //public void PrintableDateTimeReturnsCorrectFormat()
+    //{
+    //    WinlinkMessageModel sut = new();
+    //    string expectedResult = "2024-01-02T03-04-05";
+    //    Assert.True(expectedResult.Equals(sut.PrintableMsgDateTime(JanuarySecond)));
+    //}
+
+    [Fact]
+    public void HasDataWarning()
+    {
+        FlaggedBibRecordModel alpha = new()
+        {
+            BibNumber = "1",
+            @Action = "IN",
+            BibTimeOfDay = "1314",
+            DayOfMonth = "2",
+            Location = "test-location",
+            DataWarning = false,
+        };
+
+        FlaggedBibRecordModel bravo = new()
+        {
+            BibNumber = "2",
+            @Action = "OUT",
+            BibTimeOfDay = "2014",
+            DayOfMonth = "2",
+            Location = "test-location",
+            DataWarning = true,
+        };
+
+        List<FlaggedBibRecordModel> bibs = new()
+        {
+            alpha, bravo
+        };
+
+        WinlinkMessageModel sut = new()
+        {
+            WinlinkMessageId = "ABC123DEF856",
+            MessageDateStamp = MarchFourth,
+            ClientHostname = "localhost",
+            FileCreatedTimeStamp = JanuarySecond,
+            BibRecords = bibs
+        };
+
+        Assert.True(sut.HasDataWarning());
+    }
+
+    [Fact]
+    public void GetWinlinkMessageInstanceReturnsWinlinkMessageModel()
+    {
+        string winlinkMessageId = "ABC123DEF856";
+        DateTime messageDateTime = MarchFourth;
+        string clientHostname = "localhost";
+        DateTime fileCreatedDateTime = JanuarySecond;
+        List<FlaggedBibRecordModel> bibRecords = new()
+        {
+            new FlaggedBibRecordModel
+            {
+                BibNumber = "1",
+                @Action = "IN",
+                BibTimeOfDay = "1314",
+                DayOfMonth = "2",
+                Location = "test-location",
+                DataWarning = false,
+            }
+        };
+
+        WinlinkMessageModel sut = WinlinkMessageModel.GetWinlinkMessageInstance(winlinkMessageId, messageDateTime, clientHostname, fileCreatedDateTime, bibRecords);
+
+        Assert.NotNull(sut);
+        Assert.Equal(winlinkMessageId, sut.WinlinkMessageId);
+        Assert.Equal(messageDateTime, sut.MessageDateStamp);
+        Assert.Equal(clientHostname, sut.ClientHostname);
+        Assert.Equal(fileCreatedDateTime, sut.FileCreatedTimeStamp);
+        Assert.Single(sut.BibRecords);
+        Assert.Equal("1", sut.BibRecords[0].BibNumber);
     }
 }

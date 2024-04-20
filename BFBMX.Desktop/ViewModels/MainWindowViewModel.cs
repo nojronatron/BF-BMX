@@ -67,10 +67,10 @@ namespace BFBMX.Desktop.ViewModels
         /// <param name="e"></param>
         public async void HandleFileCreatedAsync(object sender, FileSystemEventArgs e)
         {
-            _logger.LogInformation("File creation detected, waiting 1 second before reading contents.");
             string? discoveredFilepath = e.FullPath ?? "unknown - check logs!";
-            _logger.LogInformation("Discovered file path {filepath}. Enqueuing to be processed.", discoveredFilepath);
             DiscoveredFileModel newFile = new(discoveredFilepath);
+            DateTime fileTimeStamp = newFile.FileTimeStamp;
+            _logger.LogInformation("Discovered file path {filepath} creation stamp {filedatetime} for processing.", discoveredFilepath, fileTimeStamp);
             await _discoveredFiles.EnqueueAsync(newFile);
 
             // insert the new item into the collection on the UI Thread (WPF requirement)
@@ -88,15 +88,13 @@ namespace BFBMX.Desktop.ViewModels
 
             _logger.LogInformation("Path {discoveredFilepath} sent to screen for display.", discoveredFilepath);
 
-            /***** moved from DiscoveredFilesCollection *****/
-
             // get machine name for File Processor
             string? hostname = Environment.MachineName;
             string machineName = string.IsNullOrWhiteSpace(hostname) ? "Unknown" : hostname;
 
             // process the file for bib records
             await Task.Delay(1000);
-            _logger.LogInformation("Sending file {newFile} to file processor.", newFile.FullFilePath);
+            _logger.LogInformation("Sending file {newFile} created at {fileTimeStamp} to file processor.", newFile.FullFilePath, newFile.FileTimeStamp);
             WinlinkMessageModel winlinkMessage = _fileProcessor.ProcessWinlinkMessageFile(newFile.FileTimeStamp, machineName, newFile.FullFilePath);
 
             // No bib reports found, log and return
@@ -125,7 +123,7 @@ namespace BFBMX.Desktop.ViewModels
         {
             string errMsg = e.GetException().Message;
             AlphaStatusMessage = $"Error handling file: {errMsg}";
-            _logger.LogInformation("HandleError called: {errmsg}", errMsg);
+            _logger.LogInformation("HandleError called by Monitor #1: {errmsg}", errMsg);
         }
 
         /// <summary>
@@ -136,8 +134,8 @@ namespace BFBMX.Desktop.ViewModels
         public void HandleErrorBravo(object sender, ErrorEventArgs e)
         {
             string errMsg = e.GetException().Message;
-            AlphaStatusMessage = $"Error handling file: {errMsg}";
-            _logger.LogInformation("HandleError called: {errmsg}", errMsg);
+            BravoStatusMessage = $"Error handling file: {errMsg}";
+            _logger.LogInformation("HandleError called by Monitor #2: {errmsg}", errMsg);
         }
 
         /// <summary>
@@ -148,8 +146,8 @@ namespace BFBMX.Desktop.ViewModels
         public void HandleErrorCharlie(object sender, ErrorEventArgs e)
         {
             string errMsg = e.GetException().Message;
-            AlphaStatusMessage = $"Error handling file: {errMsg}";
-            _logger.LogInformation("HandleError called: {errmsg}", errMsg);
+            CharlieStatusMessage = $"Error handling file: {errMsg}";
+            _logger.LogInformation("HandleError called by Monitor #3: {errmsg}", errMsg);
         }
 
         /// <summary>
@@ -232,7 +230,6 @@ namespace BFBMX.Desktop.ViewModels
                             monitor.EnableRaisingEvents = false;
                             monitor.Dispose();
                             _logger.LogInformation("ResetMonitor: Charlie Monitor disposed.");
-                            //CharlieMonitorPathEnabled = true;
                             CharlieMonitorInitialized = false;
                             SetStatusMessage(CharlieMonitorName, "This monitor has been reset.");
                             monitor = null;
@@ -302,6 +299,7 @@ namespace BFBMX.Desktop.ViewModels
                 AlphaMonitorStopped = _alphaMonitor.IsStopped;
                 AlphaMonitorPathEnabled = false;
                 string isOrNotInitialized = AlphaMonitorInitialized ? "successfully" : "not";
+                SetStatusMessage(AlphaMonitorName, "Monitor initialized. Click Launch to start monitoring.");
                 _logger.LogInformation("Alpha Monitor {isOrNotInit} initialized for path: {monitorPath}", 
                     isOrNotInitialized, 
                     AlphaMonitorPath);
@@ -333,7 +331,7 @@ namespace BFBMX.Desktop.ViewModels
                 if (AlphaMonitorPath!.Equals(BravoMonitorPath)
                     || AlphaMonitorPath.Equals(CharlieMonitorPath))
                 {
-                    SetStatusMessage(AlphaMonitorName, "Path already set elsewhere. Choose another path.");
+                    SetStatusMessage(AlphaMonitorName, "Path already on another Monitor. Choose another path.");
                     _logger.LogWarning("CanInitAlphaMonitor: Path not unique. Returning false;");
                     return false;
                 }
@@ -451,7 +449,7 @@ namespace BFBMX.Desktop.ViewModels
         /// <returns>True in nearly any case except for null.</returns>
         public bool CanDestroyAlphaMonitor()
         {
-            if (_alphaMonitor is null)
+            if (_alphaMonitor is null && string.IsNullOrWhiteSpace(AlphaMonitorPath))
             {
                 _logger.LogInformation("CanDestroyAlphaMonitor: Monitor is null and path is empty. Returning false.");
                 return false;
@@ -459,7 +457,7 @@ namespace BFBMX.Desktop.ViewModels
 
             if (_alphaMonitor is null && !string.IsNullOrWhiteSpace(AlphaMonitorPath))
             {
-                _logger.LogInformation("CanDestroyAlphaMonitor: Monitor is null and path has be entered (not validated). Returning false.");
+                _logger.LogInformation("CanDestroyAlphaMonitor: Monitor is null and path has been entered (not validated). Returning false.");
                 return false;
             }
 
@@ -468,8 +466,6 @@ namespace BFBMX.Desktop.ViewModels
         }
 
         /***** End Alpha Monitor Configuration *****/
-
-        // todo: consider how to multiplex the monitor configuration and commands for all 3 monitors.
 
         /***** Bravo Monitor Configuration *****/
         private static FSWMonitor? _bravoMonitor;
@@ -547,12 +543,12 @@ namespace BFBMX.Desktop.ViewModels
                 if (BravoMonitorPath!.Equals(AlphaMonitorPath)
                     || BravoMonitorPath.Equals(CharlieMonitorPath))
                 {
-                    SetStatusMessage(BravoMonitorName, "Path is already being monitored. Choose another path.");
+                    SetStatusMessage(BravoMonitorName, "Path already on another Monitor. Choose another path.");
                     _logger.LogWarning("CanInitBravoMonitor: Path not unique. Returning false.");
                     return false;
                 }
 
-                if (_charlieMonitor is null)
+                if (_bravoMonitor is null)
                 {
                     _logger.LogInformation("CanInitBravoMonitor: Monitor is null and path exists. Returning true.");
                     SetStatusMessage(BravoMonitorName, string.Empty);
@@ -636,31 +632,41 @@ namespace BFBMX.Desktop.ViewModels
         public void DestroyBravoMonitor()
         {
             _logger.LogInformation("DestroyBravoMonitor: Button pressed.");
-            ResetMonitor(_bravoMonitor);
-            SetStatusMessage(BravoMonitorName, "Monitor has been reset.");
+            if(_bravoMonitor is not null)
+            {
+                _bravoMonitor.EnableRaisingEvents = false;
+                _bravoMonitor.Dispose();
+                _bravoMonitor = null;
+            }
+
             BravoMonitorPathEnabled = true;
+            BravoMonitorInitialized = false;
+            BravoMonitorStarted = false;
+            BravoMonitorStopped = false;
+            SetStatusMessage(BravoMonitorName, "Monitor reset and must be reconfigured.");
+            _logger.LogInformation("DestroyBravoMonitor button: Monitor destroyed.");
         }
 
+        /// <summary>
+        /// Determines if Bravo Monitor can be destroyed based on its current state.
+        /// This is more lenient than the other Can methods so the operator can recover from a bad or misbehaving Monitor.
+        /// </summary>
+        /// <returns>True in nearly any case exept for null.</returns>
         public bool CanDestroyBravoMonitor()
         {
-            if (_bravoMonitor is null)
+            if (_bravoMonitor is null && string.IsNullOrWhiteSpace(BravoMonitorPath))
             {
-                _logger.LogInformation("CanDestroyBravoMonitor: Bravo Monitor already destroyed. Try to initialize new, instead.");
+                _logger.LogInformation("CanDestroyBravoMonitor: Monitor is null and path is empty. Returning false.");
                 return false;
             }
 
-            if (_bravoMonitor.MonitoredPath != BravoMonitorPath)
+            if (_bravoMonitor is null && !string.IsNullOrWhiteSpace(BravoMonitorPath))
             {
-                _logger.LogInformation("CanDestroyBravoMonitor: Monitor Path {monActualPath} neq {monConfiguredPath} but will return true anyway.",
-                                      _bravoMonitor.MonitoredPath,
-                                      BravoMonitorPath);
+                _logger.LogInformation("CanDestroyBravoMonitor: Monitor is null and path has been entered (not validated). Returning false.");
+                return false;
             }
 
-            if (_bravoMonitor.EnableRaisingEvents == false)
-            {
-                _logger.LogInformation("CanDestroyBravoMonitor: Monitor is not raising events but will return true anyway.");
-            }
-
+            _logger.LogInformation("CanDestroyBravoMonitor: Monitor exists and is initialized. Returning true.");
             return true;
         }
 
@@ -746,7 +752,7 @@ namespace BFBMX.Desktop.ViewModels
                 if (CharlieMonitorPath!.Equals(AlphaMonitorPath)
                     || CharlieMonitorPath.Equals(BravoMonitorPath))
                 {
-                    SetStatusMessage(CharlieMonitorName, "Path already set elsewhere. Choose another path.");
+                    SetStatusMessage(CharlieMonitorName, "Path already on another Monitor. Choose another path.");
                     _logger.LogWarning("CanInitCharlieMonitor: Path not unique. Returning false.");
                     return false;
                 }
@@ -838,13 +844,11 @@ namespace BFBMX.Desktop.ViewModels
             if (_charlieMonitor is not null)
             {
                 _charlieMonitor.EnableRaisingEvents = false;
-                // No need to reset MonitoredPath since this instance will be disposed
                 _charlieMonitor.Dispose();
                 _charlieMonitor = null;
             }
 
             CharlieMonitorPathEnabled = true;
-            //CharlieMonitorPath = string.Empty;
             CharlieMonitorInitialized = false;
             CharlieMonitorStarted = false;
             CharlieMonitorStopped = false;
@@ -852,6 +856,10 @@ namespace BFBMX.Desktop.ViewModels
             _logger.LogInformation("DestroyCharlieMonitor button: Monitor destroyed.");
         }
 
+        /// <summary>
+        /// Determines whether Charlie Monitor can be destroyed based on its current state.
+        /// </summary>
+        /// <returns>True in nearly every case except if null.</returns>
         public bool CanDestroyCharlieMonitor()
         {
             if (_charlieMonitor is null && string.IsNullOrWhiteSpace(CharlieMonitorPath))

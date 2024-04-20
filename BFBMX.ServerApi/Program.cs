@@ -32,9 +32,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddLogging();
 
 // define scoped collections, helpers, etc
+builder.Services.AddSingleton<IServerEnvFactory, ServerEnvFactory>();
 builder.Services.AddScoped<IBibReportsCollection, BibReportsCollection>();
 builder.Services.AddScoped<IBibRecordLogger, BibRecordLogger>();
-builder.Services.AddScoped<IDataExImService, DataExImService>();
 
 var app = builder.Build();
 
@@ -45,11 +45,6 @@ app.Logger.LogInformation("API Server starting up.");
 var scope = app.Services.CreateScope();
 var bibReportPayloadsCollection = scope.ServiceProvider.GetRequiredService<IBibReportsCollection>();
 var bibRecordLogger = scope.ServiceProvider.GetRequiredService<IBibRecordLogger>();
-
-// Locate backup file and import it if found otherwise assume new and continue
-bool restoreSucceeded = bibReportPayloadsCollection.RestoreFromBackupFile();
-string restoreMsg = restoreSucceeded ? "Backup file restored." : "No backup file found or no data in file.";
-app.Logger.LogWarning("API Server auto-restore process: {msg}", restoreMsg);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -81,25 +76,15 @@ app.MapPost("/WinlinkMessage", (WinlinkMessageModel request) =>
     bool loggedInTabDelimitedFormat = false;
     try
     {
-        loggedInTabDelimitedFormat = bibRecordLogger.LogFlaggedRecordsTabDelimited(request);
+        loggedInTabDelimitedFormat = bibRecordLogger.LogWinlinkMessagePayloadToTabDelimitedFile(request);
     }
     catch (Exception ex)
     {
         app.Logger.LogWarning("MapPost Exception caught at LogFlaggedRecordsTabDelimited(request) call! {exceptionMessage}\n{exceptionTrace}", ex.Message, ex.StackTrace);
     }
 
-    bool wroteToJsonAuditFile = false;
-    try
-    {
-        wroteToJsonAuditFile = bibRecordLogger.LogWinlinkMessagePayloadToJsonAuditFile(request);
-    }
-        catch (Exception ex)
-    {
-        app.Logger.LogWarning("MapPost Exception caught at LogWinlinkMessagePayloadToJsonAuditFile(request) call! {exceptionMessage}\n{exceptionTrace}", ex.Message, ex.StackTrace);
-    }
-
     // return 200 OK or 400 Bad Request
-    if (addedRecordsToCollection && loggedInTabDelimitedFormat && wroteToJsonAuditFile)
+    if (addedRecordsToCollection && loggedInTabDelimitedFormat)
     {
         Results.Ok();
     }
@@ -118,32 +103,5 @@ app.MapPost("/WinlinkMessage", (WinlinkMessageModel request) =>
 })
 .Produces(StatusCodes.Status200OK)
 .ProducesProblem(StatusCodes.Status400BadRequest);
-
-// trigger a backup of the local DB to a remote location
-app.MapPost("/TriggerBackup", () =>
-{
-    int backupCount = 0;
-
-    try
-    {
-        backupCount = bibReportPayloadsCollection.BackupCollection();
-
-        if (backupCount > 0)
-        {
-            Results.Ok();
-        }
-        else
-        {
-            Results.Accepted();
-        }
-    }
-    catch (Exception)
-    {
-        Results.Problem();
-    }
-})
-.Produces(StatusCodes.Status200OK)
-.Produces(StatusCodes.Status202Accepted)
-.ProducesProblem(StatusCodes.Status500InternalServerError);
 
 app.Run();

@@ -4,11 +4,12 @@ namespace BFBMX.Service.Helpers
 {
     public interface IFileProcessor
     {
-        HashSet<FlaggedBibRecordModel> GetBibMatches(string[] fileDataLines, string pattern);
+        HashSet<FlaggedBibRecordModel> GetBibMatches(string[] fileDataLines, string pattern, bool flag=false);
         string[] GetFileData(string fullFilePath);
         string GetMessageId(string fileData);
         HashSet<FlaggedBibRecordModel> GetSloppyMatches(string[] lines);
         HashSet<FlaggedBibRecordModel> GetStrictMatches(string[] lines);
+        DateTime GetWinlinkMessageDateTimeStamp(string winlinkMessageData);
         List<FlaggedBibRecordModel> ProcessBibs(string[] lines, string messageId);
         WinlinkMessageModel ProcessWinlinkMessageFile(DateTime timestamp, string machineName, string filePath);
         string RecordsArrayToString(string[] fileData);
