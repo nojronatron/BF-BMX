@@ -123,7 +123,7 @@ namespace BFBMX.Desktop.ViewModels
         {
             string errMsg = e.GetException().Message;
             AlphaStatusMessage = $"Error handling file: {errMsg}";
-            _logger.LogInformation("HandleError called: {errmsg}", errMsg);
+            _logger.LogInformation("HandleError called by Monitor #1: {errmsg}", errMsg);
         }
 
         /// <summary>
@@ -134,8 +134,8 @@ namespace BFBMX.Desktop.ViewModels
         public void HandleErrorBravo(object sender, ErrorEventArgs e)
         {
             string errMsg = e.GetException().Message;
-            AlphaStatusMessage = $"Error handling file: {errMsg}";
-            _logger.LogInformation("HandleError called: {errmsg}", errMsg);
+            BravoStatusMessage = $"Error handling file: {errMsg}";
+            _logger.LogInformation("HandleError called by Monitor #2: {errmsg}", errMsg);
         }
 
         /// <summary>
@@ -146,8 +146,8 @@ namespace BFBMX.Desktop.ViewModels
         public void HandleErrorCharlie(object sender, ErrorEventArgs e)
         {
             string errMsg = e.GetException().Message;
-            AlphaStatusMessage = $"Error handling file: {errMsg}";
-            _logger.LogInformation("HandleError called: {errmsg}", errMsg);
+            CharlieStatusMessage = $"Error handling file: {errMsg}";
+            _logger.LogInformation("HandleError called by Monitor #3: {errmsg}", errMsg);
         }
 
         /// <summary>
@@ -300,6 +300,7 @@ namespace BFBMX.Desktop.ViewModels
                 AlphaMonitorStopped = _alphaMonitor.IsStopped;
                 AlphaMonitorPathEnabled = false;
                 string isOrNotInitialized = AlphaMonitorInitialized ? "successfully" : "not";
+                SetStatusMessage(AlphaMonitorName, "Monitor initialized. Click Launch to start monitoring.");
                 _logger.LogInformation("Alpha Monitor {isOrNotInit} initialized for path: {monitorPath}", 
                     isOrNotInitialized, 
                     AlphaMonitorPath);
@@ -331,7 +332,7 @@ namespace BFBMX.Desktop.ViewModels
                 if (AlphaMonitorPath!.Equals(BravoMonitorPath)
                     || AlphaMonitorPath.Equals(CharlieMonitorPath))
                 {
-                    SetStatusMessage(AlphaMonitorName, "Path already set elsewhere. Choose another path.");
+                    SetStatusMessage(AlphaMonitorName, "Path already on another Monitor. Choose another path.");
                     _logger.LogWarning("CanInitAlphaMonitor: Path not unique. Returning false;");
                     return false;
                 }
@@ -545,7 +546,7 @@ namespace BFBMX.Desktop.ViewModels
                 if (BravoMonitorPath!.Equals(AlphaMonitorPath)
                     || BravoMonitorPath.Equals(CharlieMonitorPath))
                 {
-                    SetStatusMessage(BravoMonitorName, "Path is already being monitored. Choose another path.");
+                    SetStatusMessage(BravoMonitorName, "Path already on another Monitor. Choose another path.");
                     _logger.LogWarning("CanInitBravoMonitor: Path not unique. Returning false.");
                     return false;
                 }
@@ -744,7 +745,7 @@ namespace BFBMX.Desktop.ViewModels
                 if (CharlieMonitorPath!.Equals(AlphaMonitorPath)
                     || CharlieMonitorPath.Equals(BravoMonitorPath))
                 {
-                    SetStatusMessage(CharlieMonitorName, "Path already set elsewhere. Choose another path.");
+                    SetStatusMessage(CharlieMonitorName, "Path already on another Monitor. Choose another path.");
                     _logger.LogWarning("CanInitCharlieMonitor: Path not unique. Returning false.");
                     return false;
                 }
