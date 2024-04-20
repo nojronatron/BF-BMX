@@ -1,8 +1,6 @@
 using BFBMX.Service.Models;
 using Microsoft.Extensions.Logging;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace BFBMX.Service.Helpers
@@ -12,20 +10,14 @@ namespace BFBMX.Service.Helpers
         private static readonly object _lock = new();
         private readonly ILogger<FileProcessor> _logger;
 
-        private readonly string dateTimeStampPattern = @"\d{1,2}\s\w{3}\s\d{4}\s\d{1,2}:\d{1,2}:\d{1,2}\s\+\d{4}"; 
-        private readonly string messageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
-        private readonly string strictBibPattern = @"\b\d{1,3}[,|\t](OUT|IN|DROP)[,|\t]\d{1,4}[,|\t]\d{1,2}[,|\t]\w{2}\b";
-        private readonly string sloppyBibPattern = @"\b\w{1,26}(?:\s*[,|\t]\s*\w{1,26}){4}\b";
-
-        private static JsonSerializerOptions LocalJsonSerializerOptions => new()
-        {
-            WriteIndented = true,
-            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
-            PropertyNameCaseInsensitive = true
-        };
-
+        private readonly string DateTimeStampPattern = @"\d{1,2}\s\w{3}\s\d{4}\s\d{1,2}:\d{1,2}:\d{1,2}\s\+\d{4}"; 
+        private readonly string MessageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
+        private readonly string CommaDelimitedPattern = @"\b\d{1,3}(?:\s?,\s?)(?:IN|OUT|DROP)(?:\s?,\s?)\d{1,4}(?:\s?,\s?)\d{1,2}(?:\s?,\s?)\w{2}\b";
+        private readonly string TabDelimitedPattern = @"\b\d{1,3}(?:\s?\t\s?)(?:IN|OUT|DROP)(?:\s?\t\s?)\d{1,4}(?:\s?\t\s?)\d{1,2}(?:\s?\t\s?)\w{2}\b";
+        private readonly string StrictBibPattern = @"\b\d{1,3}[,|\t](OUT|IN|DROP)[,|\t]\d{1,4}[,|\t]\d{1,2}[,|\t]\w{2}\b";
+        private readonly string SloppyBibPattern = @"\b\w{1,26}(?:\s*[,|\t]\s*\w{1,26}){4}\b"; // match 5 words with length 1-26 characters, separated by commas or tabs padded with 0 or more spaces
         private static RegexOptions LocalRegexOptions => RegexOptions.IgnoreCase;
-        private static TimeSpan LocalRegexTimeout => new(0, 0, 1);
+        private static TimeSpan LocalRegexTimeout => new(0, 0, 1); // after timeout Regex pattern match will stop to fend against mischeveous input
 
         public FileProcessor(ILogger<FileProcessor> logger)
         {
@@ -168,7 +160,7 @@ namespace BFBMX.Service.Helpers
             }
             else
             {
-                Regex match = new(messageIdPattern, LocalRegexOptions, LocalRegexTimeout);
+                Regex match = new(MessageIdPattern, LocalRegexOptions, LocalRegexTimeout);
                 MatchCollection matches = match.Matches(fileData);
 
                 if (matches.Count < 1)
@@ -195,7 +187,7 @@ namespace BFBMX.Service.Helpers
             }
             else
             {
-                Regex match = new(dateTimeStampPattern, LocalRegexOptions, LocalRegexTimeout);
+                Regex match = new(DateTimeStampPattern, LocalRegexOptions, LocalRegexTimeout);
                 MatchCollection matches = match.Matches(winlinkMessageData);
 
                 if (matches.Count < 1)
@@ -247,23 +239,23 @@ namespace BFBMX.Service.Helpers
             switch(strictCount, sloppyCount)
             {
                 case (0, 0): // no matches
-                    _logger.LogInformation("ProcessBibs: Neither strict nor relaxed matches found in Message ID {msgId}, returning empty list.", messageId);
+                    _logger.LogInformation("ProcessBibs: Neither strict nor relaxed matches found in Message ID {msgId}. Returning empty list.", messageId);
                     break;
                 case (0, > 0): // only sloppy matches
                     bibRecords = sloppyMatches.ToList();
-                    _logger.LogWarning("ProcessBibs: No strict matches and {sloppyCount} relaxed matches found in Message ID {msgId}.", sloppyCount, messageId);
+                    _logger.LogInformation("ProcessBibs: No strict matches found. Will return {sloppyCount} relaxed matches found in Message ID {msgId}.", sloppyCount, messageId);
                     break;
                 case (> 0, 0): // only strict matches
                     bibRecords = strictMatches.ToList();
-                    _logger.LogWarning("ProcessBibs: {strictCount} strict matches and no relaxed matches found in Message ID {msgId}.", strictCount, messageId);
+                    _logger.LogInformation("ProcessBibs: {strictCount} strict matches and no relaxed matches found in Message ID {msgId}. Returning {msgCount} items.", strictCount, messageId, strictCount);
                     break;
                 case (> 0, > 0): // both strict and sloppy matches, will maintain strict and add only unique sloppy matches
                     strictMatches.UnionWith(sloppyMatches);
                     bibRecords = strictMatches.ToList();
-                    _logger.LogWarning("ProcessBibs: Will union {strictCount} strict matches with {sloppyCount} relaxed matches, favoring found strict matches in Message ID {msgId}.", strictCount, sloppyCount, messageId);
+                    _logger.LogInformation("ProcessBibs: {strictCount} matches and {sloppyCOunt} matches found in Message ID {msgId}. Will union strict matches with relaxed matches for a total of {unionCount} items.", strictCount, sloppyCount, messageId, bibRecords.Count);
                     break;
                 default:
-                    _logger.LogError("ProcessBibs: An unexpected combination of strict and relaxed records matching occurred when processing bib records in Message ID {msgId}. Returning an empty list.", messageId);
+                    _logger.LogError("ProcessBibs: An unexpected error occurred while trying to process bib records in Message ID {msgId}. Returning an empty list.", messageId);
                     break;
             }
 
@@ -284,7 +276,7 @@ namespace BFBMX.Service.Helpers
                 return foundBibRecords;
             }
 
-            foundBibRecords = GetBibMatches(lines, sloppyBibPattern, true);
+            foundBibRecords = GetBibMatches(lines, SloppyBibPattern, true);
             return foundBibRecords;
         }
 
@@ -302,7 +294,10 @@ namespace BFBMX.Service.Helpers
                 return foundBibRecords;
             }
 
-            foundBibRecords = GetBibMatches(lines, strictBibPattern, false);
+            //foundBibRecords = GetBibMatches(lines, StrictBibPattern, false);
+            HashSet<FlaggedBibRecordModel> csvMatches = GetBibMatches(lines, CommaDelimitedPattern, false);
+            foundBibRecords = GetBibMatches(lines, TabDelimitedPattern, false);
+            foundBibRecords.UnionWith(csvMatches);
             return foundBibRecords;
         }
 
@@ -325,7 +320,7 @@ namespace BFBMX.Service.Helpers
             }
             else
             {
-                Regex regex = new(pattern, RegexOptions.IgnoreCase, new TimeSpan(0, 0, 2));
+                Regex regex = new(pattern, LocalRegexOptions, LocalRegexTimeout);
 
                 foreach (var line in fileDataLines)
                 {
