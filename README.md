@@ -1,6 +1,6 @@
-# Bigfoot Bib Message eXtractor
+# Bigfoot Bib Message eXtractor aka BFBMX
 
-The overarching goal of this project is to create a synchronization tool that will scrape Winlink Express messages for "Bigfoot Bib Data" and log that data to a central server computer.
+The overarching goal of this project is to create a synchronization tool that will scrape Winlink Express messages for "Bigfoot Bib Data" and log that data to a central server computer for reporting on participant locations throughout the course.
 
 ## High Level Overview
 
@@ -11,6 +11,22 @@ The overarching goal of this project is to create a synchronization tool that wi
 
 ## Project Status
 
+20-Apr-2024:
+
+- Added support to detect comma-separated values in the BibRecord data.
+- Squashed various tab-delim and comma-delim bugs in BibRecord matcher code.
+- Updated logging and Monitor status messages to better track Monitor state and activities.
+- Updated logging to better track discovered BibRecord data.
+- Added Environment Variables to UI for easier recognition of configured settings.
+- Removed backup/restore feature from the Server Service.
+- Refactored BibRecord matcher code to be more lenient in certain conditions.
+- BibRecord Data is now treated as immutabe.
+- Logs will output Bib Time fields with leading zeros if less than 4 characters (like 24-hr time layout).
+- BibRecords that are duplicated within same Message ID are not logged.
+- BibRecords that are duplicate across Message IDs _are_ logged.
+- Validated concurrent multi-directory monitoring in Debug and Release builds.
+- Desktop running stand-alone (without server) runs without crashing or hanging the UI, and logs the fact that server does not respond.
+
 10-Apr-2024:
 
 - Added functional 3rd monitor.
@@ -18,7 +34,7 @@ The overarching goal of this project is to create a synchronization tool that wi
 - Block configuring Monitors with duplicate file paths (although parent and child paths are allowed).
 - Added checks to fend against edge-case Monitor states.
 - Updated BibRecord detection pattern and processing.
-- Rearranged BibRecord logging format to be tab-delimited entries: `[Winlink ID] [DateTime] [WarningFlag] [Bib Number] [Bib Action] [Bib Time] [Day Of Month] [Location]`
+- Rearranged BibRecord logging format to tab-delimited format (see [Review Desktop Log Files](#review-desktop-log-files) for details).
 - Fixed concurrency bugs in Monitor processing.
 
 5-Apr-2024:
@@ -67,60 +83,68 @@ Client App:
 
 - Monitor up to three Winlink Express instances on a single PC.
 - Log all "Bigfoot Bib Data" and note any possible data issues.
-- Contact Server and send data to it on the LAN (wired or wifi).
+- Send data to a configured Server over the LAN or local wifi.
 - Minimal UI, minimal necessary configuration needed.
-- Limited on-screen logging of discovered Winlink Express messages.
+- List discovered files so computer operator can easily keep tabs on current status.
 
 Server Service:
 
-- Listen for data from Client App(s) and log all incoming requests and payloads.
+- Listen for data from Client App(s) and process all incoming requests and payloads.
 - Log all "Bigfoot Bib Data" and note any possible data issues with an additional "flag" bit.
 
 ## Target Environment And Dependencies
 
 - Windows 10 or 11.
 - The latest stable .NET 6 Runtime.
-- A fully-connected wired or wireless LAN.
 - The latest version of Winlink Express (to ensure mime-type compatibility).
+- A fully-connected wired or wireless LAN.
+- If a Firewall/Router is involved, access to configuration might be necessary to allow HTTP traffic between client and server.
 
 Operators must be able to:
 
 - Run executables in a Windows environment.
-- Navigate the Windows Filesystem to find logfile(s).
-- View plain-text logfile(s) using Notepad or similar (suggest Notepad++ or MS Excel).
+- Navigate the Windows Filesystem.
+- View plain-text logfile(s).
 - Configure Windows Firewall to allow HTTP communications between client and server.
-- Install, manage, and operate Winlink Express.
+- Install, configure, and operate Winlink Express.
+
+### Additional Tools
+
+- A capable text editor that can search and view extended ASCII characters, such as [Notepad++](https://notepad-plus-plus.org/).
+- A Network Inspection tool like [Wireshark](https://www.wireshark.org/) to monitor HTTP traffic between client and server.
+- Optional: A CSV- or Tab-delimited spreadsheet application such as MS Excel.
 
 ## Solution Design
 
-At a very high level:
+BFBMX.Desktop:
 
-- A client-side application monitors _up to three_ Winlink Express messages folder for new items. When found, any "bib records" discovered are recorded to a logfile and sent to a configured server service on the local area network (LAN).
-- A server-side application listens for configured clients to send it data in a JSON format. When data is received, the server logs the "bib data" to a file that can be imported into a database or spreadsheet for further analysis.
+- A Windows Desktop application that monitors up to three directories for mime-files containing specific formats of data.
+- Application logs all activities and discovered data to a local log file.
+- Application sends discovered data to the BFBMX.Server API.
+
+![Desktop Block Diagram](./Docs/Desktop-Block-Diagram.png)
+
+BFBMX.ServerApi:
+
+- A Windows Service that listens for incoming data from the BFBMX.Desktop application.
+- Service logs all incoming data and activities to heads-up Terminal window.
+- Service logs all incoming data to a local log file.
+- Service has the ability to build-up a local database of data, for possible future use.
+
+![Server Block Diagram](./Docs/Server-Block-Diagram.png)
 
 ## How To Use
 
-This section will be updated as the project enters the Beta Testing phase.
+Usage instructions for BF-BMX Desktop App and Server Service.
 
-### Configure and Run
+1. Meet minimum requires as state in [Target Environment And Dependencies](#target-environment-and-dependencies).
+1. Configure [Local Environment Variables](#configure-local-environment-variables) to set behavior of the Desktop App and Server service.
+1. Download the ClickOnce :tm: [installer](#install-desktop-app) to the Windows computer that is running Winlink Express, and run the installer (link to published files is TBD).
+1. Copy the [Server Service](#run-the-server-service) zip folder to a location and un-zip it.
+1. Make note of the `log location` presented in the [Server Service console output window](#server-service-overview) and _do not_ close the window.
+1. Make note of the `logfile path` that is presented in the [console window](#server-service-overview). This is where you will find logs of actions and discovered data in the Windows file system.
 
-1. See [Target Environment And Dependencies](#target-environment-and-dependencies) for the minimum requirements.
-1. See [Configure Local Environment Variables](#configure-local-environment-variables) for configuring the Desktop App and Server service.
-1. Copy the compiled Desktop App folder and its files to a convenient location on the client computer.
-1. Copy the compiled Server Service folder and its files to a convenient location on the server computer (or client if running both on one machine).
-1. Start the Server Service by double-clicking the BFBMX-Server-API.exe file, and accepting the Windows Firewall prompt. Make not of the `log location` presented in the Server Service console output window (do not close the console).
-1. Start the Desktop App by double-clicking the BFBMX-Desktop-App.exe file. Make not of the `log location` that is presented in the Desktop App.
-1. More steps to follow.
-
-### Use the Desktop App
-
-This section will include information such as: Setting up paths to monitor, starting and stopping monitors, and reviewing log files.
-
-### Use the Server App
-
-This section will include information such as: Reviewing Console Logging, finding and using logging output files.
-
-### Configure Local Environment Variables
+## Configure Local Environment Variables
 
 BFBMX will create a folder for its logfiles in the Documents folder of USERPROFILE, for example:
 
@@ -154,20 +178,133 @@ How to Set Environment Variables so they survive logout/restart:
 13. `Close` the Environment Variables window and the System Properties window.
 
 The computer operator(s) can then start the BF-BMX Desktop application(s) and Server Service.
+## Install Desktop App
+
+Locate the ClickOnce :tm: installer file and double-click it to start the installation process.
+
+The BF-BMX Desktop App will then be located in the Windows Start Menu, and will launch.
+
+### Desktop App Overview
+
+The App is broken up into three main section: Monitors, Environment Variables, and Detected Files.
+
+Monitors:
+
+- Up to three monitors can be configured and used. Each monitor can be configured to monitor a specific Winlink Express instance.
+- Monitors have buttons to `Initialize`, `Start`, and `Stop` monitoring. If necessary, the `Reset` button can be used to force an existing Monitor to stop and be reconfigured.
+- Monitor buttons are aware of Path Validity, and Monitor State, and will automatically enable or disable as necessary.
+
+Environment Variables:
+
+- Logfile Path: The location that will contain the log files for the Desktop App.
+- Server, Port: The configured location of the remote server that will receive the discovered data.
+
+Detected Files:
+
+- This is a scrolling, first-in-first-out list of files that any Started Monitors have detected.
+- The list will hold a maximum of 12 items, and will remove the oldest item when a new one is added.
+
+![BFBMX Desktop App User Interface](./Docs/Desktop-App.png)
+
+### Set Up Desktop Monitor Paths
+
+1. For each Winlink Express instance that you want to monitor, find the location of the `messages` folder. It is usually `c:\Winlink Express\<your_callsign>\Messages`.
+1. Copy or type-in the path in the `Monitor 1 Path` textbox. Press the `Tab` key to tell the app you are done entering the path.
+1. If the path cannot be found, a warning will appear and none of that Monitor's buttons will be enabled. Fix the path and click `Tab` again and the `Initialize` button should now be enabled.
+
+### Start And Stop Desktop Monitors
+
+Once a Monitor Path has a valid path entered and the `Initialize` button has been pressed, the `Start` and `Reset` buttons should become active.
+
+- Start Button: Clicking this button will start the Monitor, which will look for newly created files in the Monitor Path.
+- Stop Button: Clicking this button will tell the Monitor to stop watching for newly created files in the Monitor Path. The Monitor can be told to watch for new files again by clicking the `Start` button.
+- Reset Button: This is a "hard stop" button that will stop and reset the Monitor to an unconfigured state.
+ 
+_Note_: The primary purpose of the `Reset` button is to clear all memory of the Monitor before shutting down the Desktop App, but it can also be used if the Monitor is not behaving as expected and needs to be reconfigured and restarted.
+
+### Review Desktop Log Files
+
+The Desktop App displays the location of its log files to the `Logfile Path` location.
+
+2 logs are maintained here:
+
+- BFBMX Desktop App Log.
+- Captured Bib Records log.
+
+BFBMX Desktop App Log:
+
+- The activities log are stored in a file named `bfbmx-desktop-app-log.txt`.
+- Button clicks, discovered files, and discovered data events are all recorded in this log.
+- A plain text file and can be opened with any text editor.
+
+Captured Bib Records:
+
+- The file is named `bfbmx-captured-bib-records.txt`.
+- Discovered Bib Records are recorded here in a tab-delimited format, compatible with what the Server Service logs.
+- The data format is: `[Winlink Message ID] [Message DateTime] [Data Warning Flag] [Bib Number] [Bib Action] [Bib Time] [Day Of Month] [Location Acronym]`.
+
+![Desktop Logfile Nominal and Alert Entries Example](./Docs/Server-Logfile-Nominal-And-Alert-Entries.png)
+
+The above example shows a Winlink Payload log file, message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2024 at 11:31:00 AM:
+
+- The top Bib Record Data was parseable without issues so the Data Warning Flag was set to `NOMINAL`.
+- The second Bib Record Data was _not_ directly parsable. In this case the Bib Number was unexpectedly large, so the Data Warning Flag was set to `ALERT` so the problem could be investigated and corrected by the computer operator.
+
+_Note_: The exact same log file format is used by the Server Service and the Desktop App, with the exception that the Desktop App logs all Bib Records to a single file, and the Server Service logs Bib Data in individual files, one file per Winlink Message ID.
+
+## Use the Server Service
+
+The Server Service is a background service based on fully-fledge web components in `ASP.NET Core`:
+
+- Only the necessary sub-components of ASP.NET Core are used to keep the service lightweight.
+- Actitivites are logged to the console window that is opened when the service is started.
+- Bib Data received from the BFBMX Desktop Client(s) ared logged to multiple tab-delimited file for reporting or other purposes.
+
+### Run the Server Service
+
+1. Download the ZIP file (location TBD) and extract the contents to a folder on the Windows computer (for example the `Documents` folder or your `Desktop`).
+1. Double-click `BFBMX-Server-Api.exe` to launch the server service.
+1. If the Windows Firewall prompt appears, click 'Allow Access' to enable the server to listen for incoming data from the Desktop App(s).
+1. The console window will open and display the server's status and activities.
+
+### Server Service Overview
+
+The Console Window:
+
+- Use `CTRL` + `C` to stop the server. This will also close the console window and the BFBMX Desktop Application(s) will no longer have a server to send data to.
+- Use the scroll bar or a mouse wheel to scroll up and down the console window to review past activities.
+- The console window can be changed in size to fit your needs without interrupting the server service in any way.
+- Most information written to the console window will be informational, but warnings and errors will be highlighted in yellow and red, respectively.
+
+The Log Files:
+
+- The file is created 1:1 for each Winlink Message "payload" received.
+- Each payload contains: A Winlink Message ID, a Winlink Message DateTime stamp, a BFBMX Desktop Computername, and the Bib Data including the Warning Flag.
+- Each file is named after the Winlink Message ID, and is stored in the configured folder accorrding to [Environment Variables](#configure-local-environment-variables).
+- The data format is: `[Winlink Message ID] [Message DateTime] [Data Warning Flag] [Bib Number] [Bib Action] [Bib Time] [Day Of Month] [Location Acronym]`.
+
+![Server Logfile Nominal and Alert Entries Example](./Docs/Server-Logfile-Nominal-And-Alert-Entries.png)
+
+The above example shows a Winlink Payload log file, message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2024 at 11:31:00 AM:
+
+- The top Bib Record Data was parseable without issues so the Data Warning Flag was set to `NOMINAL`.
+- The second Bib Record Data was _not_ directly parsable. In this case the Bib Number was unexpectedly large, so the Data Warning Flag was set to `ALERT` so the problem could be investigated and corrected by the computer operator.
+
+_Note_: The exact same log file format is used by the Server Service and the Desktop App, with the exception that the Desktop App logs all Bib Records to a single file, and the Server Service logs Bib Data in individual files, one file per Winlink Message ID.
 
 ## Notes and Limitations
 
-- There is no way to ensure that a human-forwarded message is not altered in some. This software will not detect that type of change, and will assume the forwarded message is a valid candidate for processing a direct P2P or RMS-relayed Winlink Message.
-- This software is designed to work specifically with tab-delimimted data. In the future, other delimiters may become available and will be documented here.
-- There are conditions under which this software may not detect a newly created file in a monitored folder. While the author has made every effort to minimize these events from happening, it is not outside the realm of possibility. It is up to the Desktop App operator and the Server Service operator to review log files to ensure data is being processed as expected.
+- Data that _looks like a Bib Record_ according to the matching rules will be discovered, other data will not. It is not possible for this software to know if the data is correct or not, therefore it is up to the Desktop and Server operators to verify questionable data from the source.
+- This software is designed to detect fairly-well formed tab- and comma-delimited data. Although _some variations_ like extra spaces etc will be detected and flagged, this software does _not try to detect every possible permutation of these 2 formats_.
+- Conceivably, there are conditions under which this software may not detect a newly created file in a monitored folder. While the author has made every effort to minimize the liklihood this could happen, it is not outside the realm of possibility. It is up to the Desktop and Server operators to review log files to ensure data is being discovered and processed as expected.
 
 ## Timeline
 
-- A beta version will be made available to the Bigfoot Hams Coordinator for testing and evaluation by May 1st, 2024.
-- Official v.1.0 is scheduled to be published by end of July 2024, in time for the August 9th-13th event.
+- May 1st, 2024: Beta version will be made available to the Bigfoot Hams Coordinator for testing and evaluation.
+- Before end of July 2024: Official v.1 release published, in time for the August 9th-13th event.
 
-## References
+## References and Erratta
 
-- [file-sync-win](https://github.com/nojronatron/file-sync-win)
-- [Bigfoot-Bib-Report-WL-Form](https://github.com/nojronatron/Bigfoot-Bib-Report-WL-Form)
-- learn.microsoft.com: 2009-06-15T13:45:30 (DateTimeKind.Local) -> 2009-06-15T13:45:30
+- [file-sync-win](https://github.com/nojronatron/file-sync-win).
+- [Bigfoot-Bib-Report-WL-Form](https://github.com/nojronatron/Bigfoot-Bib-Report-WL-Form).
+- Nojronatron has monetarily supported [Notepad++](https://notepad-plus-plus.org/) because he really likes and usees it daily.
