@@ -243,7 +243,7 @@ Captured Bib Records:
 - Discovered Bib Records are recorded here in a tab-delimited format, compatible with what the Server Service logs.
 - The data format is: `[Winlink Message ID] [Message DateTime] [Data Warning Flag] [Bib Number] [Bib Action] [Bib Time] [Day Of Month] [Location Acronym]`.
 
-![Desktop Logfile Nominal and Alert Entries Example](./Docs/Server-Logfile-Nominal-and-Alert-Entries.png)
+![Desktop Logfile Nominal and Alert Entries Example](./Docs/Server-Logfile-Nominal-And-Alert-Entries.png)
 
 The above example shows a Winlink Payload log file, message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2024 at 11:31:00:
 
@@ -281,7 +281,7 @@ The Log Files:
 - Each file is named after the Winlink Message ID, and is stored in the configured folder accorrding to [Environment Variables](#configure-local-environment-variables).
 - The data format is: `[Winlink Message ID] [Message DateTime] [Data Warning Flag] [Bib Number] [Bib Action] [Bib Time] [Day Of Month] [Location Acronym]`.
 
-![Server Logfile Nominal and Alert Entries Example](./Docs/Server-Logfile-Nominal-and-Alert-Entries.png)
+![Server Logfile Nominal and Alert Entries Example](./Docs/Server-Logfile-Nominal-And-Alert-Entries.png)
 
 The above example shows a Winlink Payload log file, message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2024 at 11:31:00:
 
