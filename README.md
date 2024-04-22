@@ -245,10 +245,12 @@ Captured Bib Records:
 
 ![Desktop Logfile Nominal and Alert Entries Example](./Docs/Server-Logfile-Nominal-And-Alert-Entries.png)
 
-The above example shows a Winlink Payload log file, message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2024 at 11:31:00:
+The above example shows a Winlink Payload log file, message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2024 at 11:31:00 AM:
 
 - The top Bib Record Data was parseable without issues so the Data Warning Flag was set to `NOMINAL`.
 - The second Bib Record Data was _not_ directly parsable. In this case the Bib Number was unexpectedly large, so the Data Warning Flag was set to `ALERT` so the problem could be investigated and corrected by the computer operator.
+
+_Note_: The exact same log file format is used by the Server Service and the Desktop App, with the exception that the Desktop App logs all Bib Records to a single file, and the Server Service logs Bib Data in individual files, one file per Winlink Message ID.
 
 ## Use the Server Service
 
@@ -283,10 +285,12 @@ The Log Files:
 
 ![Server Logfile Nominal and Alert Entries Example](./Docs/Server-Logfile-Nominal-And-Alert-Entries.png)
 
-The above example shows a Winlink Payload log file, message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2024 at 11:31:00:
+The above example shows a Winlink Payload log file, message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2024 at 11:31:00 AN:
 
 - The top Bib Record Data was parseable without issues so the Data Warning Flag was set to `NOMINAL`.
 - The second Bib Record Data was _not_ directly parsable. In this case the Bib Number was unexpectedly large, so the Data Warning Flag was set to `ALERT` so the problem could be investigated and corrected by the computer operator.
+
+_Note_: The exact same log file format is used by the Server Service and the Desktop App, with the exception that the Desktop App logs all Bib Records to a single file, and the Server Service logs Bib Data in individual files, one file per Winlink Message ID.
 
 ## Notes and Limitations
 
