@@ -10,10 +10,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{507433B9-A558-44EC-803E-3421DA65A8FC}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		Docs\Desktop App 20-Apr-2024.png = Docs\Desktop App 20-Apr-2024.png
 		Docs\Desktop Block Diagram 20-Apr-2024.png = Docs\Desktop Block Diagram 20-Apr-2024.png
 		LICENSE = LICENSE
 		README.md = README.md
 		Docs\Server Block Diagram 20-Apr-2024.png = Docs\Server Block Diagram 20-Apr-2024.png
+		Docs\Server Logfile Nominal And Alert Entries 20-Apr-2024.png = Docs\Server Logfile Nominal And Alert Entries 20-Apr-2024.png
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BFBMX.ServerApi", "BFBMX.ServerApi\BFBMX.ServerApi.csproj", "{CAD87F06-9147-4C75-B240-FB579F781CD5}"

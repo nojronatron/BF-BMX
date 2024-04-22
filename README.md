@@ -200,6 +200,8 @@ Detected Files:
 - This is a scrolling, first-in-first-out list of files that any Started Monitors have detected.
 - The list will hold a maximum of 12 items, and will remove the oldest item when a new one is added.
 
+### Desktop App Overview Image
+
 ![BFBMX Desktop App User Interface](./Docs/Desktop%20App%2020-Apr-2024.png)
 
 ### Set Up Desktop Monitor Paths
@@ -239,6 +241,15 @@ Captured Bib Records:
 - Discovered Bib Records are recorded here in a tab-delimited format, compatible with what the Server Service logs.
 - The data format is: `[Winlink Message ID] [Message DateTime] [Data Warning Flag] [Bib Number] [Bib Action] [Bib Time] [Day Of Month] [Location Acronym]`.
 
+### Desktop App Logfile Example
+
+![Server Logfile Nominal and Alert Entries Shown](./Docs/Server%20Logfile%20Nominal%20and%20Alert%20Entries%2020-Apr-2024.png)
+
+The above example shows a Winlink Payload log file, message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2024 at 11:31:00:
+
+- The top Bib Record Data was parseable without issues so the Data Warning Flag was set to `NOMINAL`.
+- The second Bib Record Data was _not_ directly parsable. In this case the Bib Number was unexpectedly large, so the Data Warning Flag was set to `ALERT` so the problem could be investigated and corrected by the computer operator.
+
 ## Use the Server App
 
 The Web Service runs as a background service based on the fully-fledge web component `ASP.NET Core`.
@@ -261,14 +272,14 @@ The Log Files:
 - Each file is named after the Winlink Message ID, and is stored in the configured folder accorrding to [Environment Variables](#configure-local-environment-variables).
 - The data format is: `[Winlink Message ID] [Message DateTime] [Data Warning Flag] [Bib Number] [Bib Action] [Bib Time] [Day Of Month] [Location Acronym]`.
 
-### Server App Logfile Example
+### Desktop Service Logfile Example
 
 ![Server Logfile Nominal and Alert Entries Shown](./Docs/Server%20Logfile%20Nominal%20and%20Alert%20Entries%2020-Apr-2024.png)
 
 The above example shows a Winlink Payload log file, message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2024 at 11:31:00:
 
-- In the first case, the Bib Record Data was parseable without issues so the Data Warning Flag was set to `NOMINAL`.
--  In the second case, the Bib Record Data had an issue (in this case, the Bib Number was unexpectedly large) so the Data Warning Flag was set to `ALERT` so the problem could be investigated and corrected.
+- The top Bib Record Data was parseable without issues so the Data Warning Flag was set to `NOMINAL`.
+- The second Bib Record Data was _not_ directly parsable. In this case the Bib Number was unexpectedly large, so the Data Warning Flag was set to `ALERT` so the problem could be investigated and corrected by the computer operator.
 
 ## Notes and Limitations
 
