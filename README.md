@@ -122,7 +122,7 @@ BFBMX.Desktop:
 - Application logs all activities and discovered data to a local log file.
 - Application sends discovered data to the BFBMX.Server API.
 
-![Desktop Block Diagram](./Docs/Desktop%20Block%20Diagram%2020-Apr-2024.png)
+![Desktop Block Diagram](./Docs/Desktop-Block-Diagram.png)
 
 BFBMX.ServerApi:
 
@@ -131,19 +131,18 @@ BFBMX.ServerApi:
 - Service logs all incoming data to a local log file.
 - Service has the ability to build-up a local database of data, for possible future use.
 
-![Server Block Diagram](./Docs/Server%20Block%20Diagram%2020-Apr-2024.png)
+![Server Block Diagram](./Docs/Server-Block-Diagram.png)
 
 ## How To Use
 
 Usage instructions for BF-BMX Desktop App and Server Service.
 
-1. See [Target Environment And Dependencies](#target-environment-and-dependencies) for the minimum requirements.
-1. Configure Local Environment Variables to set behavior of the Desktop App and Server service.
-1. Download the ClickOnce :tm: installer to the Windows computer that is running Winlink Express, and run the installer (link to published files is TBD).
-1. Copy the compiled Server Service folder and its files to a convenient location on the Windows computer that needs to collect all records from Desktop App instances (a.k.a "The Server").
-1. Start the Server Service by double-clicking the BFBMX-Server-API.exe file, and accepting the Windows Firewall prompt. 
-1. Make note of the `log location` presented in the Server Service console output window and _do not_ close the window.
-1. Make note of the `logfile path` that is presented in the Desktop App. This is where you will find logs of actions and discovered data on the "client" computer.
+1. Meet minimum requires as state in [Target Environment And Dependencies](#target-environment-and-dependencies).
+1. Configure [Local Environment Variables](#configure-local-environment-variables) to set behavior of the Desktop App and Server service.
+1. Download the ClickOnce :tm: [installer](#install-desktop-app) to the Windows computer that is running Winlink Express, and run the installer (link to published files is TBD).
+1. Copy the [Server Service](#run-the-server-service) zip folder to a location and un-zip it.
+1. Make note of the `log location` presented in the [Server Service console output window](#server-service-overview) and _do not_ close the window.
+1. Make note of the `logfile path` that is presented in the [console window](#server-service-overview). This is where you will find logs of actions and discovered data in the Windows file system.
 
 ## Configure Local Environment Variables
 
@@ -179,8 +178,13 @@ How to Set Environment Variables so they survive logout/restart:
 13. `Close` the Environment Variables window and the System Properties window.
 
 The computer operator(s) can then start the BF-BMX Desktop application(s) and Server Service.
+## Install Desktop App
 
-## Use the Desktop App
+Locate the ClickOnce :tm: installer file and double-click it to start the installation process.
+
+The BF-BMX Desktop App will then be located in the Windows Start Menu, and will launch.
+
+### Desktop App Overview
 
 The App is broken up into three main section: Monitors, Environment Variables, and Detected Files.
 
@@ -200,9 +204,7 @@ Detected Files:
 - This is a scrolling, first-in-first-out list of files that any Started Monitors have detected.
 - The list will hold a maximum of 12 items, and will remove the oldest item when a new one is added.
 
-### Desktop App Overview Image
-
-![BFBMX Desktop App User Interface](./Docs/Desktop%20App%2020-Apr-2024.png)
+![BFBMX Desktop App User Interface](./Docs/Desktop-App.png)
 
 ### Set Up Desktop Monitor Paths
 
@@ -241,22 +243,29 @@ Captured Bib Records:
 - Discovered Bib Records are recorded here in a tab-delimited format, compatible with what the Server Service logs.
 - The data format is: `[Winlink Message ID] [Message DateTime] [Data Warning Flag] [Bib Number] [Bib Action] [Bib Time] [Day Of Month] [Location Acronym]`.
 
-### Desktop App Logfile Example
-
-![Server Logfile Nominal and Alert Entries Shown](./Docs/Server%20Logfile%20Nominal%20and%20Alert%20Entries%2020-Apr-2024.png)
+![Desktop Logfile Nominal and Alert Entries Example](./Docs/Server-Logfile-Nominal-and-Alert-Entries.png)
 
 The above example shows a Winlink Payload log file, message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2024 at 11:31:00:
 
 - The top Bib Record Data was parseable without issues so the Data Warning Flag was set to `NOMINAL`.
 - The second Bib Record Data was _not_ directly parsable. In this case the Bib Number was unexpectedly large, so the Data Warning Flag was set to `ALERT` so the problem could be investigated and corrected by the computer operator.
 
-## Use the Server App
+## Use the Server Service
 
-The Web Service runs as a background service based on the fully-fledge web component `ASP.NET Core`.
+The Server Service is a background service based on fully-fledge web components in `ASP.NET Core`:
 
 - Only the necessary sub-components of ASP.NET Core are used to keep the service lightweight.
 - Actitivites are logged to the console window that is opened when the service is started.
 - Bib Data received from the BFBMX Desktop Client(s) ared logged to multiple tab-delimited file for reporting or other purposes.
+
+### Run the Server Service
+
+1. Download the ZIP file (location TBD) and extract the contents to a folder on the Windows computer (for example the `Documents` folder or your `Desktop`).
+1. Double-click `BFBMX-Server-Api.exe` to launch the server service.
+1. If the Windows Firewall prompt appears, click 'Allow Access' to enable the server to listen for incoming data from the Desktop App(s).
+1. The console window will open and display the server's status and activities.
+
+### Server Service Overview
 
 The Console Window:
 
@@ -272,9 +281,7 @@ The Log Files:
 - Each file is named after the Winlink Message ID, and is stored in the configured folder accorrding to [Environment Variables](#configure-local-environment-variables).
 - The data format is: `[Winlink Message ID] [Message DateTime] [Data Warning Flag] [Bib Number] [Bib Action] [Bib Time] [Day Of Month] [Location Acronym]`.
 
-### Desktop Service Logfile Example
-
-![Server Logfile Nominal and Alert Entries Shown](./Docs/Server%20Logfile%20Nominal%20and%20Alert%20Entries%2020-Apr-2024.png)
+![Server Logfile Nominal and Alert Entries Example](./Docs/Server-Logfile-Nominal-and-Alert-Entries.png)
 
 The above example shows a Winlink Payload log file, message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2024 at 11:31:00:
 
@@ -283,9 +290,9 @@ The above example shows a Winlink Payload log file, message ID H2Y96AT5T592 with
 
 ## Notes and Limitations
 
-- There is no way to ensure that a human-forwarded message is not altered in some. This software will not detect that type of change, and will assume the forwarded message is a valid candidate for processing a direct P2P or RMS-relayed Winlink Message.
-- This software is designed to work specifically with tab-delimimted data. In the future, other delimiters may become available and will be documented here.
-- There are conditions under which this software may not detect a newly created file in a monitored folder. While the author has made every effort to minimize these events from happening, it is not outside the realm of possibility. It is up to the Desktop App operator and the Server Service operator to review log files to ensure data is being processed as expected.
+- Data that _looks like a Bib Record_ according to the matching rules will be discovered, other data will not. It is not possible for this software to know if the data is correct or not, therefore it is up to the Desktop and Server operators to verify questionable data from the source.
+- This software is designed to detect fairly-well formed tab- and comma-delimited data. Although _some variations_ like extra spaces etc will be detected and flagged, this software does _not try to detect every possible permutation of these 2 formats_.
+- Conceivably, there are conditions under which this software may not detect a newly created file in a monitored folder. While the author has made every effort to minimize the liklihood this could happen, it is not outside the realm of possibility. It is up to the Desktop and Server operators to review log files to ensure data is being discovered and processed as expected.
 
 ## Timeline
 
