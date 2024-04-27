@@ -1,4 +1,6 @@
-﻿namespace BFBMX.ServerApi.Helpers
+﻿using System.Net;
+
+namespace BFBMX.ServerApi.Helpers
 {
     public class ServerEnvFactory : IServerEnvFactory
     {
@@ -38,6 +40,18 @@
                 GetServerBackupFilename()
                 );
             return backupFilePathAndName;
+        }
+
+        public string GetServerPort()
+        {
+            return Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? "5150";
+        }
+
+        public IPHostEntry GetServerHostname()
+        {
+            string serverName = Dns.GetHostName();
+            IPHostEntry hostEntryName = Dns.GetHostEntry(serverName);
+            return hostEntryName;
         }
     }
 }

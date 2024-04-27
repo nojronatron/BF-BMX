@@ -35,6 +35,7 @@ builder.Services.AddLogging();
 builder.Services.AddSingleton<IServerEnvFactory, ServerEnvFactory>();
 builder.Services.AddScoped<IBibReportsCollection, BibReportsCollection>();
 builder.Services.AddScoped<IBibRecordLogger, BibRecordLogger>();
+builder.Services.AddSingleton<IServerInfo, ServerInfo>();
 
 var app = builder.Build();
 
@@ -45,6 +46,7 @@ app.Logger.LogInformation("API Server starting up.");
 var scope = app.Services.CreateScope();
 var bibReportPayloadsCollection = scope.ServiceProvider.GetRequiredService<IBibReportsCollection>();
 var bibRecordLogger = scope.ServiceProvider.GetRequiredService<IBibRecordLogger>();
+var serverInfo = scope.ServiceProvider.GetRequiredService<IServerInfo>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -56,10 +58,10 @@ if (app.Environment.IsDevelopment())
 // supports logging HTTP Requests and Responses
 app.UseHttpLogging();
 
-app.MapGet("/", () => new
+app.MapGet("/serverInfo", () =>
 {
-    Message = "!Ehlo Werld"
-}).Produces(200).ProducesProblem(400);
+    serverInfo.Start();
+}).Produces(200).ProducesProblem(500);
 
 app.MapPost("/WinlinkMessage", (WinlinkMessageModel request) =>
 {
@@ -81,6 +83,11 @@ app.MapPost("/WinlinkMessage", (WinlinkMessageModel request) =>
     catch (Exception ex)
     {
         app.Logger.LogWarning("MapPost Exception caught at LogFlaggedRecordsTabDelimited(request) call! {exceptionMessage}\n{exceptionTrace}", ex.Message, ex.StackTrace);
+    }
+
+    if (serverInfo.CanStart())
+    {
+        serverInfo.Start();
     }
 
     // return 200 OK or 400 Bad Request
