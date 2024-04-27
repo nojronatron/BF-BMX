@@ -1,4 +1,5 @@
 ﻿using BFBMX.ServerApi.Helpers;
+using System.Net;
 
 namespace BFBMX.Service.Test.Helpers
 {
@@ -9,6 +10,21 @@ namespace BFBMX.Service.Test.Helpers
         public ServerEnvFactoryTests()
         {
             _serverEnvFactory = new ServerEnvFactory();
+        }
+
+        [Fact]
+        public void GetHostnameSucceeds()
+        {
+            string hostname = Dns.GetHostName();
+            IPHostEntry actualHostEntry = _serverEnvFactory.GetServerHostname();
+            Assert.Equal(hostname, actualHostEntry.HostName);
+        }
+
+        [Fact]
+        public void GetPortSucceeds()
+        {
+            string bfbmxPort = Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? "5150";
+            Assert.Equal(bfbmxPort, _serverEnvFactory.GetServerPort());
         }
 
         [Fact]
