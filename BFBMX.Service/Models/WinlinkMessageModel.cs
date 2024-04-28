@@ -48,11 +48,11 @@ public class WinlinkMessageModel
     }
 
     /// <summary>
-    /// Generates a printable string representation of the DateTime parameter provided in yyyy-MM-ddTHH-mm-ss format.
+    /// Generates a printable string representation of the DateTime parameter provided, for use in generating files for Access DB.
     /// </summary>
     /// <param name="dateTimeEntry"></param>
     /// <returns></returns>
-    public static string PrintableMsgDateTime(DateTime dateTimeEntry)
+    public static string FormatDateTimeForAccessDb(DateTime dateTimeEntry)
     {
         return dateTimeEntry.ToString("yyyy-MM-ddTHH-mm-ss");
     }
@@ -82,7 +82,7 @@ public class WinlinkMessageModel
     /// <returns></returns>
     public string ToAccessDatabaseTabbedString()
     {
-        string recordPrefix = $"{WinlinkMessageId}\t{PrintableMsgDateTime(MessageDateStamp)}\t";
+        string recordPrefix = $"{WinlinkMessageId}\t{FormatDateTimeForAccessDb(MessageDateStamp)}\t";
         StringBuilder sbBibData = new();
 
         foreach(var record in BibRecords)

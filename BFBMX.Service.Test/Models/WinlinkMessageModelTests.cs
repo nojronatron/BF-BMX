@@ -377,13 +377,19 @@ public class WinlinkMessageModelTests
         Assert.False(winlinkMessage1.Equals(winlinkMessage2));
     }
 
-    //[Fact]
-    //public void PrintableDateTimeReturnsCorrectFormat()
-    //{
-    //    WinlinkMessageModel sut = new();
-    //    string expectedResult = "2024-01-02T03-04-05";
-    //    Assert.True(expectedResult.Equals(sut.PrintableMsgDateTime(JanuarySecond)));
-    //}
+    [Theory]
+    [InlineData(2024, 01, 02, 03, 04, 05, "2024-01-02T03-04-05")]
+    [InlineData(2024, 12, 31, 12, 59, 59, "2024-12-31T12-59-59")]
+    [InlineData(2024, 01, 02, 00, 00, 00, "2024-01-02T00-00-00")]
+    [InlineData(2024, 01, 02, 23, 59, 59, "2024-01-02T23-59-59")]
+    [InlineData(2000, 06, 30, 00, 00, 00, "2000-06-30T00-00-00")]
+    public void FormatDateTimeForAccessDB_ReturnsCorrectFormat(int year, int month, int day, int hour, int minute, int second, string expectedResult)
+    {
+        DateTime inputDateTime = new(year, month, day, hour, minute, second);
+        string actualResult = WinlinkMessageModel.FormatDateTimeForAccessDb(inputDateTime);
+        Debug.WriteLine($"Input: {JanuarySecond}; Expected: {expectedResult}; Actual: {actualResult}");
+        Assert.True(expectedResult.Equals(actualResult));
+    }
 
     [Fact]
     public void HasDataWarning()
