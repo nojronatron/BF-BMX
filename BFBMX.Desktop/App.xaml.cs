@@ -53,7 +53,6 @@ namespace BFBMX.Desktop
             services.AddSingleton<IApiClient, ApiClient>();
             services.AddSingleton<IFileProcessor, FileProcessor>();
             services.AddSingleton<IDiscoveredFilesCollection, DiscoveredFilesCollection>();
-            services.AddSingleton<IMostRecentFilesCollection, MostRecentFilesCollection>();
 
             // inject viewmodels here as transient services
             services.AddTransient<ViewModels.MainWindowViewModel>();
