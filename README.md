@@ -15,6 +15,10 @@ The overarching goal of this project is to create a synchronization tool that wi
 
 - Server now logs detected local IP Addresses and Port to the console output.
 
+26-Apr-2024:
+
+- Changed Desktop Logging format from `dd-MM-yy-HH:mm:ss` (27-04-24-16:42:23) to `yyyy-MMM-dd HH:mm:ss` (2024-Apr-27 16:42:23), improving readability.
+
 20-Apr-2024:
 
 - Added support to detect comma-separated values in the BibRecord data.
@@ -240,6 +244,7 @@ BFBMX Desktop App Log:
 - The activities log are stored in a file named `bfbmx-desktop-app-log.txt`.
 - Button clicks, discovered files, and discovered data events are all recorded in this log.
 - A plain text file and can be opened with any text editor.
+- The data format is: `yyyy-MMM-dd HH:mm:ss [INFO|WARN|ERROR]: {Module Member Name}: (a plain english explanation of Desktop Action or state information).`.
 
 Captured Bib Records:
 
