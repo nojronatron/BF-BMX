@@ -10,11 +10,9 @@ namespace BFBMX.Desktop.Helpers
     {
         private static readonly object _lock = new object();
         private readonly Func<DesktopLoggerConfiguration> getCurrentConfig;
-        private readonly string? name;
 
-        public DesktopLogger(string name, Func<DesktopLoggerConfiguration> getCurrentConfig)
+        public DesktopLogger(Func<DesktopLoggerConfiguration> getCurrentConfig)
         {
-            this.name = name;
             this.getCurrentConfig = getCurrentConfig;
         }
 
@@ -49,7 +47,7 @@ namespace BFBMX.Desktop.Helpers
                 {
                     string message = formatter(state, exception);
                     DateTime timeStamp = DateTime.Now;
-                    string concatMessage = $"{timeStamp:dd-MM-yy-HH:mm:ss} {logLevelText}: {message}";
+                    string concatMessage = $"{timeStamp:yyyy-MMM-dd HH:mm:ss} {logLevelText}: {message}";
                     string filePath = config.LogfilePath!;
 
                     lock (_lock)
@@ -102,7 +100,7 @@ namespace BFBMX.Desktop.Helpers
         {
             return _loggers.GetOrAdd(
                 categoryName,
-                name => new DesktopLogger(categoryName, GetCurrentConfig));
+                name => new DesktopLogger(GetCurrentConfig));
         }
 
         private DesktopLoggerConfiguration GetCurrentConfig()

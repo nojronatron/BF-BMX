@@ -27,14 +27,12 @@ namespace BFBMX.Desktop.ViewModels
         public MainWindowViewModel(ILogger<MainWindowViewModel> logger,
             IFileProcessor fileProcessor,
             IApiClient apiClient,
-            IDiscoveredFilesCollection discoveredFilesCollection,
-            IMostRecentFilesCollection mostRecentFilesCollection)
+            IDiscoveredFilesCollection discoveredFilesCollection)
         {
             _logger = logger;
             _fileProcessor = fileProcessor;
             _apiClient = apiClient;
             _discoveredFiles = discoveredFilesCollection;
-            MostRecentFilesCollection = mostRecentFilesCollection;
             MostRecentItems = new();
             LogfilePath = DesktopEnvFactory.GetBfBmxLogPath();
             ServerNamePort = DesktopEnvFactory.GetServerHostnameAndPort();
@@ -51,9 +49,6 @@ namespace BFBMX.Desktop.ViewModels
         public string? _bravoStatusMessage;
         [ObservableProperty]
         public string? _charlieStatusMessage;
-
-        [ObservableProperty]
-        public IMostRecentFilesCollection _mostRecentFilesCollection;
 
         [ObservableProperty]
         public ObservableCollection<DiscoveredFileModel> _mostRecentItems;
