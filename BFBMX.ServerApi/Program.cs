@@ -58,9 +58,15 @@ if (app.Environment.IsDevelopment())
 // supports logging HTTP Requests and Responses
 app.UseHttpLogging();
 
+serverInfo.StartLogfileInfo();
+
 app.MapGet("/serverInfo", () =>
 {
-    serverInfo.Start();
+    if (serverInfo.CanStart())
+    {
+        serverInfo.StartHostInfo();
+        serverInfo.StartLogfileInfo();
+    }
 }).Produces(200).ProducesProblem(500);
 
 app.MapPost("/WinlinkMessage", (WinlinkMessageModel request) =>
@@ -87,7 +93,7 @@ app.MapPost("/WinlinkMessage", (WinlinkMessageModel request) =>
 
     if (serverInfo.CanStart())
     {
-        serverInfo.Start();
+        serverInfo.StartHostInfo();
     }
 
     // return 200 OK or 400 Bad Request
