@@ -111,16 +111,6 @@ namespace BFBMX.Service.Models
         }
 
         /// <summary>
-        /// Format BibTimeOfDay as a printable string in 4-character, 24-hour format.
-        /// </summary>
-        /// <param name="timeOfDay"></param>
-        /// <returns>0006 for 12:06 AM</returns>
-        public static string PrintableBibTimeOfDay(string timeOfDay)
-        {
-            return timeOfDay.Length == 4 ? $"{timeOfDay.Substring(0, 2)}:{timeOfDay.Substring(2, 2)}" : timeOfDay;
-        }
-
-        /// <summary>
         /// Use JsonSerializer to return this Bib Record as a JSON string.
         /// </summary>
         /// <returns></returns>
