@@ -11,6 +11,10 @@ The overarching goal of this project is to create a synchronization tool that wi
 
 ## Project Status
 
+27-Apr-2024:
+
+- Server now logs detected local IP Addresses and Port to the console output.
+
 26-Apr-2024:
 
 - Changed Desktop Logging format from `dd-MM-yy-HH:mm:ss` (27-04-24-16:42:23) to `yyyy-MMM-dd HH:mm:ss` (2024-Apr-27 16:42:23), improving readability.
@@ -280,6 +284,7 @@ The Console Window:
 - Use the scroll bar or a mouse wheel to scroll up and down the console window to review past activities.
 - The console window can be changed in size to fit your needs without interrupting the server service in any way.
 - Most information written to the console window will be informational, but warnings and errors will be highlighted in yellow and red, respectively.
+- Occasional log entries will display the server Hostname, IP Address(es), and HTTP Port.
 
 The Log Files:
 
