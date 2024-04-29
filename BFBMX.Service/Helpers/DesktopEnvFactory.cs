@@ -1,4 +1,4 @@
-﻿namespace BFBMX.Desktop.Helpers
+﻿namespace BFBMX.Service.Helpers
 {
     public static class DesktopEnvFactory
     {
@@ -12,7 +12,7 @@
         public static string GetBfBmxFolderName()
         {
             string? logDirectory = Environment.GetEnvironmentVariable("BFBMX_DESKTOP_LOG_DIR");
-            string bffName = string.IsNullOrEmpty(logDirectory) ? "BFBMX" : logDirectory;
+            string bffName = string.IsNullOrEmpty(logDirectory) ? "BFBMX_Desktop_Logs" : logDirectory;
             return bffName;
         }
 

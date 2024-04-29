@@ -14,7 +14,7 @@ namespace BFBMX.ServerApi.Helpers
         public string GetServerFolderName()
         {
             string? logDirectory = Environment.GetEnvironmentVariable("BFBMX_SERVER_LOG_DIR");
-            string sfName = string.IsNullOrWhiteSpace(logDirectory) ? "BFBMX" : logDirectory;
+            string sfName = string.IsNullOrWhiteSpace(logDirectory) ? "BFBMX_Server_Logs" : logDirectory;
             return sfName;
         }
 

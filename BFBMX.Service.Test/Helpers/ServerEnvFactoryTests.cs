@@ -76,7 +76,7 @@ namespace BFBMX.Service.Test.Helpers
             if (string.IsNullOrWhiteSpace(currentEnvVar))
             {
                 // NOT set
-                string expectedValue = "BFBMX";
+                string expectedValue = "BFBMX_Server_Logs";
                 string actualValue = _serverEnvFactory.GetServerFolderName();
                 Assert.Equal(expectedValue, actualValue);
             }
