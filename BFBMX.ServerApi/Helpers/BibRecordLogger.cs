@@ -29,11 +29,6 @@ namespace BFBMX.ServerApi.Helpers
             {
                 lock (LockObject)
                 {
-                    if (!Directory.Exists(bfBmxLogPath))
-                    {
-                        Directory.CreateDirectory(bfBmxLogPath);
-                    }
-
                     using (StreamWriter file = File.AppendText(bfBmxLogFilePath))
                     {
                         file.Write(wlMessagePayload.ToAccessDatabaseTabbedString());
