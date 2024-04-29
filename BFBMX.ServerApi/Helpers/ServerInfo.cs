@@ -8,7 +8,7 @@ namespace BFBMX.ServerApi.Helpers
         private readonly ILogger<ServerInfo> _logger;
         private readonly IServerEnvFactory _serverEnvFactory;
         private DateTime _executionTime;
-        private TimeSpan _minWaitTime = new(0, 15, 0); // 10 minutes
+        private TimeSpan _minWaitTime = new(0, 15, 0); // hh, mm, ss
 
         public ServerInfo(ILogger<ServerInfo> logger, IServerEnvFactory serverEnvFactory)
         {

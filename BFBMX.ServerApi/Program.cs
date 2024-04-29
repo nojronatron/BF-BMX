@@ -58,6 +58,7 @@ if (app.Environment.IsDevelopment())
 // supports logging HTTP Requests and Responses
 app.UseHttpLogging();
 
+// log server info to the console at startup
 serverInfo.StartLogfileInfo();
 serverInfo.StartHostInfo();
 
