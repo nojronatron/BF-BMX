@@ -23,7 +23,7 @@ namespace BFBMX.Service.Test.Helpers
         [Fact]
         public void GetPortSucceeds()
         {
-            string bfbmxPort = Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? "5150";
+            string bfbmxPort = Environment.GetEnvironmentVariable("BFBMX_SERVER_PORT") ?? "5150";
             Assert.Equal(bfbmxPort, _serverEnvFactory.GetServerPort());
         }
 
@@ -71,7 +71,7 @@ namespace BFBMX.Service.Test.Helpers
             // 2 possible scenarios:
             // envvar NOT set => default value will be returned: BFBMX
             // envvar IS set => value will be returned that matches envvar
-            string? currentEnvVar = Environment.GetEnvironmentVariable("BFBMX_SERVER_FOLDER_NAME");
+            string? currentEnvVar = Environment.GetEnvironmentVariable("BFBMX_SERVER_LOG_DIR");
 
             if (string.IsNullOrWhiteSpace(currentEnvVar))
             {

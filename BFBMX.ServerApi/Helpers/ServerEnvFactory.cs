@@ -13,7 +13,7 @@ namespace BFBMX.ServerApi.Helpers
 
         public string GetServerFolderName()
         {
-            string? logDirectory = Environment.GetEnvironmentVariable("BFBMX_SERVER_FOLDER_NAME");
+            string? logDirectory = Environment.GetEnvironmentVariable("BFBMX_SERVER_LOG_DIR");
             string sfName = string.IsNullOrWhiteSpace(logDirectory) ? "BFBMX" : logDirectory;
             return sfName;
         }
@@ -28,7 +28,7 @@ namespace BFBMX.ServerApi.Helpers
 
         public string GetServerPort()
         {
-            return Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? "5150";
+            return Environment.GetEnvironmentVariable("BFBMX_SERVER_PORT") ?? "5150";
         }
 
         public IPHostEntry GetServerHostname()

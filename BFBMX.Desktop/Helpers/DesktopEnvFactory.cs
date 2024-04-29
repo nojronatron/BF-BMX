@@ -11,7 +11,7 @@
 
         public static string GetBfBmxFolderName()
         {
-            string? logDirectory = Environment.GetEnvironmentVariable("BFBMX_FOLDER_NAME");
+            string? logDirectory = Environment.GetEnvironmentVariable("BFBMX_DESKTOP_LOG_DIR");
             string bffName = string.IsNullOrEmpty(logDirectory) ? "BFBMX" : logDirectory;
             return bffName;
         }
@@ -46,8 +46,8 @@
             const string DEFAULTSERVER = "localhost";
             const string DEFAULTPORT = "5150";
 
-            string serverName = Environment.GetEnvironmentVariable("BFBMX_SERVERNAME") ?? DEFAULTSERVER;
-            string serverPort = Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? DEFAULTPORT;
+            string serverName = Environment.GetEnvironmentVariable("BFBMX_SERVER_NAME") ?? DEFAULTSERVER;
+            string serverPort = Environment.GetEnvironmentVariable("BFBMX_SERVER_PORT") ?? DEFAULTPORT;
 
             return $"{PROTOCOL}{serverName}:{serverPort}/";
         }
