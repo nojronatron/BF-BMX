@@ -188,9 +188,11 @@ How to Set Environment Variables so they survive logout/restart:
 The computer operator(s) can then start the BF-BMX Desktop application(s) and Server Service.
 ## Install Desktop App
 
-Locate the ClickOnce :tm: installer file and double-click it to start the installation process.
+Locate and double-click "setup.exe" to start the installation process.
 
-The BF-BMX Desktop App will then be located in the Windows Start Menu, and will launch.
+The BF-BMX Desktop App will be installed and will launch.
+
+As you might expect, you can find the app in the Windows Start Menu, named "BFBMX.Desktop".
 
 ### Desktop App Overview
 
