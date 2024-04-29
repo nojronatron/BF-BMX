@@ -18,28 +18,12 @@ namespace BFBMX.ServerApi.Helpers
             return sfName;
         }
 
-        public string GetServerBackupFilename()
-        {
-            string? bbBackupFilename = Environment.GetEnvironmentVariable("BFBMX_BACKUP_FILE_NAME");
-            string backupFileName = string.IsNullOrWhiteSpace(bbBackupFilename) ? "BFBMX-LocalDb-Backup.txt" : bbBackupFilename;
-            return backupFileName;
-        }
-
         public string GetServerLogPath()
         {
             string userProfilePath = GetUserProfilePath();
             string logDirectory = GetServerFolderName();
             string serverLogPath = System.IO.Path.Combine(userProfilePath, "Documents", logDirectory);
             return serverLogPath;
-        }
-
-        public string GetServerBackupFileNameAndPath()
-        {
-            string backupFilePathAndName = Path.Combine(
-                GetServerLogPath(),
-                GetServerBackupFilename()
-                );
-            return backupFilePathAndName;
         }
 
         public string GetServerPort()
