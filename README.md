@@ -9,7 +9,17 @@ The overarching goal of this project is to create a synchronization tool that wi
 - Over time the hams have devised a digital messaging process using [Winlink Express](https://www.winlink.org), and programs like MS Excel and MS Access to report on runner locations from each Aid Station to Race Officials at the Finish Line.
 - Managing the inflow of data at the Finish Line is a challenging task and a means to synchronize data collection from multiple Winlink Express instances is desireable, so that Finish Line hams can focus on reporting runner position data to race officials in a timely manner.
 
+Each BFBMX Desktop component discovers Bib Records received via Winlink Express and sends them to a single "server" computer so that runner location and status information can be reported on quickly and easily, based on information submitted by each Aid Station ham radio operator.
+
+![BF BMX WLE Desktop Server Basic Diagram](./Docs/bf-bmx-wle-desktop-server-basic-diagram.png)
+
 ## Project Status
+
+29-Apr-2024:
+
+- Added unit tests.
+- Updated README with more detailed instructions on how to use the Desktop App and Server Service.
+- Updated README to overview important logging entries and information.
 
 27-Apr-2024:
 
@@ -274,6 +284,20 @@ The above example shows a Winlink Payload log entry: message ID H2Y96AT5T592 wit
 
 _Note_: The exact same log file format is used by the Server Service and the Desktop App, with the exception that the Desktop App logs all Bib Records to a single file whereas the Server logs Bib Data in individual files, one file per Winlink Message ID.
 
+### Desktop Log Entry Details
+
+`INFO:` ...about Monitors Alpha, Bravo, and Charlie: These log entries can usually be ignored unless there is a problem with initializing, starting, or stopping a Monitor. Logged information will be adjusted in a future release to be less noisy and more helpful.
+
+`INFO: Discovered file path {fullfilename} creation stamp {datetime} for processing.` and `INFO: Path {path} sent to screen for display`: When a file create event is detected the file information sent to the Desktop App UI.
+
+`INFO: Sending file {fullfilename} created at {datetime} to file processor`: When a file create event is detected, the file contents are sent to the Matchers for processing.
+
+`INFO: ProcessBibs: Found {Number} strict and {Number} relaxed matches in Message ID {Winlink ID}. Returning {Number} items.`: Helps the Desktop Operator understand how many Bib Records were found in the Winlink Message.
+
+`INFO: PostWinlinkMessageAsync: Response was success status code.` and `INFO: Message ID: {ID} => Wrote to file? {boolean}. Posted to API? {boolean}. Items stored in memory: {number}.`: Describe how far the component proceeded through the steps of logging, storing, and sending data to the Server Service.
+
+There are plenty of other log entries, but these are likely the most helpful in terms of resolving unexpected issues. Get used to reviewing the log files so you gain familiarity with their content and "what is normal".
+
 ## Use the Server Service
 
 The Server Service is a background service based on fully-fledge web components from Microsoft's `ASP.NET Core`:
@@ -299,8 +323,6 @@ The Console Window:
 - Use `CTRL` + `C` to _stop the server_. The BFBMX Server Service _will no longer listen for incoming data_ until it is restarted (this is a good reason to stop the Desktop Monitor(s) and probably Winlink Express, too).
 - Use the scroll bar or a mouse wheel to scroll up and down the console window to review historical log detail.
 - The console window can be changed in size to fit your needs without interrupting the server service in any way.
-- Most information written to the console window will be informational and prefixed with `info`.
-- `warn` and `error` messages will be colored yellow or red, respectively. Pay attention to these and prepare to review the log files and originating Winlink Messages for possible issues.
 - Occasional log entries will display the server Hostname, IP Address(es), and HTTP Port.
 - If the Console Window ever "disappears" that means the server service is no longer running and you will want to [restart it](#run-the-server-service).
 
@@ -323,6 +345,16 @@ The above example shows a Winlink Payload log entry: message ID H2Y96AT5T592 wit
 - The second Bib Record Data was _not_ directly parsable because the Bib Number was unexpectedly large. The App applied the Data Warning Flag of `ALERT` so the problem could be investigated and corrected by the computer operators.
 
 _Note_: The exact same log file format is used by the Server Service and the Desktop App, with the exception that the Desktop App logs all Bib Records to a single file whereas the Server logs Bib Data in individual files, one file per Winlink Message ID.
+
+### Server Service Log Entry Details
+
+- Most information written to the console window will be informational and prefixed with `info`.
+- `warn` and `error` messages will be colored yellow or red, respectively. Pay attention to these and prepare to review the log files and originating Winlink Messages for possible issues.
+- `info: Saved Winlink Message ID {ID} and its Bib Records to memory` and `info: Saved {number} entities to in-memory store.`: The server service received a valid Winlink Message "payload" and stored the data into memory.
+- `Stored Winlink Message ID {ID} with {number} bib records to server DB.`: A built-in SQL database stores the information for quick retreival (and a future feature: querying).
+- `Wrote 1 Winlink Message payload to Access DB file {fullfilepath}`: A new file was created and the tab-delimited bib record data was written to it. There will be 1 file for each unique Winlink ID the Server Service receives.
+- `Logfiles are at {path}`: Reports the configured logfile location. Find the Bib Report output files here.
+- `Server name {hostname} at address(es) {IPv4 Addresses} listening on HTTP port {TCP Port}`: The server is listening on the specified IPv4 Address and Port. The Desktop Operator will want this information when they configure Environment Variables.
 
 ## Notes and Limitations
 
