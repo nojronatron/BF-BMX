@@ -5,6 +5,46 @@ namespace BFBMX.Service.Test.Models
     public class DiscoveredFileModelTests
     {
         [Fact]
+        public void EqualsOperatorReturnsTrueForEqualInstances()
+        {
+            // Test the == operator overload
+            var left = new DiscoveredFileModel("left-file.txt");
+            var right = new DiscoveredFileModel("left-file.txt");
+
+            Assert.True(left == right);
+        }
+
+        [Fact]
+        public void EqualsOperatorReturnsFalseForUnequalInstance()
+        {
+            // Test the == operator overload
+            var left = new DiscoveredFileModel("left-file.txt");
+            var right = new DiscoveredFileModel("right-file.txt");
+
+            Assert.False(left == right);
+        }
+
+        [Fact]
+        public void NotEqualOperatorReturnsFalseForEqualInstances()
+        {
+            // Test the != operator overload
+            var left = new DiscoveredFileModel("left-file.txt");
+            var right = new DiscoveredFileModel("left-file.txt");
+
+            Assert.False(left != right);
+        }
+
+        [Fact]
+        public void NotEqualOperatorReturnsTrueForUnequalInstances()
+        {
+            // Test the != operator overload
+            var left = new DiscoveredFileModel("left-file.txt");
+            var right = new DiscoveredFileModel("right-file.txt");
+
+            Assert.True(left != right);
+        }
+
+        [Fact]
         public void InstantiateDiscoveredFileInstance()
         {
             // get the path to a temp directory, fail the test if unable to
