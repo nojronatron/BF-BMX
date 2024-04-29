@@ -59,6 +59,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpLogging();
 
 serverInfo.StartLogfileInfo();
+serverInfo.StartHostInfo();
 
 app.MapGet("/serverInfo", () =>
 {
@@ -93,6 +94,7 @@ app.MapPost("/WinlinkMessage", (WinlinkMessageModel request) =>
 
     if (serverInfo.CanStart())
     {
+        serverInfo.StartLogfileInfo();
         serverInfo.StartHostInfo();
     }
 
