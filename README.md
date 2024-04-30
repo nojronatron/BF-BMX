@@ -113,10 +113,15 @@ Server Service:
 ## Target Environment And Dependencies
 
 - Windows 10 or 11.
-- The latest stable .NET 6 Runtime.
-- The latest version of Winlink Express (to ensure mime-type compatibility).
-- A fully-connected wired or wireless LAN.
+- The [.NET 6 Runtime](https://dotnet.microsoft.com/download/dotnet/6.0/runtime). You _must_ download and install this when you have internet access.
+- The latest version of Winlink Express (to ensure mime-type compatibility). Also install this while you have internet access.
+- A fully-connected wired or wireless LAN (internet access is only required to download software and use Telnet).
 - If a Firewall/Router is involved, access to configuration might be necessary to allow HTTP traffic between client and server.
+
+> If your computer is missing any of these dependencies, you may need to have internet connectivity to install them.
+> For example, the .NET 6 Runtime will be downloaded from the internet when the Desktop App is installed. 
+> Without internet access you will need to download and install the .NET 6 Runtime separately prior to running the Desktop App installer. 
+> Similarly, Winlink Express requires internet access or a local copy of the installer to install.
 
 Operators must be able to:
 
