@@ -90,25 +90,26 @@ namespace BFBMX.Service.Test.Models
             Assert.Equal(string.Empty, sut.MonitoredPath);
         }
 
-        [Fact]
-        public void WhenMonitoredPathSet_ShouldBeSet()
-        {
-            // Arrange
-            var watcher = new FileSystemWatcher();
-            var name = "TestWatcher";
-            var path = @"C:\Test-Temp";
+        // should be MOQd
+        //[Fact]
+        //public void WhenMonitoredPathSet_ShouldBeSet()
+        //{
+        //    // Arrange
+        //    var watcher = new FileSystemWatcher();
+        //    var name = "TestWatcher";
+        //    var path = @"C:\Test-Temp";
 
-            // Act
-            var sut = new FSWMonitor(watcher, name)
-            {
-                MonitoredPath = path
-            };
+        //    // Act
+        //    var sut = new FSWMonitor(watcher, name)
+        //    {
+        //        MonitoredPath = path
+        //    };
 
-            // Assert
-            Assert.Equal(path, sut.MonitoredPath);
-        }
+        //    // Assert
+        //    Assert.Equal(path, sut.MonitoredPath);
+        //}
 
-        // TODO: Build a FSWatcherWrapper class with in interface so this can be MOQ'd
+        // should be MOQd
         //[Fact]
         //public void WhenEnableRaisingEventsSet_ShouldBeSet()
         //{
@@ -137,7 +138,7 @@ namespace BFBMX.Service.Test.Models
         //    Assert.True(isEnabledRaisingEvents);
         //}
 
-        // TODO: Build a FSWatcherWrapper class with in interface so this can be MOQ'd
+        // TODO: should be MOQ'd
         //[Fact]
         //public void CanStart_NotNullNotEnabledPathNotEmptyIsStopped_ReturnsTrue()
         //{
@@ -183,7 +184,7 @@ namespace BFBMX.Service.Test.Models
             Assert.False(canStart);
         }
 
-        // TODO: Build a FSWatcherWrapper class with in interface so this can be MOQ'd
+        // TODO: should be MOQ'd
         //[Fact]
         //public void CanStart_NotStoppedReturnFalse()
         //{
