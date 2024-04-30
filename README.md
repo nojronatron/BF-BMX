@@ -118,18 +118,21 @@ Server Service:
 - A fully-connected wired or wireless LAN (internet access is only required to download software and use Telnet).
 - If a Firewall/Router is involved, access to configuration might be necessary to allow HTTP traffic between client and server.
 
-> If your computer is missing any of these dependencies, you may need to have internet connectivity to install them.
-> For example, the .NET 6 Runtime will be downloaded from the internet when the Desktop App is installed. 
-> Without internet access you will need to download and install the .NET 6 Runtime separately prior to running the Desktop App installer. 
-> Similarly, Winlink Express requires internet access or a local copy of the installer to install.
+_Important Notes_:
+
+- If your computer is missing any of these dependencies, you may need to have internet connectivity to install them.
+- The .NET 6 Runtime _can_ be downloaded from the internet during Desktop App installation if you choose.
+- Download and install the .NET 6 Runtime separately while you have internet access, prior to running the Desktop App installer for the best experience.
+- Download and install Winlink Express separately while you have internet access, if it is not already installed and updated.
 
 Operators must be able to:
 
 - Run executables in a Windows environment.
 - Navigate the Windows Filesystem.
 - View plain-text logfile(s).
-- Configure Windows Firewall to allow HTTP communications between client and server.
 - Install, configure, and operate Winlink Express.
+
+_Note_: It could be helpful to have experience with configuring Windows Firewall in case the Security Prompt during installation is not accepted or does not show.
 
 ### Additional Tools
 
@@ -369,11 +372,11 @@ _Note_: The exact same log file format is used by the Server Service and the Des
 
 ## Timeline
 
-- May 1st, 2024: Beta version will be made available to the Bigfoot Hams Coordinator for testing and evaluation.
-- May 2024: Beta version testing begins and final adjustments are made.
-- June 2024: Full end-to-end deployment that will test the software in a multi-computer, multi-Winlink Express deployment, using a single server instance, all connected via WiFi/wired LAN.
+- May 1st, 2024: Beta version will be made available to the Bigfoot Hams Coordinator for initial evaluation.
+- May 2024: Beta version testing using 1 or more computers (no radios) begins in earnest and bugfixes or feature tweaks are applied when necessary.
+- June 2024: Full end-to-end deployment that will test the software in a multi-computer, multi-Winlink Express deployment where all computers are connected via WiFi/wired LAN.
 - July 2024: Official V1 published in time for the August 9th-13th event.
-- August 2024: Post-event review and feedback collection, and initial planning for V2 (2025).
+- After August 13th, 2024: Post-event review and feedback collection, and initial planning for V2 in 2025.
 
 ## References and Erratta
 
