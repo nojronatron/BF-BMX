@@ -37,7 +37,6 @@ namespace BFBMX.Service.Models
         public int CompareTo(DiscoveredFileModel? other)
         {
             if (other == null) return 1;
-            // todo: Find out from stakeholders if filename only collisions should be considered
             return string.Compare(FullFilePath, other.FullFilePath, StringComparison.Ordinal);
         }
 

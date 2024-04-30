@@ -138,7 +138,7 @@ namespace BFBMX.Service.Test.Models
         //    Assert.True(isEnabledRaisingEvents);
         //}
 
-        // TODO: should be MOQ'd
+        // should be MOQ'd
         //[Fact]
         //public void CanStart_NotNullNotEnabledPathNotEmptyIsStopped_ReturnsTrue()
         //{
@@ -184,7 +184,7 @@ namespace BFBMX.Service.Test.Models
             Assert.False(canStart);
         }
 
-        // TODO: should be MOQ'd
+        // should be MOQ'd
         //[Fact]
         //public void CanStart_NotStoppedReturnFalse()
         //{

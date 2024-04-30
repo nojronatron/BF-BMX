@@ -32,7 +32,6 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
 
         string wlMsgId = string.IsNullOrWhiteSpace(wlMessagePayload.WinlinkMessageId) ? "ERROR!" : wlMessagePayload.WinlinkMessageId;
 
-        // todo: find out what stakeholders want to do if duplicate because collection items are written to file, db is not
         if (this.Contains(wlMessagePayload))
         {
             _logger.LogWarning("Winlink Message ID {wlmsgid} already exists in memory!", wlMsgId);
@@ -52,7 +51,6 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
             {
                 if (bibMessageContext.WinlinkMessageModels.Any(wl => wl.WinlinkMessageId == wlMessagePayload.WinlinkMessageId))
                 {
-                    // todo: find out what stakeholders want to do if the entity already exists in the DB or it that matters
                     _logger.LogWarning("Winlink Message ID {wlmsgid} already exists in the server DB!", wlMsgId);
                 }
                 else
