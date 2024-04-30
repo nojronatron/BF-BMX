@@ -1,5 +1,4 @@
-﻿using BFBMX.Desktop.Collections;
-using BFBMX.Desktop.Helpers;
+﻿using BFBMX.Desktop.Helpers;
 using BFBMX.Service.Helpers;
 using BFBMX.Service.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -22,17 +21,14 @@ namespace BFBMX.Desktop.ViewModels
         private readonly IFileProcessor _fileProcessor;
         private readonly IApiClient _apiClient;
 
-        public readonly IDiscoveredFilesCollection _discoveredFiles;
 
         public MainWindowViewModel(ILogger<MainWindowViewModel> logger,
             IFileProcessor fileProcessor,
-            IApiClient apiClient,
-            IDiscoveredFilesCollection discoveredFilesCollection)
+            IApiClient apiClient)
         {
             _logger = logger;
             _fileProcessor = fileProcessor;
             _apiClient = apiClient;
-            _discoveredFiles = discoveredFilesCollection;
             MostRecentItems = new();
             LogfilePath = DesktopEnvFactory.GetBfBmxLogPath();
             ServerNamePort = DesktopEnvFactory.GetServerHostnameAndPort();
@@ -66,7 +62,6 @@ namespace BFBMX.Desktop.ViewModels
             DiscoveredFileModel newFile = new(discoveredFilepath);
             DateTime fileTimeStamp = newFile.FileTimeStamp;
             _logger.LogInformation("Discovered file path {filepath} creation stamp {filedatetime} for processing.", discoveredFilepath, fileTimeStamp);
-            await _discoveredFiles.EnqueueAsync(newFile);
 
             // insert the new item into the collection on the UI Thread (WPF requirement)
             App.Current.Dispatcher.Invoke(() =>
@@ -105,8 +100,6 @@ namespace BFBMX.Desktop.ViewModels
             bool wroteToFile = _fileProcessor.WriteWinlinkMessageToFile(winlinkMessage, logPathAndFilename);
             bool postedToApi = await _apiClient.PostWinlinkMessageAsync(winlinkMessage.ToJsonString());
             _logger.LogInformation("Message ID: {wlMsgId} => Wrote to file? {wroteToFile}. Posted to API? {postedToApi}. Items stored in memory: {collectionCount}.", winlinkMessage.WinlinkMessageId, wroteToFile, postedToApi, winlinkMessage.BibRecords.Count);
-
-            /***** end moved from DiscoveredFilesCollection *****/
         }
 
         /// <summary>
@@ -184,62 +177,6 @@ namespace BFBMX.Desktop.ViewModels
                         _logger.LogWarning("SetStatusMessage: Monitor name not recognized: {monitorName}", monitorName);
                         break;
                     }
-            }
-        }
-
-        /// <summary>
-        /// Reset FileSystemWatcher instance to clear monitoring configuration and free memory.
-        /// </summary>
-        /// <param name="monitor"></param>
-        public void ResetMonitor(FSWMonitor? monitor)
-        {
-            if (monitor is not null)
-            {
-
-                switch (monitor.GetName())
-                {
-                    case AlphaMonitorName:
-                        {
-                            monitor.EnableRaisingEvents = false;
-                            monitor.Dispose();
-                            _logger.LogInformation("ResetMonitor: Alpha Monitor disposed.");
-                            AlphaMonitorPathEnabled = true;
-                            AlphaMonitorInitialized = false;
-                            SetStatusMessage(AlphaMonitorName, "This monitor has been reset.");
-                            monitor = null;
-                            break;
-                        }
-                    case BravoMonitorName:
-                        {
-                            monitor.EnableRaisingEvents = false;
-                            monitor.Dispose();
-                            _logger.LogInformation("ResetMonitor: Bravo Monitor disposed.");
-                            BravoMonitorPathEnabled = true;
-                            BravoMonitorInitialized = false;
-                            SetStatusMessage(BravoMonitorName, "This monitor has been reset.");
-                            monitor = null;
-                            break;
-                        }
-                    case CharlieMonitorName:
-                        {
-                            monitor.EnableRaisingEvents = false;
-                            monitor.Dispose();
-                            _logger.LogInformation("ResetMonitor: Charlie Monitor disposed.");
-                            CharlieMonitorInitialized = false;
-                            SetStatusMessage(CharlieMonitorName, "This monitor has been reset.");
-                            monitor = null;
-                            break;
-                        }
-                    default:
-                        {
-                            _logger.LogWarning("ResetMonitor: Monitor name not recognized: {monitorName}", monitor.GetName());
-                            break;
-                        }
-                }
-            }
-            else
-            {
-                _logger.LogInformation("ResetMonitor: No existing Monitor to dispose, no state(s) were changed.");
             }
         }
 
@@ -334,7 +271,7 @@ namespace BFBMX.Desktop.ViewModels
                 if (_alphaMonitor is null)
                 {
                     _logger.LogInformation("CanInitAlphaMonitor: Monitor is null and path exists. Returning true.");
-                    SetStatusMessage(AlphaMonitorPath, string.Empty);
+                    SetStatusMessage(AlphaMonitorName, string.Empty);
                     return true;
                 }
 
