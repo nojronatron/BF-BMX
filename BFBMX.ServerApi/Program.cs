@@ -7,7 +7,7 @@ using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string serverPort = Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? "5150";
+string serverPort = Environment.GetEnvironmentVariable("BFBMX_SERVER_PORT") ?? "5150";
 _ = int.TryParse(serverPort, out int srvrPort);
 
 // Add services to the container.
@@ -46,6 +46,7 @@ app.Logger.LogInformation("API Server starting up.");
 var scope = app.Services.CreateScope();
 var bibReportPayloadsCollection = scope.ServiceProvider.GetRequiredService<IBibReportsCollection>();
 var bibRecordLogger = scope.ServiceProvider.GetRequiredService<IBibRecordLogger>();
+var serverEnvVars = scope.ServiceProvider.GetRequiredService<IServerEnvFactory>();
 var serverInfo = scope.ServiceProvider.GetRequiredService<IServerInfo>();
 
 // Configure the HTTP request pipeline.
@@ -58,7 +59,15 @@ if (app.Environment.IsDevelopment())
 // supports logging HTTP Requests and Responses
 app.UseHttpLogging();
 
+// log server info to the console at startup
 serverInfo.StartLogfileInfo();
+serverInfo.StartHostInfo();
+
+// create bibrecordlogger folder path if not already exists
+if (!Directory.Exists(serverEnvVars.GetServerLogPath()))
+{
+    Directory.CreateDirectory(serverEnvVars.GetServerLogPath());
+}
 
 app.MapGet("/serverInfo", () =>
 {
@@ -93,6 +102,7 @@ app.MapPost("/WinlinkMessage", (WinlinkMessageModel request) =>
 
     if (serverInfo.CanStart())
     {
+        serverInfo.StartLogfileInfo();
         serverInfo.StartHostInfo();
     }
 

@@ -7,6 +7,157 @@ namespace BFBMX.Service.Test.Models
         public static string DataWarningText { get => "ALERT"; }
         public static string NoDataWarningText { get => "NOMINAL";}
 
+        [Theory]
+        [InlineData("1", "IN", "1234", "2", "TL", false)]
+        [InlineData("1", "IN", "1234", "2", "TL", true)]
+        public void GetHashCodeReturnsSameCodeIncludeDataWarning(string bibNum,
+                                                                 string @action,
+                                                                 string bibTOD,
+                                                                 string dayOfMonth,
+                                                                 string location,
+                                                                 bool dataWarning)
+        {
+            FlaggedBibRecordModel original = new()
+            {
+                BibNumber = "1",
+                Action = "IN",
+                BibTimeOfDay = "1234",
+                DayOfMonth = "2",
+                Location = "TL",
+                DataWarning = false
+            };
+
+            var originalHashCode = original.GetHashCode();
+
+            FlaggedBibRecordModel sut = new()
+            {
+                BibNumber = bibNum,
+                Action = @action,
+                BibTimeOfDay = bibTOD,
+                DayOfMonth = dayOfMonth,
+                Location = location,
+                DataWarning = dataWarning
+            };
+
+            Assert.Equal(originalHashCode, sut.GetHashCode());
+        }
+
+        [Theory]
+        [InlineData("2", "IN", "1234", "2", "TL", false)]
+        [InlineData("1", "DROP", "1234", "2", "TL", false)]
+        [InlineData("1", "IN", "2345", "2", "TL", false)]
+        [InlineData("1", "IN", "1234", "23", "TL", false)]
+        [InlineData("1", "IN", "1234", "2", "LT", false)]
+        public void GetHashCodeReturnsDifferentCodesExceptDataWarning(string bibNum,
+                                                                      string @action,
+                                                                      string bibTOD,
+                                                                      string dayOfMonth,
+                                                                      string location,
+                                                                      bool dataWarning)
+        {
+            FlaggedBibRecordModel original = new()
+            {
+                BibNumber = "1",
+                Action = "IN",
+                BibTimeOfDay = "1234",
+                DayOfMonth = "2",
+                Location = "TL",
+                DataWarning = false
+            };
+
+            var originalHashCode = original.GetHashCode();
+
+            FlaggedBibRecordModel sut = new()
+            {
+                BibNumber = bibNum,
+                Action = @action,
+                BibTimeOfDay = bibTOD,
+                DayOfMonth = dayOfMonth,
+                Location = location,
+                DataWarning = dataWarning
+            };
+
+            Assert.NotEqual(originalHashCode, sut.GetHashCode());
+        }
+
+        [Fact]
+        public void CustomEqualsObjectReturnsTrueForReferenceEquals()
+        {
+            FlaggedBibRecordModel sut = new();
+            Assert.True(sut.Equals(sut));
+        }
+
+        [Fact]
+        public void CustomEqualsObjectReturnsFalseForNull()
+        {
+            FlaggedBibRecordModel sut = new();
+            Assert.False(sut.Equals(null));
+        }
+
+        [Fact]
+        public void CustomEqualsObjectReturnsTrueForSameValues()
+        {
+            FlaggedBibRecordModel sut = new()
+            {
+                BibNumber = "1",
+                @Action = "IN",
+                BibTimeOfDay = "1314",
+                DayOfMonth = "2",
+                Location = "test-location",
+                DataWarning = false
+            };
+
+            FlaggedBibRecordModel sut2 = new()
+            {
+                BibNumber = "1",
+                @Action = "IN",
+                BibTimeOfDay = "1314",
+                DayOfMonth = "2",
+                Location = "test-location",
+                DataWarning = false
+            };
+
+            Assert.True(sut.Equals(sut2));
+        }
+
+        [Theory]
+        [InlineData("1O1", "IN", "1234", "5", "TL", false)]
+        [InlineData("101", "1N", "1234", "5", "TL", true)]
+        [InlineData("101", "IN", "I234", "5", "TL", true)]
+        [InlineData("101", "IN", "1234", "6", "TL", false)]
+        [InlineData("101", "IN", "1234", "5", "LT", false)]
+        [InlineData("102", "IN", "1234", "5", "TL", false)]
+        [InlineData("101", "OUT", "1234", "5", "TL", false)]
+        [InlineData("101", "IN", "2345", "5", "TL", false)]
+        [InlineData("1O1", "IN", "1234", "15", "TL", false)]
+        [InlineData("1O1", "IN", "1234", "5", "AB", false)]
+        [InlineData("", "IN", "1234", "5", "TL", false)]
+        public void CustomEqualsObjectReturnsFalseForDifferentValues(
+            string bibNum, string bibAction, string bibTime, string dayOfMonth, string location, bool dataWarning)
+        {
+            FlaggedBibRecordModel sut = new()
+            {
+                BibNumber = "101",
+                @Action = "IN",
+                BibTimeOfDay = "1234",
+                DayOfMonth = "5",
+                Location = "TL",
+                DataWarning = false
+            };
+
+            FlaggedBibRecordModel sut2 = new()
+            {
+                BibNumber = bibNum,
+                @Action = bibAction,
+                BibTimeOfDay = bibTime,
+                DayOfMonth = dayOfMonth,
+                Location = location,
+                DataWarning = dataWarning
+            };
+
+            Assert.False(sut.Equals(sut2));
+        }
+
         [Fact]
         public void InstantiateBibRecordModelAllFields()
         {

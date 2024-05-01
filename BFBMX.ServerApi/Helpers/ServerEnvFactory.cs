@@ -13,16 +13,9 @@ namespace BFBMX.ServerApi.Helpers
 
         public string GetServerFolderName()
         {
-            string? logDirectory = Environment.GetEnvironmentVariable("BFBMX_SERVER_FOLDER_NAME");
-            string sfName = string.IsNullOrWhiteSpace(logDirectory) ? "BFBMX" : logDirectory;
+            string? logDirectory = Environment.GetEnvironmentVariable("BFBMX_SERVER_LOG_DIR");
+            string sfName = string.IsNullOrWhiteSpace(logDirectory) ? "BFBMX_Server_Logs" : logDirectory;
             return sfName;
-        }
-
-        public string GetServerBackupFilename()
-        {
-            string? bbBackupFilename = Environment.GetEnvironmentVariable("BFBMX_BACKUP_FILE_NAME");
-            string backupFileName = string.IsNullOrWhiteSpace(bbBackupFilename) ? "BFBMX-LocalDb-Backup.txt" : bbBackupFilename;
-            return backupFileName;
         }
 
         public string GetServerLogPath()
@@ -33,18 +26,9 @@ namespace BFBMX.ServerApi.Helpers
             return serverLogPath;
         }
 
-        public string GetServerBackupFileNameAndPath()
-        {
-            string backupFilePathAndName = Path.Combine(
-                GetServerLogPath(),
-                GetServerBackupFilename()
-                );
-            return backupFilePathAndName;
-        }
-
         public string GetServerPort()
         {
-            return Environment.GetEnvironmentVariable("BFBMX_SERVERPORT") ?? "5150";
+            return Environment.GetEnvironmentVariable("BFBMX_SERVER_PORT") ?? "5150";
         }
 
         public IPHostEntry GetServerHostname()

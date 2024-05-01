@@ -104,7 +104,6 @@ public class WinlinkMessageModelTests
             }
         };
 
-        // todo: Should it be Message date-time, or file created date-time?
         var expected = "ABCDEFGHIJKL.txt";
         var actual = sut.ToFilename();
         Assert.Equal(expected, actual);
