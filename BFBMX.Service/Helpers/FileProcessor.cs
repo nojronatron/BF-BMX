@@ -14,7 +14,7 @@ namespace BFBMX.Service.Helpers
         private readonly string MessageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
         private readonly string CommaDelimitedPattern = @"\b\d{1,3}(?:\s?,\s?)(?:IN|OUT|DROP)(?:\s?,\s?)\d{1,4}(?:\s?,\s?)\d{1,2}(?:\s?,\s?)\w{2}\b";
         private readonly string TabDelimitedPattern = @"\b\d{1,3}(?:\s?\t\s?)(?:IN|OUT|DROP)(?:\s?\t\s?)\d{1,4}(?:\s?\t\s?)\d{1,2}(?:\s?\t\s?)\w{2}\b";
-        private readonly string SloppyBibPattern = @"\b\w{1,26}(?:\s*[,|\t]\s*\w{1,26}){4}\b"; // match 5 words with length 1-26 characters, separated by commas or tabs padded with 0 or more spaces
+        private readonly string SloppyBibPattern = @"(?:\S{1,26}\s?(?:\t|,)\s?){4}(?:\S{0,26})"; // match 5 character groups with length 1-26 separated by commas or tabs padded with 0 or more spaces, and possible missing data after last comma or tab
         private static RegexOptions LocalRegexOptions => RegexOptions.IgnoreCase;
         private static TimeSpan LocalRegexTimeout => new(0, 0, 1); // after timeout Regex pattern match will stop to fend against mischeveous input
 
@@ -323,7 +323,7 @@ namespace BFBMX.Service.Helpers
 
                 foreach (var line in fileDataLines)
                 {
-                    var fields = line.Split('\t', ',');
+                    var fields = line.Split(new char[] { '\t', ',' });
 
                     if (fields.Length == 5)
                     {
