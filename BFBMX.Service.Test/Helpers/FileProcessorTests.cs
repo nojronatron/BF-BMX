@@ -163,6 +163,8 @@ public class FileProcessorTests
 
     [InlineData(new string[] { "206 ,IN ,0311 ,27 ,TS", "60 ,IN ,0301 ,27 ,TS" }, 2)]
     [InlineData(new string[] { "206 , IN , 0311 , 27 , TS", "60 , IN , 0301 , 27 , TS" }, 2)]
+    [InlineData(new string[] { "187,OUT,0253  ,  27,TS" }, 0)]
+    [InlineData(new string[] { "187,OUT,0253 , 27,TS" }, 1)]
     [Theory]
     public void CapturesCorrectNumber_PoorlyFormattedCommaSeparatedValidBibRecords(string[] commaBibRecords, int expectedCount)
     {  
