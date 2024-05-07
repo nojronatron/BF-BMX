@@ -11,21 +11,25 @@
     
     <Grid Background="Azure">
         <Grid.RowDefinitions>
+            <!-- grid row 0 -->
             <RowDefinition Height="2"/>
             <RowDefinition Height="36"/>
             <RowDefinition Height="2"/>
             <RowDefinition Height="32"/>
-            <RowDefinition Height="8"/>
+            <RowDefinition Height="8"/> 
+            <!-- grid row 5 -->
             <RowDefinition Height="36"/>
             <RowDefinition Height="2"/>
             <RowDefinition Height="32"/>
             <RowDefinition Height="8"/>
-            <RowDefinition Height="36"/>
+            <RowDefinition Height="36"/> 
+            <!-- grid row 10 -->
             <RowDefinition Height="2"/>
             <RowDefinition Height="32"/>
             <RowDefinition Height="8"/>
-            <RowDefinition Height="36"/>
-            <RowDefinition Height="4"/>
+            <RowDefinition Height="72"/>
+            <RowDefinition Height="4"/> 
+            <!-- grid row 15-->
             <RowDefinition Height="160"/>
             <RowDefinition Height="8"/>
         </Grid.RowDefinitions>
@@ -193,29 +197,38 @@
         </StackPanel>
 
         <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center"
                     Grid.Row="13"
                     Grid.Column="1"
                     Background="LightBlue">
-            <Label HorizontalAlignment="Left"
-                   Margin="2,4"
-                   Content="Logfile Path:"/>
-            <TextBlock IsEnabled="False"
+            
+            <StackPanel Orientation="Vertical"
+                        Margin="6,0">
+                <Label HorizontalAlignment="Center"
+                   Margin="6,4"
+                   Content="Click Logfile Path To Open In Explorer"/>
+                <Button Height="24"
+                    Padding="6,2,6,2"
+                    Margin="2"
+                    VerticalAlignment="Center"
+                    Background="Azure"
+                    Command="{Binding LaunchLogfilePathCommand}"
+                    Content="{Binding LogfilePath}" />
+            </StackPanel>
+            
+            <StackPanel Orientation="Vertical"
+                        Margin="6,0">
+                <Label HorizontalAlignment="Center"
+                   Margin="6,4"
+                   Content="Server Name and Port"/>
+                <TextBlock IsEnabled="False"
                        Height="24"
-                       Padding="6,2,6,2"
-                       Margin="2"
-                       VerticalAlignment="Center"
-                       Background="Azure"
-                       Text="{Binding LogfilePath}" />
-            <Label HorizontalAlignment="Left"
-                   Margin="2,4"
-                   Content="Server, Port:"/>
-            <TextBlock IsEnabled="False"
-                       Height="24"
-                       Padding="6,2,6,2"
+                       Padding="6,4,6,0"
                        Margin="2"
                        VerticalAlignment="Center"
                        Background="Azure"
                        Text="{Binding ServerNamePort}" />
+            </StackPanel>
         </StackPanel>
 
         <StackPanel Orientation="Vertical"
