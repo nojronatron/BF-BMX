@@ -1,10 +1,11 @@
 ﻿using BFBMX.Service.Models;
+using System.Text.RegularExpressions;
 
 namespace BFBMX.Service.Helpers
 {
     public interface IFileProcessor
     {
-        HashSet<FlaggedBibRecordModel> GetBibMatches(string[] fileDataLines, string pattern, bool flag=false);
+        HashSet<FlaggedBibRecordModel> GetBibMatches(string[] fileDataLines, Regex regexInstance, bool setWarning = false);
         string[] GetFileData(string fullFilePath);
         string GetMessageId(string fileData);
         HashSet<FlaggedBibRecordModel> GetSloppyMatches(string[] lines);

@@ -1,10 +1,8 @@
 using BFBMX.Service.Helpers;
 using BFBMX.Service.Models;
 using BFBMX.Service.Test.TestData;
-using System.Diagnostics;
 using Moq;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
 
 namespace BFBMX.Service.Test.Helpers;
 
@@ -20,11 +18,56 @@ public class FileProcessorTests
     public string sample_ValidMessageWithBibDataInReplyMessage => SampleMessages.ValidMessageWithBibDataInReplyMessage;
     public string sample_MessageWith26ValidBibs => SampleMessages.MessageWith26ValidBibs;
 
-
     public FileProcessorTests()
     {
         _mockLogger = new Mock<ILogger<FileProcessor>>();
         _fileProcessor = new FileProcessor(_mockLogger.Object);
+    }
+
+    [Theory]
+    [InlineData(new string[] { "237\tOUT\t2318\t11\t ", "237\tIN\t2241\t11\t.", "124\tIN\t2237\t11\t  " }, 3)]
+    [InlineData(new string[] { "124\tOUT\t0005\t12\t?", "141\tOUT\t2342\t11\t25", "141\tDROP\t2342\t11\t" }, 3)]
+    [InlineData(new string[] { "237, OUT, 2318, 11,  " }, 1)]
+    [InlineData(new string[] { "237, IN, 2241, 11, ." }, 1)]
+    [InlineData(new string[] { "124, IN, 2237, 11,   " }, 1)]
+    [InlineData(new string[] { "124, OUT, 0005, 12, ?" }, 1)]
+    [InlineData(new string[] { "141, OUT, 2342, 11," }, 1)]
+    [InlineData(new string[] { "141, OUT, 2342, 11, 25" }, 1)]
+    [InlineData(new string[] { "196\t IN \t2009 \t 11\t  Wright Meadow", "196\t OUT\t 2009 \t 11\t  WrightMeadow", "196\t DROP\t 2009 \t 11\t WrightMeadow" }, 3)]
+    [InlineData(new string[] { "196, IN ,2009 , 11,  Wright Meadow" }, 1)]
+    [InlineData(new string[] { "196, OUT, 2009 , 11,  WrightMeadow" }, 1)]
+    [InlineData(new string[] { "196, DROP, 2009 , 11, WrightMeadow" }, 1)]
+    public void MatchersMarkWarning_BibLocationMissingOrSpecialCharacter(string[] lines, int expectedCount)
+    {
+        List<FlaggedBibRecordModel> actualResult = _fileProcessor.GetSloppyMatches(lines).ToList();
+        Assert.NotNull(actualResult);
+        Assert.Equal(expectedCount, actualResult.Count);
+    }
+
+    [Theory]
+    [InlineData(new string[] { "115\tIN\t2009\t11\tWR" }, 1)]
+    [InlineData(new string[] { "115\tOUT\t2009\t11\tWR", "195\tOUT\t2009\t11\tWR" }, 2)]
+    [InlineData(new string[] { "115,IN,2009,11,WR" }, 1)]
+    [InlineData(new string[] { "115,OUT,2009,11,WR", "195,OUT,2009,11,WR" }, 2)]
+    [InlineData(new string[] { "12345678901234567890123456\t12345678901234567890123456\t12345678901234567890123456\t12345678901234567890123456\t12345678901234567890123456" }, 1)]
+    [InlineData(new string[] { "123456789012345678901234567\t12345678901234567890123456\t12345678901234567890123456\t12345678901234567890123456\t12345678901234567890123456" }, 1)]
+    [InlineData(new string[] { "12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456" }, 1)]
+    [InlineData(new string[] { "123456789012345678901234567, 12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456" }, 1)]
+    [InlineData(new string[] { "12345678901234567890123456, 123456789012345678901234567, 12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456" }, 0)]
+    [InlineData(new string[] { "12345678901234567890123456, 12345678901234567890123456, 123456789012345678901234567, 12345678901234567890123456, 12345678901234567890123456" }, 0)]
+    [InlineData(new string[] { "12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456, 123456789012345678901234567, 12345678901234567890123456" }, 0)]
+    [InlineData(new string[] { "12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456, 123456789012345678901234567" }, 1)]
+    [InlineData(new string[] { "1, 2, 3, 4, 123456789012345678901234567" }, 1)]
+    [InlineData(new string[] { " \t \t \t \t " }, 0)]
+    [InlineData(new string[] { " , , , , " }, 0)]
+    [InlineData(new string[] { "\t\t\t\t" }, 0)]
+    [InlineData(new string[] { ",,,," }, 0)]
+    public void FileProcessor_ProcessSloppyRecordsWithVaryingFieldLengths(string[] lines, int expectedCount)
+    {
+        HashSet<FlaggedBibRecordModel> actualResult = _fileProcessor.GetSloppyMatches(lines);
+        int actualCount = actualResult.Count;
+        Assert.NotNull(actualResult);
+        Assert.Equal(expectedCount, actualCount);
     }
 
     [Fact]
@@ -120,6 +163,8 @@ public class FileProcessorTests
 
     [InlineData(new string[] { "206 ,IN ,0311 ,27 ,TS", "60 ,IN ,0301 ,27 ,TS" }, 2)]
     [InlineData(new string[] { "206 , IN , 0311 , 27 , TS", "60 , IN , 0301 , 27 , TS" }, 2)]
+    [InlineData(new string[] { "187,OUT,0253  ,  27,TS" }, 0)]
+    [InlineData(new string[] { "187,OUT,0253 , 27,TS" }, 1)]
     [Theory]
     public void CapturesCorrectNumber_PoorlyFormattedCommaSeparatedValidBibRecords(string[] commaBibRecords, int expectedCount)
     {  
@@ -422,30 +467,6 @@ public class FileProcessorTests
         List<FlaggedBibRecordModel> actualResult = _fileProcessor.ProcessBibs(lines, messageId);
 
         Assert.Empty(actualResult);
-        Assert.Equal(expectedCount, actualResult.Count);
-    }
-
-    [Theory]
-    [InlineData(new string[] { "115\tOUT\t2009\t11\tWR" }, 1)]
-    [InlineData(new string[] { "115\tOUT\t2009\t11\tWR", "195\tOUT\t2009\t11\tWR" }, 2)]
-    [InlineData(new string[] { "115,OUT,2009,11,WR" }, 1)]
-    [InlineData(new string[] { "115,OUT,2009,11,WR", "195,OUT,2009,11,WR" }, 2)]
-    [InlineData(new string[] { "12345678901234567890123456\t12345678901234567890123456\t12345678901234567890123456\t12345678901234567890123456\t12345678901234567890123456" }, 1)]
-    [InlineData(new string[] { "123456789012345678901234567\t12345678901234567890123456\t12345678901234567890123456\t12345678901234567890123456\t12345678901234567890123456" }, 0)]
-    [InlineData(new string[] { "12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456" }, 1)]
-    [InlineData(new string[] { "123456789012345678901234567, 12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456" }, 0)]
-    [InlineData(new string[] { "12345678901234567890123456, 123456789012345678901234567, 12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456" }, 0)]
-    [InlineData(new string[] { "12345678901234567890123456, 12345678901234567890123456, 123456789012345678901234567, 12345678901234567890123456, 12345678901234567890123456" }, 0)]
-    [InlineData(new string[] { "12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456, 123456789012345678901234567, 12345678901234567890123456" }, 0)]
-    [InlineData(new string[] { "12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456, 12345678901234567890123456, 123456789012345678901234567" }, 0)]
-    [InlineData(new string[] { " \t \t \t \t " }, 0)]
-    [InlineData(new string[] { " , , , , " }, 0)]
-    [InlineData(new string[] { "\t\t\t\t" }, 0)]
-    [InlineData(new string[] { ",,,," }, 0)]
-    public void FileProcessor_ProcessSloppyRecordsWithVaryingFieldLengths(string[] lines, int expectedCount)
-    {
-        HashSet<FlaggedBibRecordModel> actualResult = _fileProcessor.GetSloppyMatches(lines);
-        Assert.NotNull(actualResult);
         Assert.Equal(expectedCount, actualResult.Count);
     }
 
