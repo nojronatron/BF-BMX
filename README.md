@@ -18,6 +18,7 @@ Each BFBMX Desktop component discovers Bib Records received via Winlink Express 
 6-May-2024:
 
 - Added day and timestamp to Monitor Status Messages.
+- Added 'server activity' log file that records Server console events to a file.
 
 29-Apr-2024:
 
@@ -234,7 +235,6 @@ Monitors:
 - Monitors have buttons to `Initialize`, `Start`, and `Stop` monitoring.
 - If necessary, the `Reset` button can be used to force an existing Monitor to stop and reset so it can be reconfigured.
 - Monitor buttons are aware of Path Validity, and Monitor State, and they will automatically enable or disable as necessary.
-- Timestamped Monitor Messagess will be updated when Monitor status changes occur.
 
 ![Desktop Status Monitor "Initialized"](./Docs/desktop-monitor-status-message-initialized.png)
 
@@ -319,7 +319,7 @@ The Server Service is a background service based on fully-fledge web components 
 
 - Only the necessary sub-components of ASP.NET Core are used to keep the service lightweight.
 - Listens for JSON-formatted POST data via HTTP and processes data as it is received.
-- Activities are logged to the console window that is opened when the service is started.
+- Activities are logged to the console window that is opened when the service is started, and to a file stored in the `BFBMX_SERVER_LOG_DIR` folder.
 - Bib Data received from the BFBMX Desktop Client(s) are logged to multiple tab-delimited files for reporting or other purposes.
 
 ### Run the Server Service
@@ -360,6 +360,12 @@ The above example shows a Winlink Payload log entry: message ID H2Y96AT5T592 wit
 - The second Bib Record Data was _not_ directly parsable because the Bib Number was unexpectedly large. The App applied the Data Warning Flag of `ALERT` so the problem could be investigated and corrected by the computer operators.
 
 _Note_: The exact same log file format is used by the Server Service and the Desktop App, with the exception that the Desktop App logs all Bib Records to a single file whereas the Server logs Bib Data in individual files, one file per Winlink Message ID.
+
+Server Activity Log:
+
+- Writes activities to a file named `server_activity.txt`.
+- Contains the same information that is displayed in the console window.
+- Use this to review historical events of the Server, especially after an unexpected event like a crash or incorrect data processing.
 
 ### Server Service Log Entry Details
 

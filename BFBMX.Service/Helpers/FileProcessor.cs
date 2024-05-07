@@ -10,13 +10,11 @@ namespace BFBMX.Service.Helpers
         private static readonly object _lock = new();
         private readonly ILogger<FileProcessor> _logger;
 
-        private readonly string DateTimeStampPattern = @"\d{1,2}\s\w{3}\s\d{4}\s\d{1,2}:\d{1,2}:\d{1,2}\s\+\d{4}"; 
-        private readonly string MessageIdPattern = @"\bMessage-ID\S\s?(?'msgid'.{12})\b";
-        private readonly string CommaDelimitedPattern = @"\b\d{1,3}(?:\s?,\s?)(?:IN|OUT|DROP)(?:\s?,\s?)\d{1,4}(?:\s?,\s?)\d{1,2}(?:\s?,\s?)\w{2}\b";
-        private readonly string TabDelimitedPattern = @"\b\d{1,3}(?:\s?\t\s?)(?:IN|OUT|DROP)(?:\s?\t\s?)\d{1,4}(?:\s?\t\s?)\d{1,2}(?:\s?\t\s?)\w{2}\b";
-        private readonly string SloppyBibPattern = @"\b\w{1,26}(?:\s*[,|\t]\s*\w{1,26}){4}\b"; // match 5 words with length 1-26 characters, separated by commas or tabs padded with 0 or more spaces
-        private static RegexOptions LocalRegexOptions => RegexOptions.IgnoreCase;
-        private static TimeSpan LocalRegexTimeout => new(0, 0, 1); // after timeout Regex pattern match will stop to fend against mischeveous input
+        static Regex DateTimeStampRegex = new (@"\d{1,2}\s\w{3}\s\d{4}\s\d{1,2}:\d{1,2}:\d{1,2}\s\+\d{4}", RegexOptions.IgnoreCase, new TimeSpan(0,0,1)); 
+        static Regex MessageIdRegex = new(@"\bMessage-ID\S\s?(?'msgid'.{12})\b", RegexOptions.IgnoreCase, new TimeSpan(0, 0, 1));
+        static Regex CommaDelimitedRegex = new(@"\b\d{1,3}(?:\s?,\s?)(?:IN|OUT|DROP)(?:\s?,\s?)\d{1,4}(?:\s?,\s?)\d{1,2}(?:\s?,\s?)\w{2}\b", RegexOptions.IgnoreCase, new TimeSpan(0, 0, 1));
+        static Regex TabDelimitedRegex = new(@"\b\d{1,3}(?:\s?\t\s?)(?:IN|OUT|DROP)(?:\s?\t\s?)\d{1,4}(?:\s?\t\s?)\d{1,2}(?:\s?\t\s?)\w{2}\b", RegexOptions.IgnoreCase, new TimeSpan(0, 0, 1));
+        static Regex SloppyRegex = new(@"(?:\S{1,26}\s?(?:\t|,)\s?){4}(?:\S{0,26})", RegexOptions.IgnoreCase, new TimeSpan(0, 0, 1)); // match 5 character groups with length 1-26 separated by commas or tabs padded with 0 or more spaces, and possible missing data after last comma or tab
 
         public FileProcessor(ILogger<FileProcessor> logger)
         {
@@ -159,8 +157,7 @@ namespace BFBMX.Service.Helpers
             }
             else
             {
-                Regex match = new(MessageIdPattern, LocalRegexOptions, LocalRegexTimeout);
-                MatchCollection matches = match.Matches(fileData);
+                MatchCollection matches = MessageIdRegex.Matches(fileData);
 
                 if (matches.Count < 1)
                 {
@@ -186,8 +183,7 @@ namespace BFBMX.Service.Helpers
             }
             else
             {
-                Regex match = new(DateTimeStampPattern, LocalRegexOptions, LocalRegexTimeout);
-                MatchCollection matches = match.Matches(winlinkMessageData);
+                MatchCollection matches = DateTimeStampRegex.Matches(winlinkMessageData);
 
                 if (matches.Count < 1)
                 {
@@ -275,7 +271,7 @@ namespace BFBMX.Service.Helpers
                 return foundBibRecords;
             }
 
-            foundBibRecords = GetBibMatches(lines, SloppyBibPattern, true);
+            foundBibRecords = GetBibMatches(lines, SloppyRegex, true);
             return foundBibRecords;
         }
 
@@ -294,8 +290,8 @@ namespace BFBMX.Service.Helpers
             }
 
             //foundBibRecords = GetBibMatches(lines, StrictBibPattern, false);
-            HashSet<FlaggedBibRecordModel> csvMatches = GetBibMatches(lines, CommaDelimitedPattern, false);
-            foundBibRecords = GetBibMatches(lines, TabDelimitedPattern, false);
+            HashSet<FlaggedBibRecordModel> csvMatches = GetBibMatches(lines, CommaDelimitedRegex, false);
+            foundBibRecords = GetBibMatches(lines, TabDelimitedRegex, false);
             foundBibRecords.UnionWith(csvMatches);
             return foundBibRecords;
         }
@@ -308,28 +304,28 @@ namespace BFBMX.Service.Helpers
         /// <param name="pattern"></param>
         /// <returns></returns>
         public HashSet<FlaggedBibRecordModel> GetBibMatches(string[] fileDataLines,
-                                                               string pattern,
-                                                               bool setWarning = false)
+                                                            Regex regexInstance,
+                                                            bool setWarning = false)
         {
             HashSet<FlaggedBibRecordModel> resultBibList = new();
 
-            if (fileDataLines is null || fileDataLines.Length < 1 || string.IsNullOrWhiteSpace(pattern))
+            if (fileDataLines is null || fileDataLines.Length < 1)
             {
                 return resultBibList;
             }
             else
             {
-                Regex regex = new(pattern, LocalRegexOptions, LocalRegexTimeout);
-
                 foreach (var line in fileDataLines)
                 {
-                    var fields = line.Split('\t', ',');
+                    var fields = line.Split(new char[] { '\t', ',' });
 
                     if (fields.Length == 5)
                     {
                         try
                         {
-                            if (regex.IsMatch(line))
+                            MatchCollection matches = regexInstance.Matches(line);
+
+                            if (matches.Count > 0)
 
                             {
                                 FlaggedBibRecordModel bibRecord = FlaggedBibRecordModel.GetBibRecordInstance(fields);
@@ -347,9 +343,9 @@ namespace BFBMX.Service.Helpers
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError("FileProcessor GetBibMatches: RegEx operation could not match {pattern} to {line}!", pattern, line);
-                            _logger.LogError("FileProcessor GetBibMatches: Exception message is {exMessage}.", ex.Message);
-                            _logger.LogError("FileProcessor GetBibMatches: Operations will continue but an audit should be performed.");
+                            _logger.LogError("FileProcessor GetBibMatches: RegEx threw an Exception processing line {line}!", line);
+                            _logger.LogError("FileProcessor GetBibMatches: RegEx Exception message is {exMessage}.", ex.Message);
+                            _logger.LogError("FileProcessor GetBibMatches: Operations will continue but a BibRecords audit should be performed.");
                         }
                     }
                 }

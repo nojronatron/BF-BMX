@@ -1,5 +1,4 @@
-﻿
-namespace BFBMX.ServerApi.Helpers
+﻿namespace BFBMX.ServerApi.Helpers
 {
     public interface IServerInfo
     {

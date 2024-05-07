@@ -9,5 +9,6 @@ namespace BFBMX.ServerApi.Helpers
         string GetUserProfilePath();
         string GetServerPort();
         IPHostEntry GetServerHostname();
+        string GetServerActivityLogFilename();
     }
 }

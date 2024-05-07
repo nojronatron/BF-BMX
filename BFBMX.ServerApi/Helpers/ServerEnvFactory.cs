@@ -37,5 +37,10 @@ namespace BFBMX.ServerApi.Helpers
             IPHostEntry hostEntryName = Dns.GetHostEntry(serverName);
             return hostEntryName;
         }
+
+        public string GetServerActivityLogFilename()
+        {
+            return "server_activity.txt";
+        }
     }
 }

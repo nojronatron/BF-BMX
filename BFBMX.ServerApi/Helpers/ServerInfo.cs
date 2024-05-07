@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Net;
+using BFBMX.Service.Helpers;
 
 namespace BFBMX.ServerApi.Helpers
 {
@@ -7,14 +8,16 @@ namespace BFBMX.ServerApi.Helpers
     {
         private readonly ILogger<ServerInfo> _logger;
         private readonly IServerEnvFactory _serverEnvFactory;
+        private readonly IServerLogWriter _serverLogWriter;
         private DateTime _executionTime;
         private TimeSpan _minWaitTime = new(0, 15, 0); // hh, mm, ss
 
-        public ServerInfo(ILogger<ServerInfo> logger, IServerEnvFactory serverEnvFactory)
+        public ServerInfo(ILogger<ServerInfo> logger, IServerEnvFactory serverEnvFactory, IServerLogWriter serverLogWriter)
         {
             _logger = logger;
             _serverEnvFactory = serverEnvFactory;
             _executionTime = DateTime.Now;
+            _serverLogWriter = serverLogWriter;
         }
 
         /// <summary>
@@ -51,6 +54,7 @@ namespace BFBMX.ServerApi.Helpers
             }
 
             _logger.LogInformation("Server name {machinename} at address(es) {ipv4addresses} listening on HTTP port {serverport}", machineName, ipV4Addresses, serverPort);
+            _serverLogWriter.WriteActivityToLogAsync($"Server name {machineName} at address(es) {ipV4Addresses} listening on HTTP port {serverPort}");
         }
 
         /// <summary>
@@ -60,7 +64,8 @@ namespace BFBMX.ServerApi.Helpers
         {
             _executionTime = DateTime.Now;
             string configuredLogFilepath = _serverEnvFactory.GetServerLogPath();
-            _logger.LogInformation("Logfiles are at {configuredlogfilepath}", configuredLogFilepath);
+            _logger.LogInformation("Logfiles are located at {configuredlogfilepath}", configuredLogFilepath);
+            _serverLogWriter.WriteActivityToLogAsync($"Logfiles are located at {configuredLogFilepath}.");
         }
     }
 }
