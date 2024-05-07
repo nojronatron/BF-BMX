@@ -2,7 +2,6 @@
 {
     public class ServerLogWriter : IServerLogWriter
     {
-        private readonly string SERVER_LOGFILE_NAME = "server_activity.txt";
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         private readonly IServerEnvFactory _serverEnvFactory;
         private readonly ILogger<ServerLogWriter> _logger;
@@ -23,11 +22,16 @@
         {
             await _semaphore.WaitAsync();
             DateTime dateTimeStamp = DateTime.Now;
-            string serverLogPath = Path.Combine(_serverEnvFactory.GetServerLogPath(), SERVER_LOGFILE_NAME);
+            string serverLogPath = Path.Combine(_serverEnvFactory.GetServerLogPath(), _serverEnvFactory.GetServerActivityLogFilename());
             string logMessage = $"{dateTimeStamp:yyyy-MMM-dd HH:mm:ss}: {message}";
 
             try
             {
+                if (!File.Exists(serverLogPath))
+                {
+                    File.Create(serverLogPath).Dispose();
+                }
+
 #pragma warning disable IDE0063 // Use simple 'using' statement
                 using (StreamWriter sw = File.AppendText(serverLogPath))
                 {
