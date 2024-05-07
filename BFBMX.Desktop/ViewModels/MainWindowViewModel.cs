@@ -110,7 +110,7 @@ namespace BFBMX.Desktop.ViewModels
         public void HandleErrorAlpha(object sender, ErrorEventArgs e)
         {
             string errMsg = e.GetException().Message;
-            AlphaStatusMessage = $"Error handling file: {errMsg}";
+            SetStatusMessage(AlphaMonitorName, $"Error handling file: {errMsg}");
             _logger.LogInformation("HandleError called by Monitor #1: {errmsg}", errMsg);
         }
 
@@ -122,7 +122,7 @@ namespace BFBMX.Desktop.ViewModels
         public void HandleErrorBravo(object sender, ErrorEventArgs e)
         {
             string errMsg = e.GetException().Message;
-            BravoStatusMessage = $"Error handling file: {errMsg}";
+            SetStatusMessage(BravoMonitorName, $"Error handling file: {errMsg}");
             _logger.LogInformation("HandleError called by Monitor #2: {errmsg}", errMsg);
         }
 
@@ -134,7 +134,7 @@ namespace BFBMX.Desktop.ViewModels
         public void HandleErrorCharlie(object sender, ErrorEventArgs e)
         {
             string errMsg = e.GetException().Message;
-            CharlieStatusMessage = $"Error handling file: {errMsg}";
+            SetStatusMessage(CharlieMonitorName, $"Error handling file: {errMsg}");
             _logger.LogInformation("HandleError called by Monitor #3: {errmsg}", errMsg);
         }
 
@@ -155,21 +155,24 @@ namespace BFBMX.Desktop.ViewModels
         /// <param name="message"></param>
         private void SetStatusMessage(string? monitorName, string? message)
         {
+            DateTime dateTimeStamp = DateTime.Now;
+            string statusMessage = $"{dateTimeStamp:M} at {dateTimeStamp:HH:mm:ss} - {message}";
+
             switch (monitorName)
             {
                 case AlphaMonitorName:
                     {
-                        AlphaStatusMessage = message;
+                        AlphaStatusMessage = statusMessage;
                         break;
                     }
                 case BravoMonitorName:
                     {
-                        BravoStatusMessage = message;
+                        BravoStatusMessage = statusMessage;
                         break;
                     }
                 case CharlieMonitorName:
                     {
-                        CharlieStatusMessage = message;
+                        CharlieStatusMessage = statusMessage;
                         break;
                     }
                 default:
@@ -231,7 +234,7 @@ namespace BFBMX.Desktop.ViewModels
                 AlphaMonitorStopped = _alphaMonitor.IsStopped;
                 AlphaMonitorPathEnabled = false;
                 string isOrNotInitialized = AlphaMonitorInitialized ? "successfully" : "not";
-                SetStatusMessage(AlphaMonitorName, "Monitor initialized. Click Launch to start monitoring.");
+                SetStatusMessage(AlphaMonitorName, "Monitor initialized. Click Start to begin monitoring.");
                 _logger.LogInformation("Alpha Monitor {isOrNotInit} initialized for path: {monitorPath}", 
                     isOrNotInitialized, 
                     AlphaMonitorPath);
@@ -271,7 +274,7 @@ namespace BFBMX.Desktop.ViewModels
                 if (_alphaMonitor is null)
                 {
                     _logger.LogInformation("CanInitAlphaMonitor: Monitor is null and path exists. Returning true.");
-                    SetStatusMessage(AlphaMonitorName, string.Empty);
+                    SetStatusMessage(AlphaMonitorName, "Path exists and monitor can be initialized.");
                     return true;
                 }
 
@@ -448,7 +451,7 @@ namespace BFBMX.Desktop.ViewModels
                 BravoMonitorStopped = _bravoMonitor.IsStopped;
                 BravoMonitorPathEnabled = false;
                 string isOrNotInitialized = BravoMonitorInitialized ? "successfully" : "not";
-                SetStatusMessage(BravoMonitorName, "Monitor initialized. Click Launch to start monitoring.");
+                SetStatusMessage(BravoMonitorName, "Monitor initialized. Click Start to begin monitoring.");
                 _logger.LogInformation("Bravo Monitor {isOrNotInit} initialized for path: {monitorPath}",
                     isOrNotInitialized,
                     BravoMonitorPath);
@@ -483,7 +486,7 @@ namespace BFBMX.Desktop.ViewModels
                 if (_bravoMonitor is null)
                 {
                     _logger.LogInformation("CanInitBravoMonitor: Monitor is null and path exists. Returning true.");
-                    SetStatusMessage(BravoMonitorName, string.Empty);
+                    SetStatusMessage(BravoMonitorName, "Path exists and monitor can be initialized.");
                     return true;
                 }
 
@@ -657,7 +660,7 @@ namespace BFBMX.Desktop.ViewModels
                 CharlieMonitorStopped = _charlieMonitor.IsStopped;
                 CharlieMonitorPathEnabled = false;
                 string isOrNotInitialized = CharlieMonitorInitialized ? "successfully" : "not";
-                SetStatusMessage(CharlieMonitorName, "Monitor initialized. Click Launch to start monitoring.");
+                SetStatusMessage(CharlieMonitorName, "Monitor initialized. Click Start to begin monitoring.");
                 _logger.LogInformation("Charlie Monitor {isOrNotInit} initialized for path: {monitorPath}",
                     isOrNotInitialized,
                     CharlieMonitorPath);
@@ -692,7 +695,7 @@ namespace BFBMX.Desktop.ViewModels
                 if (_charlieMonitor is null)
                 {
                     _logger.LogInformation("CanInitCharlieMonitor: Monitor is null and path exists. Returning true.");
-                    SetStatusMessage(CharlieMonitorName, string.Empty);
+                    SetStatusMessage(CharlieMonitorName, "Path exists and monitor can be initialized.");
                     return true;
                 }
 
