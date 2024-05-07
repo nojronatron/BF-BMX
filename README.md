@@ -17,6 +17,7 @@ Each BFBMX Desktop component discovers Bib Records received via Winlink Express 
 
 6-May-2024:
 
+- Added day and timestamp to Monitor Status Messages.
 - Added 'server activity' log file that records Server console events to a file.
 
 29-Apr-2024:
@@ -234,6 +235,9 @@ Monitors:
 - Monitors have buttons to `Initialize`, `Start`, and `Stop` monitoring.
 - If necessary, the `Reset` button can be used to force an existing Monitor to stop and reset so it can be reconfigured.
 - Monitor buttons are aware of Path Validity, and Monitor State, and they will automatically enable or disable as necessary.
+- Timestamped Monitor Messagess will be updated when Monitor status changes occur.
+
+![Desktop Status Monitor "Initialized"](./Docs/desktop-monitor-status-message-initialized.png)
 
 Environment Variables:
 
