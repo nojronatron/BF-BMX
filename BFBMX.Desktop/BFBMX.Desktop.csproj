@@ -9,13 +9,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Collections\**" />
+    <EmbeddedResource Remove="Collections\**" />
+    <None Remove="Collections\**" />
+    <Page Remove="Collections\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Collections\" />
     <Folder Include="Models\" />
     <Folder Include="Views\" />
   </ItemGroup>

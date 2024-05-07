@@ -7,6 +7,7 @@ namespace BFBMX.Service.Test.Helpers
     public class BibRecordLoggerTests
     {
         private readonly NullLogger<BibRecordLogger> _moqLogster;
+        private readonly Mock<IServerLogWriter> _moqSLWriter;
         private readonly Mock<IServerEnvFactory> _moqServerEnvFactory;
         private readonly BibRecordLogger _bibRecordLogger;
 
@@ -14,7 +15,8 @@ namespace BFBMX.Service.Test.Helpers
         {
             _moqLogster = new NullLogger<BibRecordLogger>();
             _moqServerEnvFactory = new Mock<IServerEnvFactory>();
-            _bibRecordLogger = new BibRecordLogger(_moqLogster, _moqServerEnvFactory.Object);
+            _moqSLWriter = new Mock<IServerLogWriter>();
+            _bibRecordLogger = new BibRecordLogger(_moqLogster, _moqServerEnvFactory.Object, _moqSLWriter.Object);
         }
 
         [Fact]
