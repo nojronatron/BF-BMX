@@ -34,3 +34,9 @@
 **/node_modules/
 **/bower_components/
 *.DS_Store
+
+# publish settings
+*.pubxml
+*.publishproj
+**/PublishProfiles
+**/Properties/PublishProfiles/
