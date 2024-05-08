@@ -23,6 +23,7 @@ Each BFBMX Desktop component discovers Bib Records received via Winlink Express 
 
 - Added day and timestamp to Monitor Status Messages.
 - Added 'server activity' log file that records Server console events to a file.
+- Bib Records with malformed or missing Location are flagged 'ALERT' when processed.
 
 29-Apr-2024:
 
