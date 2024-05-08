@@ -15,6 +15,10 @@ Each BFBMX Desktop component discovers Bib Records received via Winlink Express 
 
 ## Project Status
 
+7-May-2024:
+
+- Added button to open logile in Explorer from Desktop UI.
+
 6-May-2024:
 
 - Added day and timestamp to Monitor Status Messages.
@@ -272,7 +276,7 @@ _Note_: The primary purpose of the `Reset` button is to clear all memory of the 
 
 The Desktop App displays the location of its log files as configured using [Environment Variables](#configure-environment-variables).
 
-Two logs are maintained here:
+Click on the location to open the directory in Windows Explorer, where you will see two logfiles appear as files are detected by the Desktop App:
 
 - BFBMX Desktop App Log.
 - Captured Bib Records log.

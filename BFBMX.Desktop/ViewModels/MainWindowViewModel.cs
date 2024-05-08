@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 
 namespace BFBMX.Desktop.ViewModels
@@ -34,22 +35,45 @@ namespace BFBMX.Desktop.ViewModels
             ServerNamePort = DesktopEnvFactory.GetServerHostnameAndPort();
         }
 
+        /***** Global UI Properties *****/
+
         [ObservableProperty]
         public string? _logfilePath;
         [ObservableProperty]
         public string? _serverNamePort;
-
         [ObservableProperty]
         public string? _alphaStatusMessage;
         [ObservableProperty]
         public string? _bravoStatusMessage;
         [ObservableProperty]
         public string? _charlieStatusMessage;
-
         [ObservableProperty]
         public ObservableCollection<DiscoveredFileModel> _mostRecentItems;
 
-        /***** Global Monitor Functions *****/
+        /// <summary>
+        /// Launches the log file path in Windows Explorer.
+        /// </summary>
+        /// <remarks>
+        /// This method opens the log file path in Windows Explorer using the default file explorer application.
+        /// </remarks>
+        /// <seealso cref="CanLaunchLogfilePath"/>
+        [RelayCommand(CanExecute = nameof(CanLaunchLogfilePath))]
+        public void LaunchLogfilePath()
+        {
+#pragma warning disable CS8604 // Possible null reference argument.
+            Process.Start("explorer.exe", LogfilePath);
+#pragma warning restore CS8604 // Possible null reference argument.
+        }
+
+
+        /// <summary>
+        /// Determines whether the log file path is valid and can be launched.
+        /// </summary>
+        /// <returns>True if the log file path is valid; otherwise, false.</returns>
+        public bool CanLaunchLogfilePath()
+        {
+            return IsGoodPath(LogfilePath);
+        }
 
         /// <summary>
         /// Event Handler for all three FileSystemWatcher calls when a file created event occurs.
@@ -225,7 +249,7 @@ namespace BFBMX.Desktop.ViewModels
             {
                 _alphaMonitor.EnableRaisingEvents = false;
                 _alphaMonitor.MonitoredPath = AlphaMonitorPath!;
-            } 
+            }
 
             try
             {
@@ -235,15 +259,15 @@ namespace BFBMX.Desktop.ViewModels
                 AlphaMonitorPathEnabled = false;
                 string isOrNotInitialized = AlphaMonitorInitialized ? "successfully" : "not";
                 SetStatusMessage(AlphaMonitorName, "Monitor initialized. Click Start to begin monitoring.");
-                _logger.LogInformation("Alpha Monitor {isOrNotInit} initialized for path: {monitorPath}", 
-                    isOrNotInitialized, 
+                _logger.LogInformation("Alpha Monitor {isOrNotInit} initialized for path: {monitorPath}",
+                    isOrNotInitialized,
                     AlphaMonitorPath);
             }
             catch (Exception ex)
             {
                 SetStatusMessage(AlphaMonitorName, "Unable to initialize! Click Destroy, add the path, then click Initialize.");
                 _logger.LogInformation("Alpha Monitor unable to initialize for {monitorPath}, exception msg: {exceptionMsg}",
-                                      AlphaMonitorPath, 
+                                      AlphaMonitorPath,
                                       ex.Message);
                 AlphaMonitorPathEnabled = true;
 
@@ -567,7 +591,7 @@ namespace BFBMX.Desktop.ViewModels
         public void DestroyBravoMonitor()
         {
             _logger.LogInformation("DestroyBravoMonitor: Button pressed.");
-            if(_bravoMonitor is not null)
+            if (_bravoMonitor is not null)
             {
                 _bravoMonitor.EnableRaisingEvents = false;
                 _bravoMonitor.Dispose();
