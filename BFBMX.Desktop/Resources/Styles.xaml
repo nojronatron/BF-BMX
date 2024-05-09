@@ -68,7 +68,7 @@
            TargetType="TextBox"
            x:Key="MonitorPathTextBox">
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="Margin" Value="4" />
+        <Setter Property="Margin" Value="2" />
         <Setter Property="MinWidth" Value="340" />
     </Style>
 
@@ -95,6 +95,7 @@
            x:Key="ServerNamePortLabel"
            TargetType="Label">
         <Setter Property="Background" Value="{StaticResource WhiteBrush}" />
+        <Setter Property="Margin" Value="3" />
     </Style>
 
     <Style TargetType="Label">
