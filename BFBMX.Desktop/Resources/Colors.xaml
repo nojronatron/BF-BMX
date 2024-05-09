@@ -2,9 +2,9 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
     <!-- Base Font Properties -->
-    <FontFamily x:Key="DefaultFontFamily">Verdana</FontFamily>
+    <FontFamily x:Key="DefaultFontFamily">Segoe UI Variable</FontFamily>
     <FontStyle x:Key="DefaultFontStyle">Normal</FontStyle>
-    <FontWeight x:Key="DefaultFontWeight">Normal</FontWeight>
+    <FontWeight x:Key="DefaultFontWeight">Light</FontWeight>
 
     <FontFamily x:Key="ConsoleFontFamily">Consolas</FontFamily>
     <FontStyle x:Key="ConsoleFontStyle">Normal</FontStyle>
