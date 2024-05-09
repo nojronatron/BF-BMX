@@ -7,20 +7,21 @@
 
     <!-- Controls -->
     <Style TargetType="Button">
-        <Setter Property="Padding" Value="4" />
+        <Setter Property="Padding" Value="4 0" />
         <Setter Property="Margin" Value="4 2" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
         <Setter Property="FontStyle" Value="{StaticResource DefaultFontStyle}" />
         <Setter Property="FontWeight" Value="{StaticResource DefaultFontWeight}" />
-        <Setter Property="BorderBrush" Value="{StaticResource MidGrayColorBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
     </Style>
 
     <Style BasedOn="{StaticResource {x:Type Button}}" 
            TargetType="Button"
            x:Key="MonitorPathButton">
         <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Background" Value="{StaticResource AzureBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource MidGrayColorBrush}" />
+        <Setter Property="BorderThickness" Value="1.2" />
     </Style>
 
     <Style BasedOn="{StaticResource {x:Type Button}}"
@@ -54,9 +55,21 @@
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource BlackBrush}" />
     </Style>
-    
-    <Style x:Key="MonitorPathTextBox"
-           TargetType="TextBox">
+
+    <Style TargetType="TextBox">
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
+        <Setter Property="FontStyle" Value="{StaticResource DefaultFontStyle}" />
+        <Setter Property="FontWeight" Value="{StaticResource DefaultFontWeight}" />
+        <Setter Property="BorderBrush" Value="{StaticResource MidGrayColorBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style BasedOn="{StaticResource {x:Type TextBox}}" 
+           TargetType="TextBox"
+           x:Key="MonitorPathTextBox">
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Margin" Value="4" />
         <Setter Property="MinWidth" Value="340" />
@@ -90,7 +103,7 @@
 
     <Style x:Key="MainWindowBgnd"
            TargetType="Grid">
-        <Setter Property="Background" Value="{StaticResource AzureBrush}" />
+        <Setter Property="Background" Value="{StaticResource Color220Brush}" />
     </Style>
 
 </ResourceDictionary>

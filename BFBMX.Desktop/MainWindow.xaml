@@ -67,16 +67,52 @@
             </TextBox>
             <Button Style="{StaticResource InitButtonStyle}" 
                     Command="{Binding InitAlphaMonitorCommand}"
-                    Content="Initialize"/>
+                    Content="Initialize">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius"
+                                    Value="6" />
+                        <Setter Property="BorderThickness"
+                                    Value="1.2" />
+                    </Style>
+                </Button.Resources>
+            </Button>
             <Button Style="{StaticResource StartButtonStyle}" 
                     Command="{Binding StartAlphaMonitorCommand}"
-                    Content="Start"/>
+                    Content="Start">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius"
+                                    Value="6" />
+                        <Setter Property="BorderThickness"
+                                    Value="1.2" />
+                    </Style>
+                </Button.Resources>
+            </Button>
             <Button Style="{StaticResource StopButtonStyle}" 
                     Command="{Binding StopAlphaMonitorCommand}"
-                    Content="Stop" />
+                    Content="Stop">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius"
+                                    Value="6" />
+                        <Setter Property="BorderThickness"
+                                    Value="1.2" />
+                    </Style>
+                </Button.Resources>
+            </Button>
             <Button Style="{StaticResource ResetButtonStyle}" 
                     Command="{Binding DestroyAlphaMonitorCommand}"
-                    Content="Reset"/>
+                    Content="Reset">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius"
+                                    Value="6" />
+                        <Setter Property="BorderThickness"
+                                    Value="1.2" />
+                    </Style>
+                </Button.Resources>
+            </Button>
         </StackPanel>
 
         <StackPanel Orientation="Vertical"
@@ -106,16 +142,52 @@
             </TextBox>
             <Button Style="{StaticResource InitButtonStyle}" 
                     Command="{Binding InitBravoMonitorCommand}"
-                    Content="Initialize"/>
+                    Content="Initialize">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius"
+                                    Value="6" />
+                        <Setter Property="BorderThickness"
+                                    Value="1.2" />
+                    </Style>
+                </Button.Resources>
+            </Button>
             <Button Style="{StaticResource StartButtonStyle}" 
                     Command="{Binding StartBravoMonitorCommand}"
-                    Content="Start"/>
+                    Content="Start">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius"
+                                    Value="6" />
+                        <Setter Property="BorderThickness"
+                                    Value="1.2" />
+                    </Style>
+                </Button.Resources>
+            </Button>
             <Button Style="{StaticResource StopButtonStyle}" 
                     Command="{Binding StopBravoMonitorCommand}"
-                    Content="Stop" />
+                    Content="Stop">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius"
+                                    Value="6" />
+                        <Setter Property="BorderThickness"
+                                    Value="1.2" />
+                    </Style>
+                </Button.Resources>
+            </Button>
             <Button Style="{StaticResource ResetButtonStyle}" 
                     Command="{Binding DestroyBravoMonitorCommand}"
-                    Content="Reset"/>
+                    Content="Reset">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius"
+                                    Value="6" />
+                        <Setter Property="BorderThickness"
+                                    Value="1.2" />
+                    </Style>
+                </Button.Resources>
+            </Button>
         </StackPanel>
 
         <StackPanel Orientation="Vertical"
@@ -145,16 +217,52 @@
             </TextBox>
             <Button Style="{StaticResource InitButtonStyle}" 
                     Command="{Binding InitCharlieMonitorCommand}"
-                    Content="Initialize" />
+                    Content="Initialize">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius"
+                                    Value="6" />
+                        <Setter Property="BorderThickness"
+                                    Value="1.2" />
+                    </Style>
+                </Button.Resources>
+            </Button>
             <Button Style="{StaticResource StartButtonStyle}" 
                     Command="{Binding StartCharlieMonitorCommand}"
-                    Content="Start" />
+                    Content="Start">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius"
+                                    Value="6" />
+                        <Setter Property="BorderThickness"
+                                    Value="1.2" />
+                    </Style>
+                </Button.Resources>
+            </Button>
             <Button Style="{StaticResource StopButtonStyle}" 
                     Command="{Binding StopCharlieMonitorCommand}"
-                    Content="Stop" />
+                    Content="Stop">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius"
+                                    Value="6" />
+                        <Setter Property="BorderThickness"
+                                    Value="1.2" />
+                    </Style>
+                </Button.Resources>
+            </Button>
             <Button Style="{StaticResource ResetButtonStyle}"
                     Command="{Binding DestroyCharlieMonitorCommand}"
-                    Content="Reset" />
+                    Content="Reset">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius"
+                                    Value="6" />
+                        <Setter Property="BorderThickness"
+                                    Value="1.2" />
+                    </Style>
+                </Button.Resources>
+            </Button>
         </StackPanel>
 
         <StackPanel Orientation="Vertical"
@@ -176,7 +284,16 @@
                    Content="Click Logfile Path To Open In Explorer"/>
                 <Button Style="{StaticResource MonitorPathButton}" 
                         Command="{Binding LaunchLogfilePathCommand}"
-                        Content="{Binding LogfilePath}" />
+                        Content="{Binding LogfilePath}">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius"
+                                    Value="6" />
+                            <Setter Property="BorderThickness"
+                                    Value="1.2" />
+                        </Style>
+                    </Button.Resources>
+                </Button>
             </StackPanel>
             
             <StackPanel Orientation="Vertical"
@@ -189,7 +306,8 @@
                        Margin="2"
                        VerticalAlignment="Center"
                        Background="Azure"
-                       Text="{Binding ServerNamePort}" />
+                       Text="{Binding ServerNamePort}">
+                </TextBlock>
             </StackPanel>
         </StackPanel>
 

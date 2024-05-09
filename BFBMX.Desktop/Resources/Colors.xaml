@@ -49,5 +49,5 @@
     <SolidColorBrush x:Key="Color220Brush" Color="{StaticResource Color220}" />
     <SolidColorBrush x:Key="AntiqueWhiteBrush" Color="{StaticResource AntiqueWhiteColor}" />
     <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource WhiteColor}" />
-    
+                 
 </ResourceDictionary>
