@@ -5,6 +5,15 @@
         <ResourceDictionary Source="/Resources/Colors.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
+    <!-- Border -->
+    <Style TargetType="Border"
+           x:Key="SeparatorBorders">
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="Background" Value="{StaticResource LightBlueBrush}" />
+        <Setter Property="Height" Value="2" />
+        <Setter Property="Margin" Value="10 2" />
+    </Style>
+    
     <!-- Buttons -->
     <Style TargetType="Button">
         <Setter Property="Padding" Value="4 0" />
@@ -20,6 +29,7 @@
         <Setter Property="Background" Value="{StaticResource AzureBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Margin" Value="2 2" />
+        <Setter Property="Padding" Value="6 2" />
     </Style>
 
     <Style BasedOn="{StaticResource {x:Type Button}}"
@@ -54,6 +64,58 @@
         <Setter Property="Foreground" Value="{StaticResource BlackBrush}" />
     </Style>
 
+    <!-- Grid -->
+    <Style x:Key="MainWindowBgnd"
+           TargetType="Grid">
+        <Setter Property="Background" Value="{StaticResource Color220Brush}" />
+    </Style>
+
+    <!-- Labels -->
+    <Style x:Key="MonitorPathLabel"
+           TargetType="Label">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
+    </Style>
+
+    <Style BasedOn="{StaticResource {x:Type Label}}" 
+           x:Key="EnvironmentParamsLabel"
+           TargetType="Label">
+        <Setter Property="Background" Value="{StaticResource Color220Brush}" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="BorderBrush" Value="{StaticResource MidGrayColorBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style BasedOn="{StaticResource {x:Type Label}}"
+           x:Key="ServerNamePortLabel"
+           TargetType="Label">
+        <Setter Property="Background" Value="{StaticResource WhiteBrush}" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="Padding" Value="6 4 6 0" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="BorderBrush" Value="{StaticResource MidGrayColorBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style TargetType="Label">
+        <Setter Property="Background" Value="{StaticResource HighlightTextBgndBrush}" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="BorderBrush" Value="{StaticResource MidGrayColorBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <!-- List View -->
+    <Style x:Key="FileListViewStyle"
+           TargetType="ListView">
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="Height" Value="150" />
+    </Style>
+    
     <!-- TextBoxes -->
     <Style TargetType="TextBox">
         <Setter Property="Padding" Value="4" />
@@ -72,51 +134,10 @@
         <Setter Property="MinWidth" Value="340" />
     </Style>
 
-    <!-- Labels -->
-    <Style x:Key="MonitorPathLabel"
-           TargetType="Label">
-        <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="HorizontalAlignment" Value="Right" />
-        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
-    </Style>
-
-    <Style BasedOn="{StaticResource {x:Type Label}}" 
-           x:Key="EnvironmentParamsLabel"
-           TargetType="Label">
-        <Setter Property="Background" Value="{StaticResource Color220Brush}" />
-        <Setter Property="Height" Value="28" />
-        <Setter Property="Margin" Value="2" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="BorderBrush" Value="{StaticResource MidGrayColorBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-    </Style>
-
-    <Style BasedOn="{StaticResource {x:Type Label}}"
-           x:Key="ServerNamePortLabel"
-           TargetType="Label">
-        <Setter Property="Background" Value="{StaticResource WhiteBrush}" />
-        <Setter Property="Margin" Value="3" />
-    </Style>
-
-    <Style TargetType="Label">
-        <Setter Property="Background" Value="{StaticResource HighlightTextBgndBrush}" />
-        <Setter Property="Height" Value="28" />
-        <Setter Property="Margin" Value="2" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="BorderBrush" Value="{StaticResource MidGrayColorBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-    </Style>
-
     <!-- Stack Panels -->
     <Style x:Key="DefaultStackPanel"
            TargetType="StackPanel">
-        <Setter Property="Margin" Value="0 4" />
-    </Style>
-    
-    <!-- Grid -->
-    <Style x:Key="MainWindowBgnd"
-           TargetType="Grid">
-        <Setter Property="Background" Value="{StaticResource Color220Brush}" />
+        <Setter Property="Margin" Value="4" />
     </Style>
 
 </ResourceDictionary>
