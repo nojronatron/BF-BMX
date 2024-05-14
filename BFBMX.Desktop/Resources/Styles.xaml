@@ -4,20 +4,11 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/Resources/Colors.xaml" />
     </ResourceDictionary.MergedDictionaries>
-
-    <!-- Border -->
-    <Style TargetType="Border"
-           x:Key="SeparatorBorders">
-        <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="Background" Value="{StaticResource LightBlueBrush}" />
-        <Setter Property="Height" Value="1" />
-        <Setter Property="Margin" Value="10 2" />
-    </Style>
     
     <!-- Buttons -->
     <Style TargetType="Button">
-        <Setter Property="Padding" Value="4 0" />
-        <Setter Property="Margin" Value="4 0" />
+        <Setter Property="Padding" Value="6" />
+        <Setter Property="Margin" Value="4" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
         <Style.Triggers>
@@ -132,6 +123,7 @@
         <Setter Property="Height" Value="28" />
         <Setter Property="BorderBrush" Value="{StaticResource MidGrayColorBrush}" />
         <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
 
     <Style TargetType="Label">
@@ -147,7 +139,13 @@
     <Style x:Key="FileListViewStyle"
            TargetType="ListView">
         <Setter Property="Margin" Value="4" />
-        <Setter Property="Height" Value="150" />
+        <Setter Property="MinHeight" Value="150" />
+        <Setter Property="MinWidth" Value="570" />
+        <Setter Property="Background" Value="{StaticResource WhiteBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource ConsoleFontFamily}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="{StaticResource ConsoleFontWeight}" />
+        <Setter Property="FontStyle" Value="{StaticResource ConsoleFontStyle}" />
     </Style>
     
     <!-- TextBoxes -->
@@ -169,9 +167,24 @@
     </Style>
 
     <!-- Stack Panels -->
-    <Style x:Key="DefaultStackPanel"
+
+    <Style x:Key="BackgroundStackPanel"
            TargetType="StackPanel">
-        <Setter Property="Margin" Value="4" />
+        <Setter Property="Background" Value="{StaticResource Color192Brush}" />
+    </Style>
+
+    <Style x:Key="InnerHStackPanel"
+           TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Horizontal" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="InnerVStackPanel"
+           TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Vertical" />
+        <Setter Property="Margin" Value="2" />
     </Style>
 
 </ResourceDictionary>
