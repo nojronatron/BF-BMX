@@ -15,6 +15,10 @@ Each BFBMX Desktop component discovers Bib Records received via Winlink Express 
 
 ## Project Status
 
+13-May-2024 Bugfix version 1.3.3 Beta:
+
+- Disallow initializing a Monitor with an empty or invalid path. A side-effect is there will no longer be an on-screen red error box when the path is invalid. However, the Monitor Status Message will indicate the problem on-screen.
+
 7-May-2024:
 
 - Added button to open logile in Explorer from Desktop UI.

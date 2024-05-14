@@ -3,8 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:BFBMX.Desktop"
-        xmlns:validators="clr-namespace:BFBMX.Desktop.XamlValidators"
         mc:Ignorable="d"
         SizeToContent="WidthAndHeight"
         Title="Bigfoot Bib Message eXtractor - Desktop">
@@ -53,13 +51,7 @@
                      Validation.ErrorTemplate="{StaticResource errorTemplate}"
                      IsEnabled="{Binding AlphaMonitorPathEnabled}">
                 <TextBox.Text>
-                    <Binding Path="AlphaMonitorPath" 
-                             ValidatesOnDataErrors="True" 
-                             UpdateSourceTrigger="LostFocus">
-                        <Binding.ValidationRules>
-                            <validators:FilepathRule MinimumCharacters="4"/>
-                        </Binding.ValidationRules>
-                    </Binding>
+                    <Binding Path="AlphaMonitorPath"/>
                 </TextBox.Text>
             </TextBox>
             <Button Command="{Binding InitAlphaMonitorCommand}"
@@ -105,13 +97,7 @@
                      Validation.ErrorTemplate="{StaticResource errorTemplate}"
                      IsEnabled="{Binding BravoMonitorPathEnabled}">
                 <TextBox.Text>
-                    <Binding Path="BravoMonitorPath" 
-                             ValidatesOnDataErrors="True" 
-                             UpdateSourceTrigger="LostFocus">
-                        <Binding.ValidationRules>
-                            <validators:FilepathRule MinimumCharacters="4"/>
-                        </Binding.ValidationRules>
-                    </Binding>
+                    <Binding Path="BravoMonitorPath" />
                 </TextBox.Text>
             </TextBox>
             <Button Command="{Binding InitBravoMonitorCommand}"
@@ -157,13 +143,7 @@
                      Validation.ErrorTemplate="{StaticResource errorTemplate}"
                      IsEnabled="{Binding CharlieMonitorPathEnabled}">
                 <TextBox.Text>
-                    <Binding Path="CharlieMonitorPath" 
-                             ValidatesOnDataErrors="True" 
-                             UpdateSourceTrigger="LostFocus">
-                    <Binding.ValidationRules>
-                        <validators:FilepathRule MinimumCharacters="4"/>
-                    </Binding.ValidationRules>
-                </Binding>
+                    <Binding Path="CharlieMonitorPath" />
                 </TextBox.Text>
             </TextBox>
             <Button Command="{Binding InitCharlieMonitorCommand}"
