@@ -15,6 +15,10 @@ Each BFBMX Desktop component discovers Bib Records received via Winlink Express 
 
 ## Project Status
 
+14-May-2024:
+
+- Updated UI with a responsive display, contrasting color scheme, and updated control and content styles.
+
 7-May-2024:
 
 - Added button to open logile in Explorer from Desktop UI.
