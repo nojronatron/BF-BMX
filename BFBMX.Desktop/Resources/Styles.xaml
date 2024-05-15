@@ -6,27 +6,61 @@
     </ResourceDictionary.MergedDictionaries>
     
     <!-- Buttons -->
-    <Style TargetType="Button">
-        <Setter Property="Padding" Value="6" />
-        <Setter Property="Margin" Value="4" />
+    <Style TargetType="Button"
+           x:Key="BaseCustomButton">
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFont}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                            CornerRadius="4"
+                            BorderBrush="{StaticResource MidGrayColorBrush}"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="2"
+                            Padding="4 0">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="border"
+                                    Property="BorderBrush"
+                                    Value="{StaticResource OrangyBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter TargetName="border"
+                                    Property="BorderBrush"
+                                    Value="{StaticResource MidGrayColorBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
         <Style.Triggers>
-            <Trigger Property="IsFocused" Value="True">
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Cursor" Value="Hand" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="Gray" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
                 <Setter Property="BorderBrush" Value="{StaticResource OrangyBrush}" />
                 <Setter Property="BorderThickness" Value="2" />
             </Trigger>
         </Style.Triggers>
     </Style>
 
-    <Style BasedOn="{StaticResource {x:Type Button}}" 
-           TargetType="Button"
+    <Style TargetType="Button"
            x:Key="MonitorPathButton">
         <Setter Property="MinHeight" Value="28" />
         <Setter Property="Background" Value="{StaticResource AzureBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Margin" Value="2 2" />
-        <Setter Property="Padding" Value="6 2" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="Padding" Value="6 4" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Cursor" Value="Hand" />
@@ -34,56 +68,33 @@
         </Style.Triggers>
     </Style>
 
-    <Style BasedOn="{StaticResource {x:Type Button}}"
+    <Style BasedOn="{StaticResource BaseCustomButton}"
            TargetType="Button"
            x:Key="InitButtonStyle">
         <Setter Property="Background" Value="{StaticResource LightBlueBrush}" />
-        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource BlackBrush}" />
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Cursor" Value="Hand" />
-            </Trigger>
-        </Style.Triggers>
     </Style>
 
-    <Style BasedOn="{StaticResource {x:Type Button}}"
+    <Style BasedOn="{StaticResource BaseCustomButton}"
            TargetType="Button"
            x:Key="StartButtonStyle">
         <Setter Property="Background" Value="{StaticResource LightGreenBrush}" />
-        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource BlackBrush}" />
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Cursor" Value="Hand" />
-            </Trigger>
-        </Style.Triggers>
     </Style>
 
-    <Style BasedOn="{StaticResource {x:Type Button}}"
+    <Style BasedOn="{StaticResource BaseCustomButton}"
            TargetType="Button"
            x:Key="StopButtonStyle">
         <Setter Property="Background" Value="{StaticResource OrangyBrush}" />
-        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource BlackBrush}" />
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Cursor" Value="Hand" />
-            </Trigger>
-        </Style.Triggers>
     </Style>
 
-    <Style BasedOn="{StaticResource {x:Type Button}}"
+    <Style BasedOn="{StaticResource BaseCustomButton}"
            TargetType="Button"
            x:Key="ResetButtonStyle">
         <Setter Property="Background" Value="{StaticResource ColorBlueBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource WhiteBrush}" />
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Cursor" Value="Hand" />
-            </Trigger>
-        </Style.Triggers>
     </Style>
 
     <!-- Grid -->
@@ -97,7 +108,7 @@
            TargetType="Label">
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="HorizontalAlignment" Value="Right" />
-        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFont}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="{StaticResource MediumFontWeight}" />
     </Style>
@@ -119,7 +130,7 @@
            TargetType="Label">
         <Setter Property="Background" Value="{StaticResource WhiteBrush}" />
         <Setter Property="Margin" Value="2" />
-        <Setter Property="Padding" Value="6 4 6 0" />
+        <Setter Property="Padding" Value="6 4" />
         <Setter Property="Height" Value="28" />
         <Setter Property="BorderBrush" Value="{StaticResource MidGrayColorBrush}" />
         <Setter Property="BorderThickness" Value="1" />
@@ -153,7 +164,7 @@
         <Setter Property="Padding" Value="4" />
         <Setter Property="Margin" Value="4" />
         <Setter Property="FontSize" Value="12" />
-        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFont}" />
         <Setter Property="BorderBrush" Value="{StaticResource Color192Brush}" />
         <Setter Property="BorderThickness" Value="2" />
     </Style>
@@ -162,7 +173,7 @@
            TargetType="TextBox"
            x:Key="MonitorPathTextBox">
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="Margin" Value="2" />
+        <Setter Property="Margin" Value="2 6" />
         <Setter Property="MinWidth" Value="340" />
     </Style>
 

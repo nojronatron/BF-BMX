@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
     <!-- Base Font Properties -->
-    <FontFamily x:Key="DefaultFontFamily">Segoe UI Variable</FontFamily>
+    <FontFamily x:Key="DefaultFont">Segoe UI Variable</FontFamily>
     <FontStyle x:Key="DefaultFontStyle">Normal</FontStyle>
     <FontWeight x:Key="DefaultFontWeight">Light</FontWeight>
     <FontWeight x:Key="MediumFontWeight">Medium</FontWeight>

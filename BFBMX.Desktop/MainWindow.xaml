@@ -43,19 +43,19 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Style="{StaticResource BackgroundStackPanel}"
-                    Orientation="Vertical"
-                    Grid.Row="1"
-                    Grid.Column="1">
+                        Orientation="Vertical"
+                        Grid.Row="1"
+                        Grid.Column="1">
                 <StackPanel Style="{StaticResource InnerHStackPanel}">
                     <Label Content="Monitor 1 Path:"
-                   Style="{StaticResource MonitorPathLabel}"/>
+                           Style="{StaticResource MonitorPathLabel}"/>
                     <TextBox Style="{StaticResource MonitorPathTextBox}"
-                     Validation.ErrorTemplate="{StaticResource errorTemplate}"
-                     IsEnabled="{Binding AlphaMonitorPathEnabled}">
+                             Validation.ErrorTemplate="{StaticResource errorTemplate}"
+                             IsEnabled="{Binding AlphaMonitorPathEnabled}">
                         <TextBox.Text>
                             <Binding Path="AlphaMonitorPath" 
-                             ValidatesOnDataErrors="True" 
-                             UpdateSourceTrigger="LostFocus">
+                                     ValidatesOnDataErrors="True" 
+                                     UpdateSourceTrigger="LostFocus">
                                 <Binding.ValidationRules>
                                     <validators:FilepathRule MinimumCharacters="4"/>
                                 </Binding.ValidationRules>
@@ -63,52 +63,21 @@
                         </TextBox.Text>
                     </TextBox>
                     <Button Style="{StaticResource InitButtonStyle}" 
-                    Command="{Binding InitAlphaMonitorCommand}"
-                    Content="Initialize">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius"
-                                    Value="6" />
-                                <Setter Property="BorderThickness"
-                                    Value="1.2" />
-                            </Style>
-                        </Button.Resources>
+                            Command="{Binding InitAlphaMonitorCommand}"
+                            Content="Initialize">
+
                     </Button>
                     <Button Style="{StaticResource StartButtonStyle}" 
-                    Command="{Binding StartAlphaMonitorCommand}"
-                    Content="Start">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius"
-                                    Value="6" />
-                                <Setter Property="BorderThickness"
-                                    Value="1.2" />
-                            </Style>
-                        </Button.Resources>
+                            Command="{Binding StartAlphaMonitorCommand}"
+                            Content="Start">
                     </Button>
                     <Button Style="{StaticResource StopButtonStyle}" 
-                    Command="{Binding StopAlphaMonitorCommand}"
-                    Content="Stop">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius"
-                                    Value="6" />
-                                <Setter Property="BorderThickness"
-                                    Value="1.2" />
-                            </Style>
-                        </Button.Resources>
+                            Command="{Binding StopAlphaMonitorCommand}"
+                            Content="Stop">
                     </Button>
                     <Button Style="{StaticResource ResetButtonStyle}" 
-                    Command="{Binding DestroyAlphaMonitorCommand}"
-                    Content="Reset">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius"
-                                    Value="6" />
-                                <Setter Property="BorderThickness"
-                                    Value="1.2" />
-                            </Style>
-                        </Button.Resources>
+                            Command="{Binding DestroyAlphaMonitorCommand}"
+                            Content="Reset">
                     </Button>
                 </StackPanel>
 
@@ -119,19 +88,19 @@
 
 
             <StackPanel Style="{StaticResource BackgroundStackPanel}"
-                    Orientation="Vertical"
-                    Grid.Row="3"
-                    Grid.Column="1">
+                        Orientation="Vertical"
+                        Grid.Row="3"
+                        Grid.Column="1">
                 <StackPanel Style="{StaticResource InnerHStackPanel}">
                     <Label Content="Monitor 2 Path:"
-                   Style="{StaticResource MonitorPathLabel}" />
+                           Style="{StaticResource MonitorPathLabel}" />
                     <TextBox Style="{StaticResource MonitorPathTextBox}"
-                     Validation.ErrorTemplate="{StaticResource errorTemplate}"
-                     IsEnabled="{Binding BravoMonitorPathEnabled}">
+                             Validation.ErrorTemplate="{StaticResource errorTemplate}"
+                             IsEnabled="{Binding BravoMonitorPathEnabled}">
                         <TextBox.Text>
                             <Binding Path="BravoMonitorPath" 
-                             ValidatesOnDataErrors="True" 
-                             UpdateSourceTrigger="LostFocus">
+                                     ValidatesOnDataErrors="True" 
+                                     UpdateSourceTrigger="LostFocus">
                                 <Binding.ValidationRules>
                                     <validators:FilepathRule MinimumCharacters="4"/>
                                 </Binding.ValidationRules>
@@ -139,52 +108,20 @@
                         </TextBox.Text>
                     </TextBox>
                     <Button Style="{StaticResource InitButtonStyle}" 
-                    Command="{Binding InitBravoMonitorCommand}"
-                    Content="Initialize">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius"
-                                    Value="6" />
-                                <Setter Property="BorderThickness"
-                                    Value="1.2" />
-                            </Style>
-                        </Button.Resources>
+                            Command="{Binding InitBravoMonitorCommand}"
+                            Content="Initialize">
                     </Button>
                     <Button Style="{StaticResource StartButtonStyle}" 
-                    Command="{Binding StartBravoMonitorCommand}"
-                    Content="Start">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius"
-                                    Value="6" />
-                                <Setter Property="BorderThickness"
-                                    Value="1.2" />
-                            </Style>
-                        </Button.Resources>
+                            Command="{Binding StartBravoMonitorCommand}"
+                            Content="Start">
                     </Button>
                     <Button Style="{StaticResource StopButtonStyle}" 
-                    Command="{Binding StopBravoMonitorCommand}"
-                    Content="Stop">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius"
-                                    Value="6" />
-                                <Setter Property="BorderThickness"
-                                    Value="1.2" />
-                            </Style>
-                        </Button.Resources>
+                            Command="{Binding StopBravoMonitorCommand}"
+                            Content="Stop">
                     </Button>
                     <Button Style="{StaticResource ResetButtonStyle}" 
-                    Command="{Binding DestroyBravoMonitorCommand}"
-                    Content="Reset">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius"
-                                    Value="6" />
-                                <Setter Property="BorderThickness"
-                                    Value="1.2" />
-                            </Style>
-                        </Button.Resources>
+                            Command="{Binding DestroyBravoMonitorCommand}"
+                            Content="Reset">
                     </Button>
                 </StackPanel>
 
@@ -194,19 +131,19 @@
             </StackPanel>
 
             <StackPanel Style="{StaticResource BackgroundStackPanel}"
-                    Orientation="Vertical"
-                    Grid.Row="5"
-                    Grid.Column="1">
+                        Orientation="Vertical"
+                        Grid.Row="5"
+                        Grid.Column="1">
                 <StackPanel Style="{StaticResource InnerHStackPanel}">
                     <Label Content="Monitor 3 Path:"
-                   Style="{StaticResource MonitorPathLabel}" />
+                           Style="{StaticResource MonitorPathLabel}" />
                     <TextBox Style="{StaticResource MonitorPathTextBox}"
-                     Validation.ErrorTemplate="{StaticResource errorTemplate}"
-                     IsEnabled="{Binding CharlieMonitorPathEnabled}">
+                             Validation.ErrorTemplate="{StaticResource errorTemplate}"
+                             IsEnabled="{Binding CharlieMonitorPathEnabled}">
                         <TextBox.Text>
                             <Binding Path="CharlieMonitorPath" 
-                             ValidatesOnDataErrors="True" 
-                             UpdateSourceTrigger="LostFocus">
+                                     ValidatesOnDataErrors="True" 
+                                     UpdateSourceTrigger="LostFocus">
                                 <Binding.ValidationRules>
                                     <validators:FilepathRule MinimumCharacters="4"/>
                                 </Binding.ValidationRules>
@@ -214,52 +151,20 @@
                         </TextBox.Text>
                     </TextBox>
                     <Button Style="{StaticResource InitButtonStyle}" 
-                    Command="{Binding InitCharlieMonitorCommand}"
-                    Content="Initialize">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius"
-                                    Value="6" />
-                                <Setter Property="BorderThickness"
-                                    Value="1.2" />
-                            </Style>
-                        </Button.Resources>
+                            Command="{Binding InitCharlieMonitorCommand}"
+                            Content="Initialize">
                     </Button>
                     <Button Style="{StaticResource StartButtonStyle}" 
-                    Command="{Binding StartCharlieMonitorCommand}"
-                    Content="Start">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius"
-                                    Value="6" />
-                                <Setter Property="BorderThickness"
-                                    Value="1.2" />
-                            </Style>
-                        </Button.Resources>
+                            Command="{Binding StartCharlieMonitorCommand}"
+                            Content="Start">
                     </Button>
                     <Button Style="{StaticResource StopButtonStyle}" 
-                    Command="{Binding StopCharlieMonitorCommand}"
-                    Content="Stop">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius"
-                                    Value="6" />
-                                <Setter Property="BorderThickness"
-                                    Value="1.2" />
-                            </Style>
-                        </Button.Resources>
+                            Command="{Binding StopCharlieMonitorCommand}"
+                            Content="Stop">
                     </Button>
                     <Button Style="{StaticResource ResetButtonStyle}"
-                    Command="{Binding DestroyCharlieMonitorCommand}"
-                    Content="Reset">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius"
-                                    Value="6" />
-                                <Setter Property="BorderThickness"
-                                    Value="1.2" />
-                            </Style>
-                        </Button.Resources>
+                            Command="{Binding DestroyCharlieMonitorCommand}"
+                            Content="Reset">
                     </Button>
                 </StackPanel>
 
@@ -269,55 +174,53 @@
             </StackPanel>
 
             <StackPanel Style="{StaticResource BackgroundStackPanel}" 
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center"
-                    Grid.Row="7"
-                    Grid.Column="1">
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Grid.Row="7"
+                        Grid.Column="1">
 
                 <StackPanel Style="{StaticResource InnerVStackPanel}">
                     <Label Style="{StaticResource EnvironmentParamsLabel}"
-                   Content="Click Logfile Path To Open In Explorer"/>
+                           Content="Click Logfile Path To Open In Explorer"/>
                     <Button Style="{StaticResource MonitorPathButton}" 
-                        Command="{Binding LaunchLogfilePathCommand}"
-                        Content="{Binding LogfilePath}">
+                            Command="{Binding LaunchLogfilePathCommand}"
+                            Content="{Binding LogfilePath}">
                     </Button>
                 </StackPanel>
 
                 <StackPanel Style="{StaticResource InnerVStackPanel}">
                     <Label Style="{StaticResource EnvironmentParamsLabel}"
-                       Content="Server Name and Port"/>
+                           Content="Server Name and Port"/>
                     <Label Style="{StaticResource ServerNamePortLabel}"
-                       Content="{Binding ServerNamePort}">
+                           Content="{Binding ServerNamePort}">
                     </Label>
                 </StackPanel>
             </StackPanel>
 
             <StackPanel Style="{StaticResource BackgroundStackPanel}" 
-                    Grid.Row="9"
-                    Grid.Column="1">
+                        Grid.Row="9"
+                        Grid.Column="1">
                 <StackPanel Style="{StaticResource InnerVStackPanel}">
                     <ListView ItemsSource="{Binding MostRecentItems}" 
-                      d:ItemsSource="{d:SampleData ItemCount=9}"
-                      ScrollViewer.VerticalScrollBarVisibility="Visible"
-                      Style="{StaticResource FileListViewStyle}">
+                              d:ItemsSource="{d:SampleData ItemCount=9}"
+                              ScrollViewer.VerticalScrollBarVisibility="Visible"
+                              Style="{StaticResource FileListViewStyle}">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="File Name"
-                                        DisplayMemberBinding="{Binding FileName}" 
-                                        Width="156"/>
+                                                DisplayMemberBinding="{Binding FileName}" 
+                                                Width="156"/>
                                 <GridViewColumn Header="File Path"
-                                        DisplayMemberBinding="{Binding FullFilePath}"
-                                        Width="300"/>
+                                                DisplayMemberBinding="{Binding FullFilePath}"
+                                                Width="300"/>
                                 <GridViewColumn Header="File Created"
-                                        DisplayMemberBinding="{Binding FileTimeStamp}"
-                                        Width="120"/>
+                                                DisplayMemberBinding="{Binding FileTimeStamp}"
+                                                Width="132"/>
                             </GridView>
                         </ListView.View>
                     </ListView>
-
                 </StackPanel>
             </StackPanel>
-
         </Grid>
     </ScrollViewer>
 
