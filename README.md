@@ -110,7 +110,7 @@ Each BFBMX Desktop component discovers Bib Records received via Winlink Express 
 - Project design drawings underway.
 - GitHub project initialized.
 
-## Planned V.1.0 Features and Components
+## Features and Components
 
 Client App:
 
@@ -408,3 +408,15 @@ Server Activity Log:
 - [file-sync-win](https://github.com/nojronatron/file-sync-win).
 - [Bigfoot-Bib-Report-WL-Form](https://github.com/nojronatron/Bigfoot-Bib-Report-WL-Form).
 - Nojronatron has monetarily supported [Notepad++](https://notepad-plus-plus.org/) because he really likes and usees it daily.
+
+## License
+
+This software is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+
+This README, the LICENSE file, and the following information _must be kept with this codebase:_
+
+- Author: Nojronatron, copyright :copyright: Jon Rumsey, 2024.
+- GitHub: [nojronatron](https://github.com/nojronatron).
+- Repo: [BF-BMX on GitHub](https://github.com/nojronatron/BF-BMX).
+
+![JRSoftware Logo](./Docs/jrsoftware-logo-128x103.jpg)
