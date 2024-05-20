@@ -54,9 +54,6 @@
                             <Binding Path="AlphaMonitorPath" 
                                      ValidatesOnDataErrors="True" 
                                      UpdateSourceTrigger="LostFocus">
-                                <Binding.ValidationRules>
-                                    <validators:FilepathRule MinimumCharacters="4"/>
-                                </Binding.ValidationRules>
                             </Binding>
                         </TextBox.Text>
                     </TextBox>
@@ -99,9 +96,6 @@
                             <Binding Path="BravoMonitorPath" 
                                      ValidatesOnDataErrors="True" 
                                      UpdateSourceTrigger="LostFocus">
-                                <Binding.ValidationRules>
-                                    <validators:FilepathRule MinimumCharacters="4"/>
-                                </Binding.ValidationRules>
                             </Binding>
                         </TextBox.Text>
                     </TextBox>
@@ -142,9 +136,6 @@
                             <Binding Path="CharlieMonitorPath" 
                                      ValidatesOnDataErrors="True" 
                                      UpdateSourceTrigger="LostFocus">
-                                <Binding.ValidationRules>
-                                    <validators:FilepathRule MinimumCharacters="4"/>
-                                </Binding.ValidationRules>
                             </Binding>
                         </TextBox.Text>
                     </TextBox>
