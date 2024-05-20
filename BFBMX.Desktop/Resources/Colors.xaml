@@ -1,0 +1,54 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Base Font Properties -->
+    <FontFamily x:Key="DefaultFont">Segoe UI Variable</FontFamily>
+    <FontStyle x:Key="DefaultFontStyle">Normal</FontStyle>
+    <FontWeight x:Key="DefaultFontWeight">Light</FontWeight>
+    <FontWeight x:Key="MediumFontWeight">Medium</FontWeight>
+
+    <FontFamily x:Key="ConsoleFontFamily">Consolas</FontFamily>
+    <FontStyle x:Key="ConsoleFontStyle">Normal</FontStyle>
+    <FontWeight x:Key="ConsoleFontWeight">Normal</FontWeight>
+    
+    <!-- Base color palette -->
+    <Color x:Key="Color150">#000096</Color>
+    <Color x:Key="ColorBlue">#0000FF</Color>
+    <Color x:Key="MidBlueColor">#71A9FD</Color>
+    <Color x:Key="LightBlueColor">LightBlue</Color>
+    <Color x:Key="AzureColor">Azure</Color>
+
+    <Color x:Key="LightGreen">LightGreen</Color>
+    <Color x:Key="DarkGreen">DarkGreen</Color>
+    
+    <Color x:Key="Orangy">#FF9900</Color>
+    <Color x:Key="HighlightTextBgnd">LightYellow</Color>
+
+    <Color x:Key="BlackColor">Black</Color>
+    <Color x:Key="MidGrayColor">#545454</Color>
+    <Color x:Key="Color192">#C0C0C0</Color>
+    <Color x:Key="Color220">#DCE0E0</Color>
+    <Color x:Key="AntiqueWhiteColor">AntiqueWhite</Color>
+    <Color x:Key="WhiteColor">White</Color>
+
+    <!-- Base ColorBrush palette -->
+    <SolidColorBrush x:Key="Color150Brush" Color="{StaticResource Color150}" />
+    <SolidColorBrush x:Key="ColorBlueBrush" Color="{StaticResource ColorBlue}" />
+    <SolidColorBrush x:Key="MidBlueBrush" Color="{StaticResource MidBlueColor}" />
+    <SolidColorBrush x:Key="LightBlueBrush" Color="{StaticResource LightBlueColor}" />
+    <SolidColorBrush x:Key="AzureBrush" Color="{StaticResource AzureColor}" />
+
+    <SolidColorBrush x:Key="LightGreenBrush" Color="{StaticResource LightGreen}" />
+    <SolidColorBrush x:Key="DarkGreenBrush" Color="{StaticResource DarkGreen}" />
+    
+    <SolidColorBrush x:Key="OrangyBrush" Color="{StaticResource Orangy}" />
+    <SolidColorBrush x:Key="HighlightTextBgndBrush" Color="{StaticResource HighlightTextBgnd}" />
+
+    <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource BlackColor}" />
+    <SolidColorBrush x:Key="MidGrayColorBrush" Color="{StaticResource MidGrayColor}" />
+    <SolidColorBrush x:Key="Color192Brush" Color="{StaticResource Color192}" />
+    <SolidColorBrush x:Key="Color220Brush" Color="{StaticResource Color220}" />
+    <SolidColorBrush x:Key="AntiqueWhiteBrush" Color="{StaticResource AntiqueWhiteColor}" />
+    <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource WhiteColor}" />
+                 
+</ResourceDictionary>
