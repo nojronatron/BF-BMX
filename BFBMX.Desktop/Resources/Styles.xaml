@@ -1,0 +1,201 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Resources/Colors.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+    
+    <!-- Buttons -->
+    <Style TargetType="Button"
+           x:Key="BaseCustomButton">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFont}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                            CornerRadius="4"
+                            BorderBrush="{StaticResource MidGrayColorBrush}"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="2"
+                            Padding="4 0">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="border"
+                                    Property="BorderBrush"
+                                    Value="{StaticResource OrangyBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter TargetName="border"
+                                    Property="BorderBrush"
+                                    Value="{StaticResource MidGrayColorBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Cursor" Value="Hand" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="Gray" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter Property="BorderBrush" Value="{StaticResource OrangyBrush}" />
+                <Setter Property="BorderThickness" Value="2" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Button"
+           x:Key="MonitorPathButton">
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Background" Value="{StaticResource AzureBrush}" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="Padding" Value="6 4" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Cursor" Value="Hand" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style BasedOn="{StaticResource BaseCustomButton}"
+           TargetType="Button"
+           x:Key="InitButtonStyle">
+        <Setter Property="Background" Value="{StaticResource LightBlueBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource BlackBrush}" />
+    </Style>
+
+    <Style BasedOn="{StaticResource BaseCustomButton}"
+           TargetType="Button"
+           x:Key="StartButtonStyle">
+        <Setter Property="Background" Value="{StaticResource LightGreenBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource BlackBrush}" />
+    </Style>
+
+    <Style BasedOn="{StaticResource BaseCustomButton}"
+           TargetType="Button"
+           x:Key="StopButtonStyle">
+        <Setter Property="Background" Value="{StaticResource OrangyBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource BlackBrush}" />
+    </Style>
+
+    <Style BasedOn="{StaticResource BaseCustomButton}"
+           TargetType="Button"
+           x:Key="ResetButtonStyle">
+        <Setter Property="Background" Value="{StaticResource ColorBlueBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource WhiteBrush}" />
+    </Style>
+
+    <!-- Grid -->
+    <Style x:Key="MainWindowBgnd"
+           TargetType="Grid">
+        <Setter Property="Background" Value="{StaticResource Color220Brush}" />
+    </Style>
+
+    <!-- Labels -->
+    <Style x:Key="MonitorPathLabel"
+           TargetType="Label">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="{StaticResource MediumFontWeight}" />
+    </Style>
+
+    <Style BasedOn="{StaticResource {x:Type Label}}" 
+           x:Key="EnvironmentParamsLabel"
+           TargetType="Label">
+        <Setter Property="Background" Value="{StaticResource Color220Brush}" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="BorderBrush" Value="{StaticResource MidGrayColorBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontWeight" Value="{StaticResource MediumFontWeight}" />
+    </Style>
+
+    <Style BasedOn="{StaticResource {x:Type Label}}"
+           x:Key="ServerNamePortLabel"
+           TargetType="Label">
+        <Setter Property="Background" Value="{StaticResource WhiteBrush}" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="Padding" Value="6 4" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="BorderBrush" Value="{StaticResource MidGrayColorBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style TargetType="Label">
+        <Setter Property="Background" Value="{StaticResource HighlightTextBgndBrush}" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="BorderBrush" Value="{StaticResource MidGrayColorBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <!-- List View -->
+    <Style x:Key="FileListViewStyle"
+           TargetType="ListView">
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="MinHeight" Value="150" />
+        <Setter Property="MinWidth" Value="570" />
+        <Setter Property="Background" Value="{StaticResource WhiteBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource ConsoleFontFamily}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="{StaticResource ConsoleFontWeight}" />
+        <Setter Property="FontStyle" Value="{StaticResource ConsoleFontStyle}" />
+    </Style>
+    
+    <!-- TextBoxes -->
+    <Style TargetType="TextBox">
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFont}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Color192Brush}" />
+        <Setter Property="BorderThickness" Value="2" />
+    </Style>
+
+    <Style BasedOn="{StaticResource {x:Type TextBox}}" 
+           TargetType="TextBox"
+           x:Key="MonitorPathTextBox">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="2 6" />
+        <Setter Property="MinWidth" Value="340" />
+    </Style>
+
+    <!-- Stack Panels -->
+
+    <Style x:Key="BackgroundStackPanel"
+           TargetType="StackPanel">
+        <Setter Property="Background" Value="{StaticResource Color192Brush}" />
+    </Style>
+
+    <Style x:Key="InnerHStackPanel"
+           TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Horizontal" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="InnerVStackPanel"
+           TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Vertical" />
+        <Setter Property="Margin" Value="2" />
+    </Style>
+
+</ResourceDictionary>

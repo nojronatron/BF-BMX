@@ -15,6 +15,11 @@ Each BFBMX Desktop component discovers Bib Records received via Winlink Express 
 
 ## Project Status
 
+15-May-2024 Feature Update (target version 1.4.3):
+
+- Updated UI with a responsive display, contrasting color scheme, and updated control and content styles.
+- Add updated images and facts to README and instructions.
+
 13-May-2024 Bugfix version 1.3.3 Beta:
 
 - Disallow initializing a Monitor with an empty or invalid path. A side-effect is there will no longer be an on-screen red error box when the path is invalid. However, the Monitor Status Message will indicate the problem on-screen.
@@ -179,7 +184,7 @@ Usage instructions for BF-BMX Desktop App and Server Service.
 
 1. Meet minimum requires as stated in [Target Environment And Dependencies](#target-environment-and-dependencies).
 1. Configure [Local Environment Variables](#configure-local-environment-variables) to set behavior of the Desktop App and Server service.
-1. Download the ClickOnce :tm: [installer](#install-desktop-app) to the Windows computer that is running Winlink Express, and run the installer (link to published files is TBD).
+1. Download the Desktop Zip File from the [Repository Releases Page](https://github.com/nojronatron/BF-BMX/releases) to the Windows computer that is running Winlink Express, and run the [installer](#install-desktop-app).
 1. Copy the [Server Service](#run-the-server-service) zip folder to a location and un-zip it.
 1. Make note of the `log location` presented in the [Server Service console output window](#server-service-overview)
 1. _Leave the console window open_ so the server service continues to run.
@@ -333,7 +338,7 @@ The Server Service is a background service based on fully-fledge web components 
 
 ### Run the Server Service
 
-1. Download the ZIP file (location TBD) and extract the contents to a folder on the Windows computer (for example the `Documents` folder or your `Desktop`).
+1. Download the latest ZIP file from the [Repository Releases Page](https://github.com/nojronatron/BF-BMX/releases) and extract the contents to a folder on the Windows computer (for example the `Documents` folder or your `Desktop`).
 1. Double-click `BFBMX.ServerApi.exe` to launch the server service.
 1. If an alert prompt appears from `Windows Firewall` or `Windows Security` click 'Allow Access' to enable the server to listen for incoming data from the Desktop App(s).
 1. The console window will open and display the server's status and activities.
@@ -349,6 +354,8 @@ The Console Window:
 - The console window can be changed in size to fit your needs without interrupting the server service in any way.
 - Occasional log entries will display the server Hostname, IP Address(es), and HTTP Port.
 - If the Console Window ever "disappears" that means the server service is no longer running and you will want to [restart it](#run-the-server-service).
+
+![Web Server Console Screenshot](./Docs/web-server-console.png)
 
 _Note 1_: When first launched, the Server Service console might display one or more `warn` messages related to 'Microsoft.AspNetCore.Server.Kestrel[0]'. This is transitory and will not impact system operation or data processing.
 
