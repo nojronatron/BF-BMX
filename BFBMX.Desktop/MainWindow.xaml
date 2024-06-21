@@ -18,27 +18,31 @@
                 
                 <!-- set grid column widths -->
                 <ResourceDictionary>
-                    <GridLength x:Key="FileNameWidth">156</GridLength>
-                    <GridLength x:Key="FilePathWidth">300</GridLength>
-                    <GridLength x:Key="FileCreatedWidth">132</GridLength>
+                    <GridLength x:Key="FileNameWidth">152</GridLength>
+                    <GridLength x:Key="FilePathWidth">334</GridLength>
+                    <GridLength x:Key="FileCreatedWidth">140</GridLength>
                 </ResourceDictionary>
 
                 <ResourceDictionary>
                     <!-- set style for items that have the NOMINAL flag set -->
                     <DataTemplate x:Key="BibNominal">
                         <Border BorderBrush="{StaticResource BlackBrush}"
-                                BorderThickness="1">
+                                BorderThickness="0"
+                                Margin="0">
                             <Grid Background="{StaticResource WhiteBrush}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="{StaticResource FileNameWidth}" />
                                     <ColumnDefinition Width="{StaticResource FilePathWidth}" />
                                     <ColumnDefinition Width="{StaticResource FileCreatedWidth}" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0"
+                                <TextBlock Style="{StaticResource FileListItemStyle}" 
+                                           Grid.Column="0"
                                            Text="{Binding Path=FileName}" />
-                                <TextBlock Grid.Column="1" 
+                                <TextBlock Style="{StaticResource FileListItemStyle}" 
+                                           Grid.Column="1" 
                                            Text="{Binding Path=FullFilePath}" />
-                                <TextBlock Grid.Column="2" 
+                                <TextBlock Style="{StaticResource FileListItemStyle}" 
+                                           Grid.Column="2" 
                                            Text="{Binding Path=FileTimeStamp}" />
                             </Grid>
                         </Border>
@@ -47,18 +51,22 @@
                     <!-- set style for items that have the WARNING flag set -->
                     <DataTemplate x:Key="BibWarning">
                         <Border BorderBrush="{StaticResource BlackBrush}"
-                                BorderThickness="1">
+                                BorderThickness="0"
+                                Margin="0">
                             <Grid Background="{StaticResource OrangyBrush}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="{StaticResource FileNameWidth}" />
                                     <ColumnDefinition Width="{StaticResource FilePathWidth}" />
                                     <ColumnDefinition Width="{StaticResource FileCreatedWidth}" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0"
+                                <TextBlock Style="{StaticResource WarningFileListItemStyle}"
+                                           Grid.Column="0"
                                            Text="{Binding Path=FileName}"/>
-                                <TextBlock Grid.Column="1" 
+                                <TextBlock Style="{StaticResource WarningFileListItemStyle}" 
+                                           Grid.Column="1" 
                                            Text="{Binding Path=FullFilePath}" />
-                                <TextBlock Grid.Column="2" 
+                                <TextBlock Style="{StaticResource WarningFileListItemStyle}"
+                                           Grid.Column="2" 
                                            Text="{Binding Path=FileTimeStamp}" />
                             </Grid>
                         </Border>
@@ -252,22 +260,24 @@
                                 <ColumnDefinition Width="{StaticResource FilePathWidth}" />
                                 <ColumnDefinition Width="{StaticResource FileCreatedWidth}" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0"
+                            <TextBlock Style="{StaticResource FileListHeadingStyle}" 
+                                       Grid.Column="0"
                                        Text="Message ID"
-                                       Width="156" />
-                            <TextBlock Grid.Column="1"
+                                       Width="152" />
+                            <TextBlock Style="{StaticResource FileListHeadingStyle}" 
+                                       Grid.Column="1"
                                        Text="File Path"
-                                       Width="300" />
-                            <TextBlock Grid.Column="2"
+                                       Width="320" />
+                            <TextBlock Style="{StaticResource FileListHeadingStyle}" 
+                                       Grid.Column="2"
                                        Text="Timestamp"
                                        Width="132" />
                         </Grid>
-                        <ScrollViewer>
-                            <ListView ItemsSource="{Binding MostRecentItems}" 
-                              d:ItemsSource="{d:SampleData ItemCount=9}"
-                              ItemTemplateSelector="{StaticResource dfTemplateLocator}">
-                            </ListView>
-                        </ScrollViewer>
+                        <ListView ItemsSource="{Binding MostRecentItems}" 
+                                      d:ItemsSource="{d:SampleData ItemCount=9}"
+                                      ItemTemplateSelector="{StaticResource dfTemplateLocator}"
+                                      Style="{StaticResource FileListViewStyle}">
+                        </ListView>
                     </StackPanel>
                     
                 </StackPanel>
