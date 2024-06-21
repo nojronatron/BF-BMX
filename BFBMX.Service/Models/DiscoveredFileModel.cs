@@ -19,6 +19,9 @@ namespace BFBMX.Service.Models
         public string FullFilePath => FullFileInfo.FullName;
         public DateTime FileTimeStamp => FullFileInfo.CreationTime;
 
+        public string DisplayFilePath => FullFileInfo.FullName;
+        public string DisplayFileTimeStamp => FullFileInfo.CreationTime.ToString("yyyy-MM-dd HH:mm:ss");
+
         public override bool Equals(object? obj)
         {
             return Equals(obj as DiscoveredFileModel);
