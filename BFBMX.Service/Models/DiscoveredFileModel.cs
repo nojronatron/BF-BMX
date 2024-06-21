@@ -14,6 +14,7 @@ namespace BFBMX.Service.Models
             FullFileInfo = new FileInfo(fullPath);
         }
 
+        public bool HasWarningFlag { get; set; } = false;
         public string FileName => FullFileInfo.Name;
         public string FullFilePath => FullFileInfo.FullName;
         public DateTime FileTimeStamp => FullFileInfo.CreationTime;
