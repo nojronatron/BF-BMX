@@ -6,7 +6,7 @@
         xmlns:helpers="clr-namespace:BFBMX.Desktop.Helpers"
         mc:Ignorable="d"
         SizeToContent="WidthAndHeight"
-        Title="Bigfoot Bib Message eXtractor - Desktop">
+        Title="BF-BMX Desktop version 1.5.3">
 
     <Window.Resources>
         <ResourceDictionary>
