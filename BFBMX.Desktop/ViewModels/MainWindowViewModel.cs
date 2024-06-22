@@ -22,6 +22,7 @@ namespace BFBMX.Desktop.ViewModels
         private readonly IFileProcessor _fileProcessor;
         private readonly IApiClient _apiClient;
 
+        private int MaxRecentItems => 12;
 
         public MainWindowViewModel(ILogger<MainWindowViewModel> logger,
             IFileProcessor fileProcessor,
@@ -87,21 +88,6 @@ namespace BFBMX.Desktop.ViewModels
             DateTime fileTimeStamp = newFile.FileTimeStamp;
             _logger.LogInformation("Discovered file path {filepath} creation stamp {filedatetime} for processing.", discoveredFilepath, fileTimeStamp);
 
-            // insert the new item into the collection on the UI Thread (WPF requirement)
-            App.Current.Dispatcher.Invoke(() =>
-            {
-                MostRecentItems.Insert(0, newFile);
-                // update the UI by adding an item to the observable collection and maintaining a max of 12 items
-                int mostRecentItemsCount = MostRecentItems.Count;
-
-                if (mostRecentItemsCount > 12)
-                {
-                    MostRecentItems.RemoveAt(mostRecentItemsCount - 1);
-                }
-            });
-
-            _logger.LogInformation("Path {discoveredFilepath} sent to screen for display.", discoveredFilepath);
-
             // get machine name for File Processor
             string? hostname = Environment.MachineName;
             string machineName = string.IsNullOrWhiteSpace(hostname) ? "Unknown" : hostname;
@@ -112,18 +98,43 @@ namespace BFBMX.Desktop.ViewModels
             WinlinkMessageModel winlinkMessage = _fileProcessor.ProcessWinlinkMessageFile(newFile.FileTimeStamp, machineName, newFile.FullFilePath);
 
             // No bib reports found, log and return
-            if (winlinkMessage is null || winlinkMessage.BibRecords.Count <= 0)
+            if (winlinkMessage is null || winlinkMessage.BibRecords.Count < 1)
             {
                 _logger.LogInformation("No bibrecords found in winlinkMessage {msgName}.", newFile.FullFilePath);
+                AddDiscoveredFileToCollection(newFile);
                 return;
             }
+            else
+            {
+                // add Warning Flag to new file for UI to display
+                newFile.HasWarningFlag = winlinkMessage.HasDataWarning();
+                AddDiscoveredFileToCollection(newFile);
 
-            // send bib reports to API and log to file
-            string logPathAndFilename = Path.Combine(DesktopEnvFactory.GetBfBmxLogPath(), DesktopEnvFactory.GetBibRecordsLogFileName());
-            _logger.LogInformation("Sending {wlMsgId} bib data to logfile and API.", winlinkMessage.WinlinkMessageId);
-            bool wroteToFile = _fileProcessor.WriteWinlinkMessageToFile(winlinkMessage, logPathAndFilename);
-            bool postedToApi = await _apiClient.PostWinlinkMessageAsync(winlinkMessage.ToJsonString());
-            _logger.LogInformation("Message ID: {wlMsgId} => Wrote to file? {wroteToFile}. Posted to API? {postedToApi}. Items stored in memory: {collectionCount}.", winlinkMessage.WinlinkMessageId, wroteToFile, postedToApi, winlinkMessage.BibRecords.Count);
+                // send bib reports to API and log to file
+                string logPathAndFilename = Path.Combine(DesktopEnvFactory.GetBfBmxLogPath(), DesktopEnvFactory.GetBibRecordsLogFileName());
+                _logger.LogInformation("Sending {wlMsgId} bib data to logfile and API.", winlinkMessage.WinlinkMessageId);
+                bool wroteToFile = _fileProcessor.WriteWinlinkMessageToFile(winlinkMessage, logPathAndFilename);
+                bool postedToApi = await _apiClient.PostWinlinkMessageAsync(winlinkMessage.ToJsonString());
+                _logger.LogInformation("Message ID: {wlMsgId} => Wrote to file? {wroteToFile}. Posted to API? {postedToApi}. Items stored in memory: {collectionCount}.", winlinkMessage.WinlinkMessageId, wroteToFile, postedToApi, winlinkMessage.BibRecords.Count);
+            }
+        }
+
+        public void AddDiscoveredFileToCollection(DiscoveredFileModel newFile)
+        {
+            // insert the new item into the collection on the UI Thread (WPF requirement)
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                MostRecentItems.Insert(0, newFile);
+                // update the UI by adding an item to the observable collection keeping no more than MaxRecentItems items
+                int mostRecentItemsCount = MostRecentItems.Count;
+
+                if (mostRecentItemsCount > MaxRecentItems)
+                {
+                    MostRecentItems.RemoveAt(mostRecentItemsCount - 1);
+                }
+            });
+
+            _logger.LogInformation("Path {discoveredFilepath} sent to screen for display.", newFile.FullFilePath);
         }
 
         /// <summary>

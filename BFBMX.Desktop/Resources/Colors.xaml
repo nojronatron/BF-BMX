@@ -1,16 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     
-    <!-- Base Font Properties -->
-    <FontFamily x:Key="DefaultFont">Segoe UI Variable</FontFamily>
-    <FontStyle x:Key="DefaultFontStyle">Normal</FontStyle>
-    <FontWeight x:Key="DefaultFontWeight">Light</FontWeight>
-    <FontWeight x:Key="MediumFontWeight">Medium</FontWeight>
-
-    <FontFamily x:Key="ConsoleFontFamily">Consolas</FontFamily>
-    <FontStyle x:Key="ConsoleFontStyle">Normal</FontStyle>
-    <FontWeight x:Key="ConsoleFontWeight">Normal</FontWeight>
-    
     <!-- Base color palette -->
     <Color x:Key="Color150">#000096</Color>
     <Color x:Key="ColorBlue">#0000FF</Color>

@@ -3,6 +3,8 @@
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/Resources/Colors.xaml" />
+        <ResourceDictionary Source="/Resources/Fonts.xaml" />
+        <ResourceDictionary Source="/Resources/WindowProps.xaml" />
     </ResourceDictionary.MergedDictionaries>
     
     <!-- Buttons -->
@@ -149,7 +151,7 @@
     <!-- List View -->
     <Style x:Key="FileListViewStyle"
            TargetType="ListView">
-        <Setter Property="Margin" Value="4" />
+        <Setter Property="Margin" Value="2" />
         <Setter Property="MinHeight" Value="150" />
         <Setter Property="MinWidth" Value="570" />
         <Setter Property="Background" Value="{StaticResource WhiteBrush}" />
@@ -157,6 +159,30 @@
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="{StaticResource ConsoleFontWeight}" />
         <Setter Property="FontStyle" Value="{StaticResource ConsoleFontStyle}" />
+    </Style>
+    
+    <!-- TextBlock -->
+    <Style x:Key="FileListHeadingStyle"
+           TargetType="TextBlock">
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="{StaticResource MediumFontWeight}" />
+        <Setter Property="TextAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="FileListItemStyle"
+           TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource ConsoleFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="{StaticResource MediumFontWeight}" />
+    </Style>
+
+    <Style x:Key="WarningFileListItemStyle"
+           TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource ConsoleFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="DemiBold" />
     </Style>
     
     <!-- TextBoxes -->
@@ -178,7 +204,6 @@
     </Style>
 
     <!-- Stack Panels -->
-
     <Style x:Key="BackgroundStackPanel"
            TargetType="StackPanel">
         <Setter Property="Background" Value="{StaticResource Color192Brush}" />

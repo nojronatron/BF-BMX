@@ -15,7 +15,12 @@ Each BFBMX Desktop component discovers Bib Records received via Winlink Express 
 
 ## Project Status
 
-15-May-2024 Feature Update (target version 1.4.3):
+21-Jun3-2024 Feature Update (target version 1.5.3):
+
+- Highlight file records that have the 'Warning' flag set in the Desktop App UI.
+- Minor bug fixes.
+
+15-May-2024 version 1.4.3:
 
 - Updated UI with a responsive display, contrasting color scheme, and updated control and content styles.
 - Add updated images and facts to README and instructions.
@@ -259,10 +264,11 @@ Environment Variables:
 
 Detected Files:
 
-- A scrollable list of `*.mime` files detected by any active, STARTed Monitor.
-- The list will hold a maximum of 12 items, and will remove the oldest item from the bottom when a new one is added to the top.
+- A scrollable list of `*.mime` files detected by any active Monitor.
+- The list will hold a maximum of 12 items. New items are added to the top, and items are removed from the bottom (oldest).
+- Files that contain Bib Report data that has malformed data or format will be highlighted for informational purposes.
 
-![BFBMX Desktop App User Interface](./Docs/Desktop-App.png)
+![BFBMX Desktop App User Interface](./Docs/Desktop-App-with-markup.png)
 
 ### Set Up Desktop Monitor Paths
 

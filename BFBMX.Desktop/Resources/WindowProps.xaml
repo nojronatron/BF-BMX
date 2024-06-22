@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Base column widths -->
+    <GridLength x:Key="FileNameGridLen">110</GridLength>
+    <GridLength x:Key="FilePathGridLen">488</GridLength>
+    <GridLength x:Key="FileCreatedGridLen">168</GridLength>
+
+</ResourceDictionary>

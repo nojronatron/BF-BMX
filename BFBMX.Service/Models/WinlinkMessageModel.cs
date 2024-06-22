@@ -38,10 +38,11 @@ public class WinlinkMessageModel
         };
     }
 
+
     /// <summary>
-    /// Tests if this Winlink Message entity has any Bib Records with Data Warnings.
+    /// Checks if any of the Bib Records in this Winlink Message entity have a data warning.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>True if not empty and at least one Bib Record has a data warning, otherwise false.</returns>
     public bool HasDataWarning()
     {
         return BibRecords.Any(x => x.DataWarning);
