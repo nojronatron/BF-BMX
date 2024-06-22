@@ -3,6 +3,8 @@
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/Resources/Colors.xaml" />
+        <ResourceDictionary Source="/Resources/Fonts.xaml" />
+        <ResourceDictionary Source="/Resources/WindowProps.xaml" />
     </ResourceDictionary.MergedDictionaries>
     
     <!-- Buttons -->
