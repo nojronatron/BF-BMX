@@ -112,10 +112,23 @@ namespace BFBMX.Desktop.ViewModels
 
                 // send bib reports to API and log to file
                 string logPathAndFilename = Path.Combine(DesktopEnvFactory.GetBfBmxLogPath(), DesktopEnvFactory.GetBibRecordsLogFileName());
-                _logger.LogInformation("Sending {wlMsgId} bib data to logfile and API.", winlinkMessage.WinlinkMessageId);
+                _logger.LogInformation("Sending {wlMsgId} Message data to logfile and API.", winlinkMessage.WinlinkMessageId);
+
                 bool wroteToFile = _fileProcessor.WriteWinlinkMessageToFile(winlinkMessage, logPathAndFilename);
+                _logger.LogInformation("Message ID: {wlMsgId} => Wrote to file? {wroteToFile}.", winlinkMessage.WinlinkMessageId, wroteToFile);
+
                 bool postedToApi = await _apiClient.PostWinlinkMessageAsync(winlinkMessage.ToJsonString());
-                _logger.LogInformation("Message ID: {wlMsgId} => Wrote to file? {wroteToFile}. Posted to API? {postedToApi}. Items stored in memory: {collectionCount}.", winlinkMessage.WinlinkMessageId, wroteToFile, postedToApi, winlinkMessage.BibRecords.Count);
+                
+                if (postedToApi)
+                {
+                    _logger.LogInformation("Posted Message ID {wlMsgId} to API successfully.", winlinkMessage.WinlinkMessageId);
+                    _logger.LogInformation("Stored {bibRecordCount} Bib Records from Message ID {wlMsgId}.", winlinkMessage.BibRecords.Count, winlinkMessage.WinlinkMessageId);
+                }
+                else
+                {
+                    _logger.LogWarning("Message ID {wlMsgId} was sent to server but there was no response or an error code was returned!", winlinkMessage.WinlinkMessageId);
+                    _logger.LogWarning("IF A SERVER IS DEPLOYED AND YOU SEE THIS MESSAGE: Check the server is running without log errors, if firewall is blocking SERVER_PORT, and whether Desktop and Server are on the same network.");
+                }
             }
         }
 
