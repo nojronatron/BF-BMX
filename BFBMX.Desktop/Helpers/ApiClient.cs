@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 
 namespace BFBMX.Desktop.Helpers
@@ -11,17 +10,15 @@ namespace BFBMX.Desktop.Helpers
         private readonly ApiClientSettings _apiClientSettings;
         private readonly ILogger<ApiClient> _logger;
 
-        public ApiClient(ILogger<ApiClient> logger, ApiClientSettings apiConfig)
+        public ApiClient(ILogger<ApiClient> logger, ApiClientSettings apiClientSettings)
         {
             _logger = logger;
             _apiClient = new HttpClient();
-            _apiClientSettings = apiConfig;
-            _apiClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _apiClientSettings = apiClientSettings;
         }
 
         public async Task<bool> PostWinlinkMessageAsync(string jsonPayload)
         {
-            string postWinlinkMsgUri = "WinlinkMessage"; // post Winlink Message service endpoint
             bool result = false;
             if (string.IsNullOrWhiteSpace(jsonPayload))
             {
@@ -30,11 +27,12 @@ namespace BFBMX.Desktop.Helpers
             }
             else
             {
-                StringContent postPayload = new(jsonPayload, Encoding.UTF8, "application/json");
+                StringContent postPayload = new(jsonPayload, Encoding.UTF8, _apiClientSettings.DefaultMediaType);
+
                 try
                 {
-                    string uriPath = System.IO.Path.Combine(_apiClientSettings.BaseUri, postWinlinkMsgUri);
-                    _logger.LogInformation("ApiClient set uriPath to {uriPath}.", uriPath);
+                    string uriPath = System.IO.Path.Combine(_apiClientSettings.BaseUri, _apiClientSettings.PostWinlinkMsgUri);
+                    _logger.LogInformation("Sending message to server at {uriPath}. Will timeout in {apiClientTimeout} (HH:MM:SS)", uriPath, _apiClientSettings.DefaultTimeout);
 
                     // httpclient will dispose automatically to conserve resources
                     using (HttpResponseMessage response = await _apiClient.PostAsync(uriPath, postPayload))
@@ -42,11 +40,11 @@ namespace BFBMX.Desktop.Helpers
                         if (response.IsSuccessStatusCode)
                         {
                             result = true;
-                            _logger.LogInformation("PostWinlinkMessageAsync: Response was success status code.");
+                            _logger.LogInformation("Response from Server was a success status code.");
                         }
                         else
                         {
-                            _logger.LogWarning("PostWinlinkMessageAsync: Response was not a success status code.");
+                            _logger.LogWarning("Response from Server was NOT a success status code.");
                             result = false;
                         }
                     }
