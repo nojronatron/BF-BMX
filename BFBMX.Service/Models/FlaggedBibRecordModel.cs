@@ -154,14 +154,14 @@ namespace BFBMX.Service.Models
             return false;
         }
 
-        public override string ToString()
-        {
-            string bibNum = string.IsNullOrWhiteSpace(BibNumber) ? "NULL" : BibNumber;
-            string action = string.IsNullOrWhiteSpace(Action) ? "NULL" : Action;
-            string bibTimeOfDay = string.IsNullOrWhiteSpace(BibTimeOfDay) ? "NULL" : BibTimeOfDay;
-            string dayOfMonth = string.IsNullOrWhiteSpace(DayOfMonth) ? "NULL" : DayOfMonth;
-            string location = string.IsNullOrWhiteSpace(Location) ? "NULL" : Location;
-            return $"Number: {bibNum}, Action: {action}, Time: {bibTimeOfDay}, Day: {dayOfMonth}, Location: {location}";
-        }
+        //public override string ToString()
+        //{
+        //    string bibNum = string.IsNullOrWhiteSpace(BibNumber) ? "NULL" : BibNumber;
+        //    string action = string.IsNullOrWhiteSpace(Action) ? "NULL" : Action;
+        //    string bibTimeOfDay = string.IsNullOrWhiteSpace(BibTimeOfDay) ? "NULL" : BibTimeOfDay;
+        //    string dayOfMonth = string.IsNullOrWhiteSpace(DayOfMonth) ? "NULL" : DayOfMonth;
+        //    string location = string.IsNullOrWhiteSpace(Location) ? "NULL" : Location;
+        //    return $"Number: {bibNum}, Action: {action}, Time: {bibTimeOfDay}, Day: {dayOfMonth}, Location: {location}";
+        //}
     }
 }
