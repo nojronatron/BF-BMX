@@ -10,8 +10,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{507433B9-A558-44EC-803E-3421DA65A8FC}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		Docs\Desktop-App.png = Docs\Desktop-App.png
 		Docs\bf-bmx-wle-desktop-server-basic-diagram.png = Docs\bf-bmx-wle-desktop-server-basic-diagram.png
+		Docs\Desktop-App.png = Docs\Desktop-App.png
 		Docs\Desktop-Block-Diagram.png = Docs\Desktop-Block-Diagram.png
 		LICENSE = LICENSE
 		README.md = README.md
