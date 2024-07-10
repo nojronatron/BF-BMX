@@ -24,6 +24,11 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
         _serverLogWriter = serverLogWriter;
     }
 
+    public IEnumerable<string> GetAllEntities()
+    {
+        return this.Select(wlm => wlm.ToJsonString());
+    }
+
     public bool AddEntityToCollection(WinlinkMessageModel wlMessagePayload)
     {
         int savedEntityCount = 0;
