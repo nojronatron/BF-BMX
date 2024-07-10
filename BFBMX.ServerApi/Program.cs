@@ -74,13 +74,23 @@ serverInfo.StartHostInfo();
 // init server activity logfile
 await serverLogWriter.WriteActivityToLogAsync("Initialized server activity logger.");
 
-app.MapGet("/serverInfo", () =>
+app.MapGet("/api/v1/AllRecords", () =>
+{
+    // create a JSON file with all records from bibReportPayloadsCollection
+    return bibReportPayloadsCollection.GetAllEntities();
+}).Produces(200).ProducesProblem(500);
+
+app.MapGet("/api/v1/ServerInfo", () =>
 {
     if (serverInfo.CanStart())
     {
         serverInfo.StartHostInfo();
         serverInfo.StartLogfileInfo();
     }
+
+    Dictionary<string, string> message = new();
+    message.Add("version", "v1.6.0 Dev Preview");
+    return Results.Json(message);
 }).Produces(200).ProducesProblem(500);
 
 app.MapPost("/WinlinkMessage", (WinlinkMessageModel request) =>
