@@ -1,0 +1,144 @@
+﻿@page "/bybibnumber"
+@using BFBMX.Service.Models
+@using Helpers
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using System.Diagnostics
+
+@inject IHttpClientFactory ClientFactory
+@inject HttpConfiguration HttpConfig
+@rendermode InteractiveServer
+
+<h1>Bib Number Report</h1>
+
+<section>
+    <h3>Input Section</h3>
+    @if(IsMessagesEmpty)
+    {
+        <p>Enter a bib number to search for messages.</p>
+        <input type="text" @bind="QueryBibNum" />
+        <button @onclick="HandleGetMessages">Get Bib Report</button>
+    }
+    else
+    {
+        <button @onclick="HandleGetNewQuery">New Query</button>
+    }
+</section>
+
+<section>
+    <h3>Output Section</h3>
+    @if(IsMessagesError)
+    {
+        <p>@ResponseErrorMessage</p>
+    }
+    @if(IsMessagesEmpty)
+    {
+        <p>No messages found for the bib number entered.</p>
+    }
+    @if(CanDisplayMessages)
+    {
+        @foreach (var message in Messages)
+        {
+            <article>
+                <h4>Winlink ID: @message.WinlinkMessageId</h4>
+                <ul>
+                    <li>Message Timestamp: @message.MessageDateStamp</li>
+                    <li>Discovered By: @message.ClientHostname</li>
+                    <li>Message Received At: @message.FileCreatedTimeStamp</li>
+                </ul>
+                <table>
+                    <thead>
+                        <tr>
+                            <td>Bib Number</td>
+                            <td>Action</td>
+                            <td>Time</td>
+                            <td>Day</td>
+                            <td>Location</td>
+                            <td>Data Warning</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach(var bibrecord in message.BibRecords)
+                    {
+                        <tr>
+                            <td>@bibrecord.BibNumber</td>
+                            <td>@bibrecord.Action</td>
+                            <td>@bibrecord.BibTimeOfDay</td>
+                            <td>@bibrecord.DayOfMonth</td>
+                            <td>@bibrecord.Location</td>
+                            <td>@bibrecord.DataWarning</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </article>
+        }
+    }
+</section>
+
+@code {
+    public string? QueryBibNum {get;set;} = string.Empty;
+    public string ResponseErrorMessage {get;set;} = string.Empty;
+    public IEnumerable<WinlinkMessageModel>? Messages {get;set;}
+    public bool IsRequestSent {get;set;} 
+    public bool IsMessagesEmpty => Messages is null || Messages.Count() < 1;
+    public bool IsMessagesError {get;set;}
+    public bool CanDisplayMessages {get;set;} = false;
+
+    public async Task HandleGetNewQuery()
+    {
+        QueryBibNum = string.Empty;
+        ResponseErrorMessage = string.Empty;
+        Messages = null;
+        IsRequestSent = false;
+        IsMessagesError = false;
+        CanDisplayMessages = false;
+    }
+
+    public async Task HandleGetMessages()
+    {
+        try
+        {
+            string queryBibNumEndpoint = string.Concat(HttpConfig.BibNumberEndpoint, "/", QueryBibNum);
+            HttpRequestMessage request = new(HttpMethod.Get, queryBibNumEndpoint);
+            request.Headers.Add("Accept", HttpConfig.AcceptHeader);
+            request.Headers.Add("User-Agent", HttpConfig.UserAgentHeader);
+            HttpClient client = ClientFactory.CreateClient();
+            CancellationToken ct = HttpConfig.Cts.Token;
+            HttpResponseMessage response = await client.SendAsync(request, ct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                Messages = await JsonSerializer.DeserializeAsync<IEnumerable<WinlinkMessageModel>>(responseStream, HttpConfig.JsonOptions);
+                IsRequestSent = true;
+            }
+            else
+            {
+                ResponseErrorMessage = $"{(int)response.StatusCode}: {response.ReasonPhrase}";
+                IsMessagesError = true;
+            }
+
+            CanDisplayMessages = !IsMessagesEmpty && !IsMessagesError;
+        }
+        catch (Exception ex)
+        {
+            /* 
+             * Possible Exceptions from both HttpRequestMessage and HttpClient:
+             * 
+             * ArgumentNullException
+             * InvalidOperationException
+             * HttpRequestException
+             * TaskCanceledException
+             * OperationCanceledException
+             * 
+             * These need to be logged
+             */
+
+            Debug.WriteLine(ex.Message);
+            IsMessagesError = true;
+            ResponseErrorMessage = ex.Message;
+            CanDisplayMessages = !IsMessagesError;
+        }
+    }
+}

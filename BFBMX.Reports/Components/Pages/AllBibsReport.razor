@@ -1,0 +1,148 @@
+﻿@page "/allbibsreport"
+@using BFBMX.Service.Models
+@using Helpers
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using System.Diagnostics
+
+@inject IHttpClientFactory ClientFactory
+@inject HttpConfiguration HttpConfig
+
+<h1>All Recorded Bibs Report</h1>
+
+@if (getMessagesError || Messages is null)
+{
+    <p>Unable to get any data. Try again later.</p>
+}
+else
+{
+    @foreach (var message in Messages)
+    {
+        <section>
+            <h3>Winlink ID: @message.WinlinkMessageId</h3>
+            <ul>
+                <li>Message Timestamp: @message.MessageDateStamp</li>
+                <li>Discovered By: @message.ClientHostname</li>
+                <li>Message Received At: @message.FileCreatedTimeStamp</li>
+            </ul>
+            <table>
+                <thead>
+                    <tr>
+                        <td>Bib Number</td>
+                        <td>Action</td>
+                        <td>Time</td>
+                        <td>Day</td>
+                        <td>Location</td>
+                        <td>Data Warning</td>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach(var bibrecord in message.BibRecords)
+                {
+                    <tr>
+                        <td>@bibrecord.BibNumber</td>
+                        <td>@bibrecord.Action</td>
+                        <td>@bibrecord.BibTimeOfDay</td>
+                        <td>@bibrecord.DayOfMonth</td>
+                        <td>@bibrecord.Location</td>
+                        <td>@bibrecord.DataWarning</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </section>
+    }
+}
+
+@code {
+    public IEnumerable<WinlinkMessageModel>? Messages {get;set;}
+    private bool getMessagesError;
+    private bool shouldRender;
+
+    protected override bool ShouldRender() => shouldRender;
+
+    public async Task GetMessages()
+    {
+        try
+        {
+            HttpRequestMessage request = new(HttpMethod.Get, HttpConfig.AllRecordsEndpoint);
+            request.Headers.Add("Accept", HttpConfig.AcceptHeader);
+            request.Headers.Add("User-Agent", HttpConfig.UserAgentHeader);
+            HttpClient client = ClientFactory.CreateClient();
+            CancellationToken ct = HttpConfig.Cts.Token;
+            HttpResponseMessage response = await client.SendAsync(request, ct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                Messages = await JsonSerializer.DeserializeAsync<IEnumerable<WinlinkMessageModel>>(responseStream, HttpConfig.JsonOptions);
+            }
+            else
+            {
+                Debug.WriteLine($"{(int)response.StatusCode}: {response.ReasonPhrase}");
+                getMessagesError = true;
+            }
+
+            shouldRender = true;
+        }
+        catch (ArgumentNullException anex)
+        {
+            Debug.WriteLine(anex.Message);
+            getMessagesError = true;
+            shouldRender = false;
+
+        }
+        catch (InvalidOperationException ioex)
+        {
+            Debug.WriteLine(ioex.Message);
+            getMessagesError = true;
+            shouldRender = false;
+
+        }
+        catch (HttpRequestException hrex)
+        {
+            Debug.WriteLine(hrex.Message);
+            getMessagesError = true;
+            shouldRender = false;
+
+        }
+        catch (TaskCanceledException tcex)
+        {
+            Debug.WriteLine(tcex.Message);
+            getMessagesError = true;
+            shouldRender = false;
+
+        }
+        catch (OperationCanceledException ocex)
+        {
+            Debug.WriteLine(ocex.Message);
+            getMessagesError = true;
+            shouldRender = false;
+
+        }
+        catch (Exception ex)
+        {
+            /* 
+             * Possible Exceptions from both HttpRequestMessage and HttpClient:
+             * 
+             * ArgumentNullException
+             * InvalidOperationException
+             * HttpRequestException
+             * TaskCanceledException
+             * OperationCanceledException
+             * 
+             * These need to be logged
+             */
+
+            Debug.WriteLine($"Some other exception occurred.\n{ex.Message}\n {ex.StackTrace}");
+
+            getMessagesError = true;
+            shouldRender = false;
+        }
+    }
+
+    override protected async Task OnInitializedAsync()
+    {
+        await GetMessages();
+    }
+}
