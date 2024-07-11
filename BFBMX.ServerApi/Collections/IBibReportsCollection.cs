@@ -7,5 +7,6 @@ namespace BFBMX.ServerApi.Collections
         bool AddEntityToCollection(WinlinkMessageModel message);
         IEnumerable<WinlinkMessageModel> GetAllEntities();
         IEnumerable<WinlinkMessageModel> GetDroppedReports();
+        IEnumerable<WinlinkMessageModel> GetBibReport(string bibNumber);
     }
 }
