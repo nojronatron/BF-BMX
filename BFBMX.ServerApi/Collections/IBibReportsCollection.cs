@@ -5,6 +5,7 @@ namespace BFBMX.ServerApi.Collections
     public interface IBibReportsCollection
     {
         bool AddEntityToCollection(WinlinkMessageModel message);
-        IEnumerable<string> GetAllEntities();
+        IEnumerable<WinlinkMessageModel> GetAllEntities();
+        IEnumerable<WinlinkMessageModel> GetDroppedReports();
     }
 }

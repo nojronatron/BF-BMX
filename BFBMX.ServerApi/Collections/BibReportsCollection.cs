@@ -24,9 +24,30 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
         _serverLogWriter = serverLogWriter;
     }
 
-    public IEnumerable<string> GetAllEntities()
+    public IEnumerable<WinlinkMessageModel> GetDroppedReports()
     {
-        return this.Select(wlm => wlm.ToJsonString());
+        var messagesWithDrops = this.Where(wlm => wlm.BibRecords.Any(bib => bib.@Action == "DROP"));
+        List<WinlinkMessageModel> resultCollection = new();
+
+        foreach(var message in messagesWithDrops)
+        {
+            List<FlaggedBibRecordModel> droppedBibsReports = message.BibRecords.Where(
+                bib => bib.@Action!.ToLower() != "in" && bib.@Action.ToLower() != "out").ToList();
+            WinlinkMessageModel wlm = WinlinkMessageModel.GetWinlinkMessageInstance(
+                message.WinlinkMessageId,
+                message.MessageDateStamp,
+                message.ClientHostname,
+                message.FileCreatedTimeStamp,
+                droppedBibsReports);
+            resultCollection.Add(wlm);
+        }
+
+        return resultCollection;
+    }
+
+    public IEnumerable<WinlinkMessageModel> GetAllEntities()
+    {
+        return this.Select(wlm => wlm);
     }
 
     public bool AddEntityToCollection(WinlinkMessageModel wlMessagePayload)
