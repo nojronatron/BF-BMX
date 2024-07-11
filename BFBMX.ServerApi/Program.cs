@@ -74,6 +74,11 @@ serverInfo.StartHostInfo();
 // init server activity logfile
 await serverLogWriter.WriteActivityToLogAsync("Initialized server activity logger.");
 
+app.MapGet("/api/v1/dropreport", () =>
+{
+    return bibReportPayloadsCollection.GetDroppedReports();
+}).Produces(200).ProducesProblem(500);
+
 app.MapGet("/api/v1/AllRecords", () =>
 {
     // create a JSON file with all records from bibReportPayloadsCollection
