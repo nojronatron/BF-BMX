@@ -90,6 +90,11 @@ app.MapGet("/api/v1/AllRecords", () =>
     return bibReportPayloadsCollection.GetAllEntities();
 }).Produces(200).ProducesProblem(500);
 
+app.MapGet("/api/v1/Statistics", () =>
+{
+    return bibReportPayloadsCollection.GetStatistics();
+}).Produces(200).ProducesProblem(500);
+
 app.MapGet("/api/v1/ServerInfo", () =>
 {
     if (serverInfo.CanStart())

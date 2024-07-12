@@ -24,9 +24,67 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
         _serverLogWriter = serverLogWriter;
     }
 
+    public BibRecordsStatisticsModel GetStatistics()
+    {
+        BibRecordsStatisticsModel result = new();
+        result.TotalWinlinkMessagesProcessed = this.Count();
+
+        int minLittleFootBibNumber = 300;
+        int maxLittleFootBibNumber = 799;
+
+        int maxBigFootBibNumber = 299;
+        int minBigFootBibNumber = 0;
+
+        HashSet<FlaggedBibRecordModel> LittleFootBibRecordsHashSet = new();
+        HashSet<int> LittleFootBibsSeen = new();
+        HashSet<FlaggedBibRecordModel> BigFootBibRecordsHashSet = new();
+        HashSet<int> BigFootBibsSeen = new();
+        HashSet<FlaggedBibRecordModel> UnknownBibRecordsHashSet = new();
+        HashSet<string> UnknownBibEntryData = new();
+
+        foreach (WinlinkMessageModel wlm in this)
+        {
+            foreach (FlaggedBibRecordModel fbrm in wlm.BibRecords)
+            {
+                if (int.TryParse(fbrm.BibNumber, out int parsedNum))
+                {
+                    // is it between bigFoot Max and Min?
+                    if (parsedNum <= maxBigFootBibNumber && parsedNum >= minBigFootBibNumber)
+                    {
+                        BigFootBibRecordsHashSet.Add(fbrm);
+                        BigFootBibsSeen.Add(parsedNum);
+                        continue;
+                    }
+
+                    // is it between one of the littleFoot Max and Min?
+                    if (parsedNum <= maxLittleFootBibNumber && parsedNum >= minLittleFootBibNumber)
+                    {
+                        LittleFootBibRecordsHashSet.Add(fbrm);
+                        LittleFootBibsSeen.Add(parsedNum);
+                        continue;
+                    }
+                }
+
+                // if neither then just send a string collection of unknown bib data
+                UnknownBibRecordsHashSet.Add(fbrm);
+
+                if (!string.IsNullOrWhiteSpace(fbrm.BibNumber))
+                {
+                    UnknownBibEntryData.Add(fbrm.BibNumber);
+                }
+            }
+        }
+
+        result.BigFootBibRecordsProcessed = BigFootBibRecordsHashSet.Count();
+        result.LittleFootBibRecordsProcessed = LittleFootBibRecordsHashSet.Count();
+        result.LittleFeetBibNumbersSeen = LittleFootBibsSeen.ToList();
+        result.BigFootBibNumbersSeen = BigFootBibsSeen.ToList();
+        result.UnknownBibDataItems = UnknownBibRecordsHashSet.TakeWhile(frb => string.IsNullOrWhiteSpace(frb.BibNumber) == false).ToList(); //UnknownBibEntryData.ToList();
+        return result;
+    }
+
     public IEnumerable<WinlinkMessageModel> GetBibReport(string bibNumber)
     {
-
        var messagesWithBib = this.Where(wlm => wlm.BibRecords.Any(bib => bib.BibNumber == bibNumber));
         List<WinlinkMessageModel> resultCollection = new();
 

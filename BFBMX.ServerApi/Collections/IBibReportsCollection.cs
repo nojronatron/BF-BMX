@@ -8,5 +8,6 @@ namespace BFBMX.ServerApi.Collections
         IEnumerable<WinlinkMessageModel> GetAllEntities();
         IEnumerable<WinlinkMessageModel> GetDroppedReports();
         IEnumerable<WinlinkMessageModel> GetBibReport(string bibNumber);
+        BibRecordsStatisticsModel GetStatistics();
     }
 }
