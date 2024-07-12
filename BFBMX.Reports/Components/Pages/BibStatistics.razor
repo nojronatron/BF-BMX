@@ -1,7 +1,214 @@
 ﻿@page "/bibstatistics"
 
-<h1>Bib Statistics</h1>
+@using BFBMX.Service.Models
+@using Helpers
+@using System.Text
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using System.Diagnostics
+
+@inject IHttpClientFactory ClientFactory
+@inject HttpConfiguration HttpConfig
+
+<h1>Bib Statistics As Of @LastUpdated</h1>
+
+@if (GetMessageError)
+{
+    <p>Unable to retrieve data. Try again later.</p>
+}
+else
+{
+    <h3>Overall Statistics</h3>
+    <section class="overall-content">
+        <article class="overall-stats">
+            <p>Messages From Aid Stations: @TotalMessages</p>
+            <p>BF200 Records Processed: @BigFootRecordsCount</p>
+            <p>20M and 40M Records Processed: @LittleFeetRecordsCount</p>
+            <p>Total Unique Bibs Seen: @TotalBibsSeenCount</p>
+        </article>
+        <article class="unknown-data">
+            <p class="statistic-title">Processed Bib Records To Research</p>
+            <ul>
+                @foreach(var item in UnknownItems)
+                {
+                    <li class="unknown-item">@item</li>
+                }
+            </ul>
+        </article>
+    </section>
+
+    <h3>Event Specific Data</h3>
+    <section class="event-specific-parent">
+        <article class="bf-bibs-seen">
+            <p class="statistic-title">BF200 Bibs Seen: @BigFootBibsSeenCount</p>
+            <p class="statistic-seen-bib-num">@BigFootBibsSeen</p>
+        </article>
+        <article class="lf-bibs-seen">
+            <p class="statistic-title">20M and 40M Bibs Seen: @LittleFeetBibsSeenCount</p>
+            <p class="statistic-seen-bib-num">@LittleFeetBibsSeen</p>
+        </article>
+    </section>
+
+    <section class="help-text">
+        <h3 class="definitions-heading">Definitions</h3>
+        <ul class="definitions">
+            <li><em>Messages From Aid Stations</em>: How many messages an Aid Station has sent via HAM that contain information about runners.</li>
+            <li><em>BF200 Records Processed</em>: The number of individual records of 200-mile runner actions such as IN, OUT, or DROP.</li>
+            <li><em>20M andn 40M Records Processed</em>: The sum of all 20-mile runner and 40-mile runner individual records of actions (IN, OUT, or DROP).</li>
+            <li><em>Total Unique Bibs Seen</em>: Represents the number if <em>unique individual runners</em> seen on-course.</li>
+            <li><em>Processed Bib Records to Research</em>: HAMs use this list to uncover erroneous records and get them corrected. Common errors are mis-keyed data, or missing data components.</li>
+            <li><em>BF200 Bibs Seen</em>: A count of unique bib numbers seen by HAMs, and an ordered list of those bib numbers.</li>
+            <li><em>20M and 40M Bibs Seen</em>: A count of unique bib numbers seen by HAMs, and an ordered list of those bib numbers.</li>
+            <li></li>
+            <li></li>
+        </ul>
+    </section>
+}
 
 @code {
+    public BibRecordsStatisticsModel? Statistics {get;set;}
+    public string LastUpdated {get;set;} = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    public string TotalMessages {get;set;} = string.Empty;
+    public string BigFootRecordsCount {get;set;} = string.Empty;
+    public string LittleFeetRecordsCount {get;set;} = string.Empty;
+    public List<string> UnknownItems {get;set;} = new();
+    public string BigFootBibsSeen {get;set;} = string.Empty;
+    public string LittleFeetBibsSeen {get;set;} = string.Empty;
 
+    private bool GetMessageError;
+    private bool PageShouldRender;
+
+    public int BigFootBibsSeenCount => Statistics?.BigFootBibNumbersSeen.Count() ?? 0;
+    public int LittleFeetBibsSeenCount => Statistics?.LittleFeetBibNumbersSeen.Count() ?? 0;
+    public int TotalBibsSeenCount => Statistics?.BigFootBibNumbersSeen.Count() + Statistics?.LittleFeetBibNumbersSeen.Count() ?? 0;
+
+    protected override bool ShouldRender() => PageShouldRender;
+
+    private void FormatBibsSeen()
+    {
+        if (Statistics.BigFootBibNumbersSeen.Count() > 0)
+        {
+            List<int> sortedBibNumbers = Statistics.BigFootBibNumbersSeen.OrderBy(x => x).ToList();
+            StringBuilder sb = new();
+
+            foreach (var bib in sortedBibNumbers)
+            {
+                sb.Append($"{bib}, ");
+            }
+
+            sb.Remove(sb.Length - 2, 2);
+            BigFootBibsSeen = sb.ToString();
+        }
+        else
+        {
+            BigFootBibsSeen = $"None processed as of {LastUpdated}";
+        }
+
+        if (Statistics.LittleFeetBibNumbersSeen.Count() > 0)
+        {
+            List<int> sortedBibNumbers = Statistics.LittleFeetBibNumbersSeen.OrderBy(x => x).ToList();
+            StringBuilder sb = new();
+
+            foreach (var bib in sortedBibNumbers)
+            {
+                sb.Append($"{bib}, ");
+            }
+
+            sb.Remove(sb.Length - 2, 2);
+            LittleFeetBibsSeen = sb.ToString();
+        }
+        else
+        {
+            LittleFeetBibsSeen = $"None processed as of {LastUpdated}";
+        }
+    }
+
+    private void FormatLittleFeetRecordsCount()
+    {
+        LittleFeetRecordsCount = Statistics.LittleFootBibRecordsProcessed > 0
+            ? Statistics.LittleFootBibRecordsProcessed.ToString()
+            : "None";
+    }
+
+    private void FormatBigFootRecordsCount()
+    {
+        BigFootRecordsCount = Statistics.BigFootBibRecordsProcessed > 0
+            ? Statistics.BigFootBibRecordsProcessed.ToString()
+            : "None";
+    }
+
+    private void FormatTotalMessagesProcessed() 
+    {
+        TotalMessages = Statistics.TotalWinlinkMessagesProcessed > 0
+            ? Statistics.TotalWinlinkMessagesProcessed.ToString()
+            : "None";
+    }
+
+    private void FormatUnknownItems()
+    {
+        if (Statistics.UnknownBibDataItems.Count() > 0)
+        {
+            foreach(FlaggedBibRecordModel item in Statistics.UnknownBibDataItems)
+            {
+                UnknownItems.Add(item.ToCommaSeparatedString());
+            }
+        }
+        else
+        {
+            UnknownItems.Add($"None processed as of {LastUpdated}");
+        }
+    }
+
+    public async Task GetStatistics()
+    {
+        try
+        {
+            HttpRequestMessage request = new(HttpMethod.Get, HttpConfig.StatisticsEndpoint);
+            request.Headers.Add("Accept", HttpConfig.AcceptHeader);
+            request.Headers.Add("User-Agent", HttpConfig.UserAgentHeader);
+            HttpClient client = ClientFactory.CreateClient();
+            CancellationToken ct = HttpConfig.Cts.Token;
+            HttpResponseMessage response = await client.SendAsync(request, ct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                using System.IO.Stream responseStream = await response.Content.ReadAsStreamAsync();
+                Statistics = await JsonSerializer.DeserializeAsync<BibRecordsStatisticsModel>(responseStream, HttpConfig.JsonOptions);
+                FormatTotalMessagesProcessed();
+                FormatBigFootRecordsCount();
+                FormatLittleFeetRecordsCount();
+                FormatUnknownItems();
+                FormatBibsSeen();
+            }
+            else
+            {
+                GetMessageError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            /* 
+             * Possible Exceptions from both HttpRequestMessage and HttpClient:
+             * 
+             * ArgumentNullException
+             * InvalidOperationException
+             * HttpRequestException
+             * TaskCanceledException
+             * OperationCanceledException
+             * 
+             * These need to be logged
+             */
+
+            Debug.WriteLine($"{ex.Message}\n{ex.StackTrace}");
+            GetMessageError = true;
+            PageShouldRender = false;
+        }
+
+        PageShouldRender = true;
+    }
+
+    override protected async Task OnInitializedAsync()
+    {
+        await GetStatistics();
+    }
 }

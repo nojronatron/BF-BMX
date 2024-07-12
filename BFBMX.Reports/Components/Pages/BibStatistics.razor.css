@@ -1,0 +1,59 @@
+﻿h3 {
+    text-align: center;
+}
+
+.overall-content {
+    display: flex;
+    border: solid 1px grey;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.event-specific-parent {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    border: 1px solid grey;
+}
+
+.overall-stats {
+    background: cyan;
+    padding: 1em;
+    flex: 1;
+}
+
+.statistic-title {
+    text-align: center;
+    font-weight: 600;
+}
+
+.unknown-data {
+    display: flex;
+    flex-direction: column;
+    background: orange;
+    padding: 1em;
+    flex: 1;
+}
+
+.bf-bibs-seen {
+    background: yellow;
+    padding: 1em;
+}
+
+.lf-bibs-seen {
+    background: cyan;
+    padding: 1em;
+}
+
+ul {
+    list-style-type: none;
+    text-align: center;
+}
+
+.definitions-heading {
+    margin-top: 2em;
+}
+.definitions {
+    text-align: left;
+}
