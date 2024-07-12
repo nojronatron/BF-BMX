@@ -111,6 +111,19 @@ namespace BFBMX.Service.Models
         }
 
         /// <summary>
+        /// Format this Bib Record as a comma-delimited output string
+        /// Use this for reporting purposes or import to spreadsheets
+        /// Headings: BibNum, Action, Time, Day, Location, and Warning
+        /// </summary>
+        /// <returns></returns>
+        public string ToCommaSeparatedString()
+        {
+            string dwText = DataWarning ? "ALERT" : "NOMINAL";
+            string? paddedBibTime = BibTimeOfDay?.Length < 4 ? BibTimeOfDay.PadLeft(5, '0') : BibTimeOfDay;
+            return $"{BibNumber}, {Action}, {paddedBibTime}, {DayOfMonth}, {Location}, {dwText}";
+        }
+
+        /// <summary>
         /// Use JsonSerializer to return this Bib Record as a JSON string.
         /// </summary>
         /// <returns></returns>
