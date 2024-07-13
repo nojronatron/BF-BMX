@@ -1,0 +1,105 @@
+﻿body {
+    background-color: rgba(220,220,220,.6);
+}
+
+ul {
+    list-style-type: none;
+    text-align: center;
+    margin:0em;
+    padding:0em;
+}
+
+.query-section {
+    display: flex;
+    flex-direction: row;
+    padding: 1em;
+    margin-bottom: 1em;
+    border: 1px solid gray;
+}
+.overall-content {
+    display:flex;
+    flex-direction:column;
+    padding: 1em;
+    border: 1px solid gray;
+}
+
+.input-form {
+    display: flex;
+    flex-direction: column;
+    flex: 2
+}
+
+.as-list-container {
+    padding: 1em;
+    flex: 1;
+}
+
+.overall-stats-title {
+    text-align: center;
+}
+
+.cntr-data-heading {
+    font-weight: 600;
+    text-align: center;
+}
+
+.statistic-title {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.2em;
+}
+
+.bibcount-pop-container {
+    min-width: 30em;
+    padding: 1em;
+}
+
+.overall-stats-container {
+    display: flex;
+    flex-wrap: wrap;
+    min-width: 14em;
+}
+
+.data-container-common
+{
+    border: dashed 1px grey;
+    padding: 1em;
+    margin: .4em;
+}
+
+.basic-counts-container {
+    min-width: 16em;
+    background: rgba(130,130,0,.6);
+}
+
+.wl-id-container {
+    min-width: 14em;
+    background: yellow;
+    text-align: center;
+}
+
+.wl-datestamps-container {
+    min-width: 16em;
+    background: green;
+    text-align: center;
+}
+
+.bibs-seen-in {
+    min-width: 12em;
+    background: lime;
+}
+
+.bibs-seen-out {
+    min-width: 12em;
+    background: yellow;
+}
+
+.bibs-seen-unknown {
+    min-width: 12em;
+    background: orange;
+}
+
+.bibs-reported-on {
+    min-width: 12em;
+    background: cyan;
+}

@@ -1,7 +1,323 @@
 ﻿@page "/byaidstation"
 
+@using BFBMX.Service.Models
+@using System.Text
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using System.Diagnostics
+
+@inject IHttpClientFactory ClientFactory
+@inject HttpConfiguration HttpConfig
+
+@rendermode InteractiveServer
+
 <h1>Aid Station Report</h1>
 
-@code {
+<section class="query-section">
+    @if (!CanDisplayAidStationStats)
+    {
+        <article class="input-form">
+            <p>Enter Aid Station Name or Abbreviation</p>
+            <input type="text" @bind="QueryAidStation" />
+            <button @onclick="HandleGetAidStationStats">Get Aid Station Report</button>
+            <p>@ResponseErrorMessage</p>
+        </article>
+        <article class="as-list-container">
+            <p>Available Aid Stations</p>
+            <ul>
+                @foreach (string aidStation in AidStationLookup.Keys)
+                {
+                    <li>@aidStation: @AidStationLookup[aidStation]</li>
+                }
+            </ul>
+        </article>
+    }
+    else
+    {
+        <button @onclick="HandleGetNewQuery">Click to query another Aid Station</button>
+    }
+</section>
 
+<section class="overall-content">
+    @if (IsResponseAnError)
+    {
+        <article>
+            <p class="text-danger">Unable to retrieve data. Try again later.</p>
+        </article>
+    }
+    @if(IsResponseEmpty)
+    {
+        <article>
+            <p>No Aid Station data to report on yet.</p>
+        </article>
+    }
+    @if(CanDisplayAidStationStats)
+    {
+        <article>
+            <p class="statistic-title">@AidStationName data received as of @LastUpdated</p>
+        </article>
+        <article class="overall-stats-container">
+            <div class="data-container-common basic-counts-container">
+                <p>
+                    <span class="cntr-data-heading">Unique Bib Count:</span>
+                    <span>@BibsReportedOnCount</span>
+                </p>
+                <p>
+                    <span class="cntr-data-heading">Calculated Population:</span>
+                    <span>@CalculatedBibCountAtAidStation</span>
+                </p>
+            </div>
+            @if(AllWinlinkIDs.Count > 0)
+            {
+                <div class="wl-id-container as-list-container data-container-common">
+                    <p class="cntr-data-heading">Winlink IDs Received (@TotalWinlinkMessagesCount)</p>
+                    <ul>
+                        @foreach(string wlID in AllWinlinkIDs)
+                        {
+                            <li>@wlID</li>
+                        }
+                    </ul>
+                </div>
+            }
+            @if(MessageDateStamps.Count > 0)
+            {
+            <div class="wl-datestamps-container as-list-container data-container-common">
+                    <p class="cntr-data-heading">Message Date Stamps</p>
+                <ul>
+                    @foreach(DateTime datestamp in MessageDateStamps)
+                    {
+                        <li>@datestamp</li>
+                    }
+                </ul>
+            </div>
+            }
+            @if(BibsArrivedCount > 0)
+            {
+            <div class="bibs-seen-in as-list-container data-container-common">
+                    <p class="cntr-data-heading">Bibs Arrived (@BibsArrivedCount)</p>
+                <ul>
+                    @foreach(int bib in BibsArrived)
+                    {
+                        <li>@bib</li>
+                    }
+                </ul>
+            </div>
+            }
+            @if (BibsDepartedCount > 0)
+            {
+            <div class="bibs-seen-out as-list-container data-container-common">
+                    <p class="cntr-data-heading">Bibs Exited (@BibsDepartedCount)</p>
+                <ul>
+                    @foreach (int bib in BibsDeparted)
+                    {
+                        <li>@bib</li>
+                    }
+                </ul>
+            </div>
+            }
+            @if (BibsOtherActionCount > 0)
+            {
+                <div class="bibs-seen-unknown as-list-container data-container-common">
+                    <p class="cntr-data-heading">Bibs With Other Status (@BibsOtherActionCount)</p>
+                    <ul>
+                        @foreach (string bib in BibsOtherAction)
+                        {
+                            <li>@bib</li>
+                        }
+                    </ul>
+                </div>
+            }
+            @if (BibsReportedOnCount > 0)
+            {
+            <div class="bibs-reported-on as-list-container data-container-common">
+                    <p class="cntr-data-heading">All Bibs Seen (@BibsReportedOnCount)</p>
+                <ul>
+                    @foreach (int bib in BibsReportedOn)
+                    {
+                        <li>@bib</li>
+                    }
+                </ul>
+            </div>
+            }
+        </article>
+    }
+</section>
+
+@code {
+    public string LastUpdated { get; set; } = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+    public AidStationStatisticsModel? AidStationResponse { get; set; }
+
+    public SortedSet<int> BibsReportedOn { get; set; } = new(); // which unique bib numbers HAS this AS reported on?
+    public SortedSet<int> BibsArrived { get; set; } = new(); // unique bib numbers with action: IN
+    public SortedSet<int> BibsDeparted { get; set; } = new(); // unique bib numbers with action: OUT
+    public List<string> BibsOtherAction { get; set; } = new(); // unique bib numbers with NEITHER action: IN nor OUT
+
+    public SortedSet<DateTime> MessageDateStamps = new();
+    public string AidStationName { get; set; } = "Not Set!";
+    public HashSet<string> AllWinlinkIDs { get; set; } = new(); // unique list of WL IDs received
+
+    public int TotalWinlinkMessagesCount => AllWinlinkIDs.Count();
+    public int BibsReportedOnCount => BibsReportedOn.Count();
+    public int BibsArrivedCount => BibsArrived.Count();
+    public int BibsDepartedCount => BibsDeparted.Count();
+    public int BibsOtherActionCount => BibsOtherAction.Count();
+    public int TotalBibsSeenCount => BibsArrivedCount + BibsDepartedCount + BibsOtherActionCount;
+    public int CalculatedBibCountAtAidStation => BibsArrivedCount - BibsDepartedCount; // unofficial count of bibs at this AS
+
+    private Dictionary<string, string> AidStationLookup = new();
+
+    private bool GetMessageError;
+
+    public string QueryAidStation { get; set; } = string.Empty;
+    public string ResponseErrorMessage { get; set; } = string.Empty;
+    public bool IsRequestSent { get; set; }
+    public bool IsResponseEmpty => AidStationResponse is null;
+    public bool IsResponseAnError { get; set; }
+    public bool CanDisplayAidStationStats { get; set; }
+
+    public void ClearDataFields()
+    {
+        AidStationResponse = null;
+        BibsReportedOn.Clear();
+        BibsArrived.Clear();
+        BibsDeparted.Clear();
+        BibsOtherAction.Clear();
+        MessageDateStamps.Clear();
+        AidStationName = string.Empty;
+        AllWinlinkIDs.Clear();
+        QueryAidStation = string.Empty;
+        ResponseErrorMessage = string.Empty;
+
+    }
+    public void HandleGetNewQuery()
+    {
+        ClearDataFields();
+        IsRequestSent = false;
+        IsResponseAnError = false;
+        CanDisplayAidStationStats = false;
+    }
+
+    public async Task HandleGetAidStationStats()
+    {
+        try
+        {
+            string queryAidStationEndpoint = string.Concat(HttpConfig.AidStationEndpoint, "/", QueryAidStation);
+            HttpRequestMessage request = new(HttpMethod.Get, queryAidStationEndpoint);
+            request.Headers.Add("Accept", HttpConfig.AcceptHeader);
+            request.Headers.Add("User-Agent", HttpConfig.UserAgentHeader);
+            HttpClient client = ClientFactory.CreateClient();
+            CancellationToken ct = HttpConfig.Cts.Token;
+            HttpResponseMessage response = await client.SendAsync(request, ct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                using System.IO.Stream responseStream = await response.Content.ReadAsStreamAsync();
+                AidStationResponse = await JsonSerializer.DeserializeAsync<AidStationStatisticsModel>(responseStream, HttpConfig.JsonOptions);
+                IsRequestSent = true;
+            }
+            else
+            {
+                ResponseErrorMessage = $"{(int)response.StatusCode}: {response.ReasonPhrase}";
+                IsResponseAnError = true;
+            }
+
+            if (IsResponseEmpty || IsResponseAnError)
+            {
+                CanDisplayAidStationStats = false;
+            }
+            else
+            {
+                LoadWinlinkMessageMetaData();
+                AidStationName = AidStationResponse!.AidStationName;
+                LoadBibsReportedOn();
+                CanDisplayAidStationStats = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            /*
+            * Possible Exceptions from both HttpRequestMessage and HttpClient:
+            *
+            * ArgumentNullException
+            * InvalidOperationException
+            * HttpRequestException
+            * TaskCanceledException
+            * OperationCanceledException
+            *
+            * These need to be logged
+            */
+
+            Debug.WriteLine($"{ex.Message}\n{ex.StackTrace}");
+            // GetMessageError = true;
+            // PageShouldRender = false;
+            IsResponseAnError = true;
+            ResponseErrorMessage = ex.Message;
+            CanDisplayAidStationStats = !IsResponseAnError;
+        }
+
+        // PageShouldRender = true;
+    }
+
+    public void LoadBibsReportedOn()
+    {
+        foreach(WinlinkMessageModel winlinkMessage in AidStationResponse!.WinlinkMessages)
+        {
+            foreach(FlaggedBibRecordModel bibRecord in winlinkMessage.BibRecords)
+            {
+                if (int.TryParse(bibRecord.BibNumber, out int bibnum))
+                {
+                    BibsReportedOn.Add(bibnum);
+
+                    if (bibRecord.Action == "IN")
+                    {
+                        BibsArrived.Add(bibnum);
+                    }
+                    else if (bibRecord.Action == "OUT")
+                    {
+                        BibsDeparted.Add(bibnum);
+                    }
+                    else
+                    {
+                        BibsOtherAction.Add(bibRecord.BibNumber);
+                    }
+                }
+                else
+                {
+                    BibsOtherAction.Add(bibRecord.BibNumber ?? "Error!");
+                }
+            }
+        }
+    }
+
+    public void LoadWinlinkMessageMetaData()
+    {
+        foreach(WinlinkMessageModel winlinkMessage in AidStationResponse!.WinlinkMessages)
+        {
+            MessageDateStamps.Add(winlinkMessage.MessageDateStamp);
+            AllWinlinkIDs.Add(winlinkMessage.WinlinkMessageId ?? "Error!");
+        }
+    }
+
+    override protected async Task OnInitializedAsync()
+    {
+        AidStationLookup.Add("MM", "Marble Mountain");
+        AidStationLookup.Add("BL", "Blue Lake");
+        AidStationLookup.Add("AC", "Ape Canyon");
+        AidStationLookup.Add("WR", "Windy Ridge");
+        AidStationLookup.Add("JR", "Johnston Ridge");
+        AidStationLookup.Add("CW", "Coldwater Lake");
+        AidStationLookup.Add("NP", "Norway Pass");
+        AidStationLookup.Add("EP", "Elk Pass");
+        AidStationLookup.Add("WM", "Wright Meadow (Rd.9327");
+        AidStationLookup.Add("SB", "Spencer Butte");
+        AidStationLookup.Add("LR", "Lewis River");
+        AidStationLookup.Add("CB", "Council Bluff");
+        AidStationLookup.Add("QR", "Quartz Ridge");
+        AidStationLookup.Add("CL", "Chain of Lakes");
+        AidStationLookup.Add("KT", "Klikitat");
+        AidStationLookup.Add("TS", "Twin Sisters");
+        AidStationLookup.Add("OC", "Owen's Creek");
+        AidStationLookup.Add("FN", "Finish (Bigfoot Base)");
+    }
 }
