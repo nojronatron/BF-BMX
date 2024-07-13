@@ -1,7 +1,6 @@
 ﻿@page "/bibstatistics"
 
 @using BFBMX.Service.Models
-@using Helpers
 @using System.Text
 @using System.Text.Json
 @using System.Text.Json.Serialization
@@ -10,7 +9,8 @@
 @inject IHttpClientFactory ClientFactory
 @inject HttpConfiguration HttpConfig
 
-<h1>Bib Statistics As Of @LastUpdated</h1>
+<h1>Bib Statistics</h1>
+<p class="bib-stat-byline">As Of @LastUpdated</p>
 
 @if (GetMessageError)
 {
@@ -49,19 +49,15 @@ else
         </article>
     </section>
 
-    <section class="help-text">
-        <h3 class="definitions-heading">Definitions</h3>
-        <ul class="definitions">
-            <li><em>Messages From Aid Stations</em>: How many messages an Aid Station has sent via HAM that contain information about runners.</li>
-            <li><em>BF200 Records Processed</em>: The number of individual records of 200-mile runner actions such as IN, OUT, or DROP.</li>
-            <li><em>20M andn 40M Records Processed</em>: The sum of all 20-mile runner and 40-mile runner individual records of actions (IN, OUT, or DROP).</li>
-            <li><em>Total Unique Bibs Seen</em>: Represents the number if <em>unique individual runners</em> seen on-course.</li>
-            <li><em>Processed Bib Records to Research</em>: HAMs use this list to uncover erroneous records and get them corrected. Common errors are mis-keyed data, or missing data components.</li>
-            <li><em>BF200 Bibs Seen</em>: A count of unique bib numbers seen by HAMs, and an ordered list of those bib numbers.</li>
-            <li><em>20M and 40M Bibs Seen</em>: A count of unique bib numbers seen by HAMs, and an ordered list of those bib numbers.</li>
-            <li></li>
-            <li></li>
-        </ul>
+    <section class="def-container">
+        <h3 class="def-heading">Definitions</h3>
+        <p class="def-item"><em>Messages From Aid Stations</em>: How many messages an Aid Station has sent via HAM that contain information about runners.</p>
+        <p class="def-item"><em>BF200 Records Processed</em>: The number of individual records of 200-mile runner actions such as IN, OUT, or DROP.</p>
+        <p class="def-item"><em>20M andn 40M Records Processed</em>: The sum of all 20-mile runner and 40-mile runner individual records of actions (IN, OUT, or DROP).</p>
+        <p class="def-item"><em>Total Unique Bibs Seen</em>: Represents the number if <em>unique individual runners</em> seen on-course.</p>
+        <p class="def-item"><em>Processed Bib Records to Research</em>: HAMs use this pst to uncover erroneous records and get them corrected. Common errors are mis-keyed data, or missing data components.</p>
+        <p class="def-item"><em>BF200 Bibs Seen</em>: A count of unique bib numbers seen by HAMs, and an ordered list of those bib numbers.</p>
+        <p class="def-item"><em>20M and 40M Bibs Seen</em>: A count of unique bib numbers seen by HAMs, and an ordered list of those bib numbers.</p>
     </section>
 }
 
