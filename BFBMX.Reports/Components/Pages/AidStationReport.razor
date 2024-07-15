@@ -17,13 +17,18 @@
     @if (!CanDisplayAidStationStats)
     {
         <article class="input-form">
-            <p>Enter Aid Station Name or Abbreviation</p>
-            <input type="text" @bind="QueryAidStation" />
-            <button @onclick="HandleGetAidStationStats">Get Aid Station Report</button>
-            <p>@ResponseErrorMessage</p>
+            <label for="queryAidStation" class="cntr-data-heading">Enter Aid Station Name or Abbreviation</label>
+            <input id="queryAidStation" type="text" class="bigfoot-text-input-cntr" @bind="QueryAidStation" />
+            <button class="bigfoot-button-blue" @onclick="HandleGetAidStationStats">Get Aid Station Report</button>
+
+            @if (string.IsNullOrWhiteSpace(InputValidationMessage) == false)
+            {
+                <p class="text-danger text-lg-center">@InputValidationMessage</p>
+            }
+
         </article>
         <article class="as-list-container">
-            <p>Available Aid Stations</p>
+            <p class="cntr-data-heading">Available Aid Stations</p>
             <ul>
                 @foreach (string aidStation in AidStationLookup.Keys)
                 {
@@ -34,7 +39,7 @@
     }
     else
     {
-        <button @onclick="HandleGetNewQuery">Click to query another Aid Station</button>
+        <button class="bigfoot-button-blue" @onclick="HandleGetNewQuery">Click to query another Aid Station</button>
     }
 </section>
 
@@ -42,35 +47,28 @@
     @if (IsResponseAnError)
     {
         <article>
-            <p class="text-danger">Unable to retrieve data. Try again later.</p>
-        </article>
-    }
-    @if(IsResponseEmpty)
-    {
-        <article>
-            <p>No Aid Station data to report on yet.</p>
+            <p class="text-danger">Unable to retrieve data. Check your search input and try again later.</p>
+            <p>@ResponseErrorMessage</p>
         </article>
     }
     @if(CanDisplayAidStationStats)
     {
-        <article>
-            <p class="statistic-title">@AidStationName data received as of @LastUpdated</p>
+        <article class="topline-container">
+            @if (AllWinlinkIDs.Count() < 1)
+            {
+                <p class="no-wl-messages">No Winlink messages received from @(AidStationName) yet</p>
+            }
+            else
+            {
+                <p class="stat-section-title">@AidStationName data received as of @LastUpdated</p>
+            }
         </article>
-        <article class="overall-stats-container">
-            <div class="data-container-common basic-counts-container">
-                <p>
-                    <span class="cntr-data-heading">Unique Bib Count:</span>
-                    <span>@BibsReportedOnCount</span>
-                </p>
-                <p>
-                    <span class="cntr-data-heading">Calculated Population:</span>
-                    <span>@CalculatedBibCountAtAidStation</span>
-                </p>
-            </div>
+        <article class="statistics-container">
+
             @if(AllWinlinkIDs.Count > 0)
             {
                 <div class="wl-id-container as-list-container data-container-common">
-                    <p class="cntr-data-heading">Winlink IDs Received (@TotalWinlinkMessagesCount)</p>
+                    <p class="cntr-data-heading">Winlink IDs Received (@AllWinlinkIDs.Count())</p>
                     <ul>
                         @foreach(string wlID in AllWinlinkIDs)
                         {
@@ -79,46 +77,24 @@
                     </ul>
                 </div>
             }
+
             @if(MessageDateStamps.Count > 0)
             {
-            <div class="wl-datestamps-container as-list-container data-container-common">
-                    <p class="cntr-data-heading">Message Date Stamps</p>
-                <ul>
-                    @foreach(DateTime datestamp in MessageDateStamps)
-                    {
-                        <li>@datestamp</li>
-                    }
-                </ul>
-            </div>
+                <div class="wl-datestamps-container as-list-container data-container-common">
+                        <p class="cntr-data-heading">Message Date Stamps (@MessageDateStamps.Count())</p>
+                    <ul>
+                        @foreach(DateTime datestamp in MessageDateStamps)
+                        {
+                            <li>@datestamp</li>
+                        }
+                    </ul>
+                </div>
             }
-            @if(BibsArrivedCount > 0)
-            {
-            <div class="bibs-seen-in as-list-container data-container-common">
-                    <p class="cntr-data-heading">Bibs Arrived (@BibsArrivedCount)</p>
-                <ul>
-                    @foreach(int bib in BibsArrived)
-                    {
-                        <li>@bib</li>
-                    }
-                </ul>
-            </div>
-            }
-            @if (BibsDepartedCount > 0)
-            {
-            <div class="bibs-seen-out as-list-container data-container-common">
-                    <p class="cntr-data-heading">Bibs Exited (@BibsDepartedCount)</p>
-                <ul>
-                    @foreach (int bib in BibsDeparted)
-                    {
-                        <li>@bib</li>
-                    }
-                </ul>
-            </div>
-            }
-            @if (BibsOtherActionCount > 0)
+
+            @if (BibsOtherAction.Count() > 0)
             {
                 <div class="bibs-seen-unknown as-list-container data-container-common">
-                    <p class="cntr-data-heading">Bibs With Other Status (@BibsOtherActionCount)</p>
+                    <p class="cntr-data-heading">Bibs With Other Status (@BibsOtherAction.Count())</p>
                     <ul>
                         @foreach (string bib in BibsOtherAction)
                         {
@@ -127,69 +103,108 @@
                     </ul>
                 </div>
             }
-            @if (BibsReportedOnCount > 0)
+
+            @if (HasBibData && CalculatedPopulation.Count() > 0)
             {
-            <div class="bibs-reported-on as-list-container data-container-common">
-                    <p class="cntr-data-heading">All Bibs Seen (@BibsReportedOnCount)</p>
-                <ul>
-                    @foreach (int bib in BibsReportedOn)
+            <div class="data-container-common calc-pop-container">
+                <p class="stat-title">Calculated Population (@CalculatedPopulation.Count())</p>
+                @if(BibsArrived.Count() < BibsDeparted.Count())
+                    {
+                        <p class="text-danger cntr-data-heading">!! More OUT than IN !!</p>
+                    }
+                    <ul>
+                    @foreach(int bib in CalculatedPopulation)
                     {
                         <li>@bib</li>
                     }
                 </ul>
             </div>
             }
+
+            @if (BibsDeparted.Count() > 0)
+            {
+                <div class="bibs-seen-out as-list-container data-container-common">
+                    <p class="cntr-data-heading">Bibs Exited (@BibsDeparted.Count())</p>
+                    <ul>
+                        @foreach (int bib in BibsDeparted)
+                        {
+                            <li>@bib</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @if (BibsArrived.Count() > 0)
+            {
+                <div class="bibs-seen-in as-list-container data-container-common">
+                    <p class="cntr-data-heading">Bibs Arrived (@BibsArrived.Count())</p>
+                    <ul>
+                        @foreach (int bib in BibsArrived)
+                        {
+                            <li>@bib</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @if (UniqueBibsSeen.Count() > 0)
+            {
+                <div class="bibs-reported-on as-list-container data-container-common">
+                    <p class="cntr-data-heading">All Bibs Seen (@UniqueBibsSeen.Count())</p>
+                    <ul>
+                        @foreach (int bib in UniqueBibsSeen)
+                        {
+                            <li>@bib</li>
+                        }
+                    </ul>
+                </div>
+            }
         </article>
     }
 </section>
 
 @code {
-    public string LastUpdated { get; set; } = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-
-    public AidStationStatisticsModel? AidStationResponse { get; set; }
-
-    public SortedSet<int> BibsReportedOn { get; set; } = new(); // which unique bib numbers HAS this AS reported on?
-    public SortedSet<int> BibsArrived { get; set; } = new(); // unique bib numbers with action: IN
-    public SortedSet<int> BibsDeparted { get; set; } = new(); // unique bib numbers with action: OUT
-    public List<string> BibsOtherAction { get; set; } = new(); // unique bib numbers with NEITHER action: IN nor OUT
-
-    public SortedSet<DateTime> MessageDateStamps = new();
-    public string AidStationName { get; set; } = "Not Set!";
-    public HashSet<string> AllWinlinkIDs { get; set; } = new(); // unique list of WL IDs received
-
-    public int TotalWinlinkMessagesCount => AllWinlinkIDs.Count();
-    public int BibsReportedOnCount => BibsReportedOn.Count();
-    public int BibsArrivedCount => BibsArrived.Count();
-    public int BibsDepartedCount => BibsDeparted.Count();
-    public int BibsOtherActionCount => BibsOtherAction.Count();
-    public int TotalBibsSeenCount => BibsArrivedCount + BibsDepartedCount + BibsOtherActionCount;
-    public int CalculatedBibCountAtAidStation => BibsArrivedCount - BibsDepartedCount; // unofficial count of bibs at this AS
-
     private Dictionary<string, string> AidStationLookup = new();
-
     private bool GetMessageError;
 
+    public string LastUpdated { get; set; } = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    public string AidStationName { get; set; } = "Not Set!";
     public string QueryAidStation { get; set; } = string.Empty;
     public string ResponseErrorMessage { get; set; } = string.Empty;
+    public string InputValidationMessage { get; set; } = string.Empty;
+
+    public int TotalBibsSeenCount => BibsArrived.Count() + BibsDeparted.Count() + BibsOtherAction.Count();
+
     public bool IsRequestSent { get; set; }
-    public bool IsResponseEmpty => AidStationResponse is null;
     public bool IsResponseAnError { get; set; }
     public bool CanDisplayAidStationStats { get; set; }
+    public bool HasBibData => TotalBibsSeenCount > 0;
+
+    public AidStationStatisticsModel? AidStationResponse { get; set; }
+    public HashSet<string> AllWinlinkIDs { get; set; } = new(); // unique list of WL IDs received
+    public SortedSet<DateTime> MessageDateStamps = new();
+    public SortedSet<int> UniqueBibsSeen { get; set; } = new(); // which unique bib numbers HAS this AS reported on?
+    public SortedSet<int> BibsArrived { get; set; } = new(); // unique bib numbers with action: IN
+    public SortedSet<int> BibsDeparted { get; set; } = new(); // unique bib numbers with action: OUT
+    public SortedSet<int> CalculatedPopulation { get; set; } = new(); // calculated list of bibs at this AS
+    public List<string> BibsOtherAction { get; set; } = new(); // unique bib numbers with NEITHER action: IN nor OUT
 
     public void ClearDataFields()
     {
         AidStationResponse = null;
-        BibsReportedOn.Clear();
+        UniqueBibsSeen.Clear();
         BibsArrived.Clear();
         BibsDeparted.Clear();
         BibsOtherAction.Clear();
         MessageDateStamps.Clear();
         AidStationName = string.Empty;
         AllWinlinkIDs.Clear();
+        CalculatedPopulation.Clear();
         QueryAidStation = string.Empty;
         ResponseErrorMessage = string.Empty;
-
+        IsResponseAnError = false;
     }
+
     public void HandleGetNewQuery()
     {
         ClearDataFields();
@@ -202,6 +217,15 @@
     {
         try
         {
+            InputValidationMessage = string.Empty;
+
+            if (QueryAidStation.Length < 2)
+            {
+                ClearDataFields();
+                InputValidationMessage = "Enter a valid Aid Station abbreviation";
+                return;
+            }
+
             string queryAidStationEndpoint = string.Concat(HttpConfig.AidStationEndpoint, "/", QueryAidStation);
             HttpRequestMessage request = new(HttpMethod.Get, queryAidStationEndpoint);
             request.Headers.Add("Accept", HttpConfig.AcceptHeader);
@@ -218,11 +242,11 @@
             }
             else
             {
-                ResponseErrorMessage = $"{(int)response.StatusCode}: {response.ReasonPhrase}";
+                ResponseErrorMessage = $"{(int)response.StatusCode} {response.ReasonPhrase}";
                 IsResponseAnError = true;
             }
 
-            if (IsResponseEmpty || IsResponseAnError)
+            if (IsResponseAnError)
             {
                 CanDisplayAidStationStats = false;
             }
@@ -231,6 +255,7 @@
                 LoadWinlinkMessageMetaData();
                 AidStationName = AidStationResponse!.AidStationName;
                 LoadBibsReportedOn();
+                GetCalculatedPopulation();
                 CanDisplayAidStationStats = true;
             }
         }
@@ -249,14 +274,24 @@
             */
 
             Debug.WriteLine($"{ex.Message}\n{ex.StackTrace}");
-            // GetMessageError = true;
-            // PageShouldRender = false;
             IsResponseAnError = true;
             ResponseErrorMessage = ex.Message;
             CanDisplayAidStationStats = !IsResponseAnError;
+            // await a delay of 4 seconds before calling ClearDataFields()
+            ClearDataFields();
         }
 
-        // PageShouldRender = true;
+    }
+
+    public void GetCalculatedPopulation()
+    {
+        foreach(var bib in BibsArrived)
+        {
+            if (!BibsDeparted.Contains(bib))
+            {
+                CalculatedPopulation.Add(bib);
+            }
+        }
     }
 
     public void LoadBibsReportedOn()
@@ -267,7 +302,7 @@
             {
                 if (int.TryParse(bibRecord.BibNumber, out int bibnum))
                 {
-                    BibsReportedOn.Add(bibnum);
+                    UniqueBibsSeen.Add(bibnum);
 
                     if (bibRecord.Action == "IN")
                     {
@@ -319,5 +354,7 @@
         AidStationLookup.Add("TS", "Twin Sisters");
         AidStationLookup.Add("OC", "Owen's Creek");
         AidStationLookup.Add("FN", "Finish (Bigfoot Base)");
+
+        await base.OnInitializedAsync();
     }
 }
