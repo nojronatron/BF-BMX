@@ -1,6 +1,5 @@
 ﻿@page "/droppedbibs"
 @using BFBMX.Service.Models
-@using Helpers
 @using System.Text.Json
 @using System.Text.Json.Serialization
 @using System.Diagnostics
@@ -10,53 +9,70 @@
 
 <h1>Dropped Bibs Report</h1>
 
-@if (getMessagesError || Messages is null)
+@if (IsError)
 {
-    <p>Unable to retrieve data. Try again later.</p>
+    <p>Error (under development)</p>
+}
+@if (Messages is null || Messages.Count() < 1)
+{
+    <p>No data to display. Try again later.</p>
 }
 else
 {
-    @foreach (var message in Messages)
-    {
-        <section>
-            <h3>Winlink ID: @message.WinlinkMessageId</h3>
-            <ul>
-                <li>Message Timestamp: @message.MessageDateStamp</li>
-                <li>Discovered By: @message.ClientHostname</li>
-                <li>Message Received At: @message.FileCreatedTimeStamp</li>
+    <section class="bf-card-container-h">
+        <div class="bibs-seen-in data-container-common">
+            <p class="cntr-data-heading">Bibs Dropped (@DroppedBibsList.Count())</p>
+            <ul class="bf-ul">
+                @foreach (int bib in DroppedBibsList)
+                {
+                    <li>@bib</li>
+                }
             </ul>
-            <table>
-                <thead>
-                    <tr>
-                        <td>Bib Number</td>
-                        <td>Action</td>
-                        <td>Time</td>
-                        <td>Day</td>
-                        <td>Location</td>
-                        <td>Data Warning</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach(var bibrecord in message.BibRecords)
+        </div>
+
+        @foreach (var message in Messages)
+        {
+            <article class="bf-wl-msg-card">
+                <div class="bf-wl-msg-card-heading">Winlink ID: @message.WinlinkMessageId</div>
+                <div class="bf-wl-msg-props-container">
+                    <div>
+                        <span class="bf-wl-msg-card-key">Message Timestamp:</span>
+                        <span class="bf-wl-msg-card-value">@message.MessageDateStamp</span>
+                    </div>
+                    <div>
+                        <span class="bf-wl-msg-card-key">Computer:</span>
+                        <span class="bf-wl-msg-card-value">@message.ClientHostname</span>
+                    </div>
+                    <div>
+                        <span class="bf-wl-msg-card-key">File Created:</span>
+                        <span class="bf-wl-msg-card-value">@message.FileCreatedTimeStamp</span>
+                    </div>
+                </div>
+                <div class="bf-csv-records-container">
+                    @foreach(FlaggedBibRecordModel fbrm in message.BibRecords)
                     {
-                        <tr>
-                            <td>@bibrecord.BibNumber</td>
-                            <td>@bibrecord.Action</td>
-                            <td>@bibrecord.BibTimeOfDay</td>
-                            <td>@bibrecord.DayOfMonth</td>
-                            <td>@bibrecord.Location</td>
-                            <td>@bibrecord.DataWarning</td>
-                        </tr>
+                        @if(fbrm.DataWarning)
+                        {
+                            <div class="bf-csv-bib-record bf-warning-record">@fbrm.ToCommaSeparatedString()</div>
+                        }
+                        else
+                        {
+                            <div class="bf-csv-bib-record bf-nominal-record">@fbrm.ToCommaSeparatedString()</div>
+                        }
                     }
-                </tbody>
-            </table>
-        </section>
-    }
+                </div>
+            </article>
+        }
+    </section>
 }
 
 @code {
     public IEnumerable<WinlinkMessageModel>? Messages {get;set;}
-    private bool getMessagesError;
+    public List<string> CommaSeparatedBibRecords { get; set; } = new();
+    public List<int> DroppedBibsList { get; set; } = new();
+
+    private string ErrorMessage = string.Empty;
+    private bool IsError;
     private bool shouldRender;
 
     protected override bool ShouldRender() => shouldRender;
@@ -65,6 +81,9 @@ else
     {
         try 
         {
+            IsError = false;
+            ErrorMessage = string.Empty;
+
             HttpRequestMessage request = new(HttpMethod.Get, HttpConfig.DropReportEndpoint);
             request.Headers.Add("Accept", HttpConfig.AcceptHeader);
             request.Headers.Add("User-Agent", HttpConfig.UserAgentHeader);
@@ -79,28 +98,53 @@ else
             }
             else
             {
-                getMessagesError = true;
+                IsError = true;
+                ErrorMessage = $"{(int)response.StatusCode} {response.ReasonPhrase}";
+                return;
             }
 
             shouldRender = true;
+            LoadBibRecords();
         }
         catch (Exception ex)
         {
             /* 
-             * Possible Exceptions from both HttpRequestMessage and HttpClient:
-             * 
-             * ArgumentNullException
-             * InvalidOperationException
-             * HttpRequestException
-             * TaskCanceledException
-             * OperationCanceledException
-             * 
-             * These need to be logged
+            * Possible Exceptions from both HttpRequestMessage and HttpClient:
+            * 
+            * ArgumentNullException
+            * InvalidOperationException
+            * HttpRequestException
+            * TaskCanceledException
+            * OperationCanceledException
+            * 
+            * These need to be logged
              */
 
-            Debug.WriteLine($"{ex.Message}\n{ex.StackTrace}");
-            getMessagesError = true;
+            ErrorMessage = $"{ex.Message}\n{ex.StackTrace}";
+            IsError = true;
             shouldRender = false;
+        }
+    }
+
+    private void LoadBibRecords()
+    {
+        CommaSeparatedBibRecords.Clear();
+        DroppedBibsList.Clear();
+
+        if (Messages is not null && Messages.Count() > 0)
+        {
+            foreach(WinlinkMessageModel message in Messages)
+            {
+                foreach (FlaggedBibRecordModel flaggedBibRecord in message.BibRecords)
+                {
+                    CommaSeparatedBibRecords.Add(flaggedBibRecord.ToCommaSeparatedString());
+
+                    if (int.TryParse(flaggedBibRecord.BibNumber, out int bibNum))
+                    {
+                        DroppedBibsList.Add(bibNum);
+                    }
+                }
+            }
         }
     }
 
