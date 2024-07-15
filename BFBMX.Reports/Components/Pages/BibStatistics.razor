@@ -18,34 +18,66 @@
 }
 else
 {
-    <h3>Overall Statistics</h3>
-    <section class="overall-content">
-        <article class="overall-stats">
-            <p>Messages From Aid Stations: @TotalMessages</p>
-            <p>BF200 Records Processed: @BigFootRecordsCount</p>
-            <p>20M and 40M Records Processed: @LittleFeetRecordsCount</p>
-            <p>Total Unique Bibs Seen: @TotalBibsSeenCount</p>
-        </article>
-        <article class="unknown-data">
-            <p class="statistic-title">Processed Bib Records To Research</p>
-            <ul>
-                @foreach(var item in UnknownItems)
-                {
-                    <li class="unknown-item">@item</li>
-                }
-            </ul>
-        </article>
-    </section>
+    <section class="bf-card-container-h">
+        <article class="bf-wl-msg-card">
+            <div class="bf-wl-msg-card-heading">Overall Statistics</div>
+            <div class="bf-wl-msg-props-container">
+                <div>
+                    <span class="bf-wl-msg-card-key">Aid Station Reports:</span>
+                    <span class="bf-wl-msg-card-value">@TotalMessages</span>
+                </div>
 
-    <h3>Event Specific Data</h3>
-    <section class="event-specific-parent">
-        <article class="bf-bibs-seen">
-            <p class="statistic-title">BF200 Bibs Seen: @BigFootBibsSeenCount</p>
-            <p class="statistic-seen-bib-num">@BigFootBibsSeen</p>
+                <div>
+                    <span class="bf-wl-msg-card-key">BF200 Records Processed:</span>
+                    <span class="bf-wl-msg-card-value">@BigFootRecordsCount</span>
+                </div>
+
+                <div>
+                    <span class="bf-wl-msg-card-key">20M and 40M Records Processed:</span>
+                    <span class="bf-wl-msg-card-value">@LittleFeetRecordsCount</span>
+                </div>
+
+                <div>
+                    <span class="bf-wl-msg-card-key">Total Unique Bibs Seen:</span>
+                    <span class="bf-wl-msg-card-value">@TotalBibsSeenCount</span>
+                </div>
+            </div>
         </article>
-        <article class="lf-bibs-seen">
-            <p class="statistic-title">20M and 40M Bibs Seen: @LittleFeetBibsSeenCount</p>
-            <p class="statistic-seen-bib-num">@LittleFeetBibsSeen</p>
+
+        <article class="bf-wl-msg-card">
+            <div class="bf-wl-msg-card-heading">Records To Research</div>
+            <div class="bf-csv-records-container">
+                @foreach (var item in UnknownItems)
+                {
+                    <div class="bf-csv-bib-record bf-warning-record">@item</div>
+                }
+            </div>
+        </article>
+
+        <article class="bf-wl-msg-card">
+            <div class="bf-wl-msg-card-heading">200M Bibs</div>
+            <div class="bf-wl-msg-props-container">
+                <div>
+                    <span class="bf-wl-msg-card-key">Count:</span>
+                    <span class="br-wl-msg-card-value">@BigFootBibsSeenCount</span>
+                </div>
+            </div>
+            <div class="bf-csv-records-container">
+                <div class="bf-csv-bib-record bf-nominal-record">@BigFootBibsSeen</div>
+            </div>
+        </article>
+
+        <article class="bf-wl-msg-card">
+            <div class="bf-wl-msg-card-heading">20M and 40M Bibs</div>
+            <div class="bf-wl-msg-props-container">
+                <div>
+                    <span class="bf-wl-msg-card-key">Count:</span>
+                    <span class="br-wl-msg-card-value">@LittleFeetBibsSeenCount</span>
+                </div>
+            </div>
+            <div class="bf-csv-records-container">
+                <div class="bf-csv-bib-record bf-nominal-record">@LittleFeetBibsSeen</div>
+            </div>
         </article>
     </section>
 
