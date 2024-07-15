@@ -1,12 +1,15 @@
+/* default Blazor css */
+
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: var(--bf-fontfamily-standard);
+/*    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;*/
 }
 
 a, .btn-link {
     color: #006bb7;
 }
 
-.btn-primary {
+/*.btn-primary {
     color: #fff;
     background-color: #1b6ec2;
     border-color: #1861ac;
@@ -15,7 +18,7 @@ a, .btn-link {
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
-
+*/
 .content {
     padding-top: 1.1rem;
 }
@@ -56,4 +59,270 @@ h1, h4 {
 
 h1 {
     text-align: center;
+}
+/* end default Blazor css */
+
+/* primary color palette */
+
+:root {
+    --rgba-darkblue: rgba(0, 0, 150, 1);
+    --rgba-darkblue-60: rgba(0,0,150,.6);
+    --rgba-darkblue-30: rgba(0,0,150,.3);
+
+    --rgba-blue: rgba(0,0,255,1);
+    --rgba-blue-60: rgba(0,0,255,.6);
+    --rgba-blue-30: rgba(0,0,255,.3);
+
+    --rgba-midblue: rgba(113,169,253, 1);
+    --rgba-midblue-60: rgba(113,169,253, .6);
+    --rgba-midblue-30: rgba(113,169,253, .3);
+
+    --rgba-lightblue: rgba(173,216,230, 1);
+    --rgba-lightblue-60: rgba(173,216,230, .6);
+    --rgba-lightblue-30: rgba(173,216,230, .3);
+
+    --rgba-azure: rgba(240,255,255, 1);
+    --rgba-azure-60: rgba(240,255,255, .6);
+    --rgba-azure-30: rgba(240,255,255, .3);
+
+    --rgba-lightgreen: rgba(144,238,133,1);
+    --rgba-lightgreen-60: rgba(144,238,133,.6);
+    --rgba-lightgreen-30: rgba(144,238,133,.3);
+
+    --rgba-darkgreen: rgba(0,40,0,1);
+    --rgba-darkgreen-60: rgba(0,40,0,.6);
+    --rgba-darkgreen-30: rgba(0,40,0,.3);
+
+    --rgba-orangy: rgba(255,158,0, 1);
+    --rgba-orangy-60: rgba(255,158,0, .6);
+    --rgba-orangy-30: rgba(255,158,0, .3);
+
+    --rgba-lightyellow: rgba(255,255,224, 1);
+    --rgba-lightyellow-60: rgba(255,255,224, .6);
+    --rgba-lightyellow-30: rgba(255,255,224, .3);
+
+    --rgba-black: rgba(0,0,0,1);
+    --rgba-black-60: rgba(255,255,255,.6);
+    --rgba-black-30: rgba(255,255,255,.3);
+    
+    --rgba-mid-gray: rgba(84,84,84,1);
+    --rgba-mid-gray-60: rgba(84,84,84,.6);
+    --rgba-mid-gray-30: rgba(84,84,84,.3);
+
+    --rgba-light-mid-gray: rgba(192,192,192,1);
+    --rgba-light-mid-gray-60: rgba(192,192,192,.6);
+    --rgba-light-mid-gray-30: rgba(192,192,192,.3);
+
+    --rgba-light-gray: rgba(220,224,224,1);
+    --rgba-light-gray-60: rgba(220,224,224,.6);
+    --rgba-light-gray-30: rgba(220,224,224,.3);
+
+    --rgba-antique-white: rgba(250,235,215,1);
+    --rgba-antique-white-60: rgba(250,235,215,.6);
+    --rgba-antique-white-30: rgba(250,235,215,.3);
+
+    --rgba-white: rgba(255,255,255,1);
+    --rgba-white-60: rgba(255,255,255,.6);
+    --rgba-white-30: rgba(255,255,255,.3);
+
+    --bf-fontfamily-standard: Segoe UI, Arial, sans-serif;
+    --bf-fontfamily-console: Consolas, monospace;
+}
+
+/* buttons */
+.bigfoot-button-gray {
+    background-color: var(--rgba-light-gray);
+    color: var(--rgba-white);
+    border: 2px solid var(--rgba-mid-gray);
+    border-radius: .8em;
+    padding: 0.2em .8em;
+    margin: 0.5em;
+    cursor: pointer;
+}
+
+.bigfoot-button-blue {
+    background-color: var(--rgba-lightblue);
+    color: var(--rgba-black);
+    font-weight:600;
+    border: 1px solid var(--rgba-black);
+    border-radius: .5em;
+    padding: 0.2em 1em;
+    margin: 0.5em;
+    cursor: pointer;
+}
+
+.bigfoot-button-blue:hover, .bigfoot-button-blue:focus {
+    background-color: var(--rgba-lightblue-30);
+    outline-color: var(--rgba-orangy-60);
+    outline-style: solid;
+    outline-width: 2px;
+}
+
+.bigfoot-button-orangy {
+    background-color: var(--rgba-orangy);
+    color: var(--rgba-white);
+    border: 2px solid var(--rgba-darkblue);
+    border-radius: 5px;
+    padding: 0.5em 1em;
+    margin: 0.5em;
+    cursor: pointer;
+}
+
+.bigfoot-button-orangy:hover, .bigfoot-button-orangy:focus {
+    background-color: var(--rgba-orangy-60);
+    outline-color: var(--rgba-darkblue);
+    outline-style: solid;
+    outline-width: 2px;
+}
+
+.bigfoot-button-green {
+    background-color: var(--rgba-lightgreen);
+    color: var(--rgba-white);
+    border: .2em solid var(--rgba-darkgreen);
+    border-radius: 5px;
+    padding: 0.5em 1em;
+    margin: 0.5em;
+    cursor: pointer;
+}
+
+.bigfoot-button-green:hover, .bigfoot-button-green:focus {
+    background-color: var(--rgba-lightgreen-60);
+    outline-color: var(--rgba-orangy-60);
+    outline-style:solid;
+    outline-width: 2px;
+}
+/* end buttons */
+
+/* text input field */
+.bigfoot-text-imput {
+    padding: 0.2em .8em;
+    margin: 0.5em;
+}
+
+.bigfoot-text-input-cntr {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.2em;
+    padding: 0.2em .8em;
+    margin: 0.5em;
+}
+
+/* end text input field */
+
+/* Winlink Message Cards */
+
+.bf-card-container-h {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    margin: .6em;
+}
+
+.bf-wl-msg-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--rgba-lightblue-60);
+    border: 1px solid var(--rgba-mid-gray);
+    border-radius: 5px;
+    padding: 0.5em;
+    margin: 0.5em;
+    min-width: 14em;
+}
+
+.bf-wl-msg-card-heading {
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.bf-wl-msg-card-key {
+    font-weight: 600;
+}
+
+.bf-wl-msg-card-value {
+    color: var(--rgba-black);
+    font-family: var(--bf-fontfamily-console);
+}
+
+.bf-wl-msg-props-container {
+    background-color: var(--rgba-lightyellow-60);
+    border: 1px solid var(--rgba-mid-gray);
+    border-radius: 5px;
+    padding: 0.5em;
+    margin: 0.5em;
+}
+
+.bf-csv-records-container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
+
+.bf-csv-bib-record {
+    font-family: var(--bf-fontfamily-console);
+    font-size: 1.1em;
+    display: flex;
+    flex-direction: row;
+    padding: 0.5em;
+    margin: 0.1em;
+    border: 1px solid var(--rgba-mid-gray);
+}
+
+.bf-nominal-record {
+    color: var(--rgba-black);
+    background: var(--rgba-lightgreen-60);
+}
+
+.bf-warning-record {
+    font-weight: 600;
+    color: var(--rgba-black);
+    background: var(--rgba-orangy-30);
+}
+/* end WL Message cards */
+
+.data-container-common {
+    border: solid 1px var(--rgba-mid-gray);
+    padding: 1em;
+    margin: .4em;
+}
+
+.bf-rawlist-drops {
+    border: 1px solid var(--rgba-mid-gray);
+}
+
+.cntr-data-heading {
+    font-weight: 600;
+    text-align: center;
+}
+
+.bibs-seen-in {
+    min-width: 12em;
+    background: var(--rgba-lightyellow-60);
+}
+
+.bibs-seen-out {
+    min-width: 12em;
+    background: var(--rgba-lightgreen-60);
+}
+
+.bf-ul {
+    list-style-type: none;
+    text-align: center;
+    margin: 0em;
+    padding: 0em;
+}
+
+.as-list-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin: .6em;
+}
+
+.input-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin: .6em;
 }
