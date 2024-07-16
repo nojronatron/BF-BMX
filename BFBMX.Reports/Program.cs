@@ -14,8 +14,9 @@ namespace BFBMX.Reports
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
             builder.Services.AddHttpClient();
-            builder.Services.AddSingleton<HttpConfiguration>();
             builder.Services.AddSingleton<IAidStationsDict, AidStationsDict>();
+            builder.Services.AddSingleton<IReportServerEnvFactory, ReportServerEnvFactory>();
+            builder.Services.AddSingleton<IHttpConfiguration, HttpConfiguration>();
 
             var app = builder.Build();
 
