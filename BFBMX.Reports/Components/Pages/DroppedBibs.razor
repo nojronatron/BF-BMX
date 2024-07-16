@@ -3,6 +3,7 @@
 @using System.Text.Json
 @using System.Text.Json.Serialization
 @using System.Diagnostics
+@using System.Text
 
 @inject IHttpClientFactory ClientFactory
 @inject IHttpConfiguration HttpConfig
@@ -20,15 +21,18 @@
 else
 {
     <section class="bf-card-container-h">
-        <div class="bibs-seen-in data-container-common">
-            <p class="cntr-data-heading">Bibs Dropped (@DroppedBibsList.Count())</p>
-            <ul class="bf-ul">
-                @foreach (int bib in DroppedBibsList)
-                {
-                    <li>@bib</li>
-                }
-            </ul>
-        </div>
+        <article class="bf-wl-msg-card">
+            <div class="bf-wl-msg-card-heading">Dropped Bibs</div>
+            <div class="bf-wl-msg-props-container">
+                <div>
+                    <span class="bf-wl-msg-card-key">Count:</span>
+                    <span class="bf-wl-msg-card-value">@SortedDroppedBibsSet.Count()</span>
+                </div>
+            </div>
+            <div class="bf-csv-recrods-container">
+                <div class="bf-csv-bib-record bf-nominal-record">@SortedDroppedBibs</div>
+            </div>
+        </article>
 
         @foreach (var message in Messages)
         {
@@ -70,6 +74,8 @@ else
     public IEnumerable<WinlinkMessageModel>? Messages {get;set;}
     public List<string> CommaSeparatedBibRecords { get; set; } = new();
     public List<int> DroppedBibsList { get; set; } = new();
+    public SortedSet<int> SortedDroppedBibsSet { get; set; } = new();
+    public string SortedDroppedBibs { get; set; } = string.Empty;
 
     private string ErrorMessage = string.Empty;
     private bool IsError;
@@ -82,6 +88,8 @@ else
         Messages = null;
         CommaSeparatedBibRecords.Clear();
         DroppedBibsList.Clear();
+        SortedDroppedBibsSet.Clear();
+        SortedDroppedBibs = string.Empty;
     }
 
     public async Task GetMessages()
@@ -110,8 +118,9 @@ else
                 return;
             }
 
-            shouldRender = true;
             LoadBibRecords();
+            FormatSortedDroppedBibs();
+            shouldRender = true;
         }
         catch (Exception ex)
         {
@@ -133,6 +142,28 @@ else
         }
     }
 
+    private void FormatSortedDroppedBibs()
+    {
+        StringBuilder sb = new();
+        int count = 0;
+
+        foreach(int bib in SortedDroppedBibsSet)
+        {
+            if (count == SortedDroppedBibsSet.Count() - 1)
+            {
+                sb.AppendLine(bib.ToString().Trim());
+            }
+            else
+            {
+                sb.AppendLine($"{bib}, ");
+            }
+
+            count++;
+        }
+
+        SortedDroppedBibs = sb.ToString();
+    }
+
     private void LoadBibRecords()
     {
         CommaSeparatedBibRecords.Clear();
@@ -149,6 +180,7 @@ else
                     if (int.TryParse(flaggedBibRecord.BibNumber, out int bibNum))
                     {
                         DroppedBibsList.Add(bibNum);
+                        SortedDroppedBibsSet.Add(bibNum);
                     }
                 }
             }
