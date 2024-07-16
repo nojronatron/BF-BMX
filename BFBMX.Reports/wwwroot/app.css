@@ -143,54 +143,71 @@ h1 {
 .bigfoot-button-blue {
     background-color: var(--rgba-lightblue);
     color: var(--rgba-black);
-    font-weight:600;
-    border: 1px solid var(--rgba-black);
+    font-weight: 600;
+    border: 2px solid var(--rgba-black);
     border-radius: .5em;
-    padding: 0.2em 1em;
+    padding: 0.4em 1em;
     margin: 0.5em;
     cursor: pointer;
 }
-
-.bigfoot-button-blue:hover, .bigfoot-button-blue:focus {
-    background-color: var(--rgba-lightblue-30);
-    outline-color: var(--rgba-orangy-60);
-    outline-style: solid;
-    outline-width: 2px;
-}
+    .bigfoot-button-blue:hover, .bigfoot-button-blue:focus {
+        background-color: var(--rgba-lightblue-30);
+        outline-color: var(--rgba-orangy-60);
+        outline-style: solid;
+        outline-width: 2px;
+    }
 
 .bigfoot-button-orangy {
     background-color: var(--rgba-orangy);
     color: var(--rgba-white);
     border: 2px solid var(--rgba-darkblue);
     border-radius: 5px;
-    padding: 0.5em 1em;
+    padding: 0.4em 1em;
     margin: 0.5em;
     cursor: pointer;
 }
-
-.bigfoot-button-orangy:hover, .bigfoot-button-orangy:focus {
-    background-color: var(--rgba-orangy-60);
-    outline-color: var(--rgba-darkblue);
-    outline-style: solid;
-    outline-width: 2px;
-}
+    .bigfoot-button-orangy:hover, .bigfoot-button-orangy:focus {
+        background-color: var(--rgba-orangy-60);
+        outline-color: var(--rgba-darkblue);
+        outline-style: solid;
+        outline-width: 2px;
+    }
 
 .bigfoot-button-green {
     background-color: var(--rgba-lightgreen);
-    color: var(--rgba-white);
-    border: .2em solid var(--rgba-darkgreen);
+    color: var(--rgba-black);
+    border: 2px solid var(--rgba-darkgreen);
     border-radius: 5px;
-    padding: 0.5em 1em;
+    padding: 0.4em 1em;
     margin: 0.5em;
     cursor: pointer;
+    max-width: 24em;
 }
+    .bigfoot-button-green:hover, .bigfoot-button-green:focus {
+        background-color: var(--rgba-lightgreen-60);
+        outline-color: var(--rgba-orangy-60);
+        outline-style: solid;
+        outline-width: 2px;
+    }
 
-.bigfoot-button-green:hover, .bigfoot-button-green:focus {
-    background-color: var(--rgba-lightgreen-60);
-    outline-color: var(--rgba-orangy-60);
-    outline-style:solid;
-    outline-width: 2px;
+
+.bigfoot-button-darkgreen {
+    background-color: var(--rgba-darkgreen-60);
+    color: var(--rgba-white);
+    border: 2px solid var(--rgba-lightgreen);
+    border-radius: 5px;
+    padding: 0.4em 1em;
+    margin: 0.5em;
+    cursor: pointer;
+    max-width: 24em;
 }
+    .bigfoot-button-darkgreen:hover, .bigfoot-button-darkgreen:focus {
+        background-color: var(--rgba-darkgreen-30);
+        outline-color: var(--rgba-orangy-60);
+        outline-style: solid;
+        outline-width: 2px;
+    }
+
 /* end buttons */
 
 /* text input field */
@@ -202,12 +219,36 @@ h1 {
 .bigfoot-text-input-cntr {
     text-align: center;
     font-weight: 600;
-    font-size: 1.2em;
+    font-size: 1em;
     padding: 0.2em .8em;
     margin: 0.5em;
 }
 
 /* end text input field */
+
+/* General Card Elements */
+
+.bib-stat-byline {
+    text-align: center;
+    font-size: 1.1em;
+}
+
+.def-container {
+    margin: 1em;
+}
+
+.def-heading {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.stat-section-title {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.2em;
+}
+
+/* End general card elements */
 
 /* Winlink Message Cards */
 
@@ -252,12 +293,38 @@ h1 {
     margin: 0.5em;
 }
 
+.bf-values-container-base {
+    text-align: center;
+    border: 1px solid var(--rgba-mid-gray);
+    border-radius: 5px;
+    padding: 0.5em;
+    margin: 0.3em;
+}
+
+.bf-values-green-bkgnd {
+    color: var(--rgba-white);
+    font-family: var(--bf-fontfamily-console);
+    font-weight: 500;
+    background-color: var(--rgba-darkgreen-60);
+}
+
+.bf-values-ltgreen-bkgnd {
+    background-color: var(--rgba-lightgreen-30);
+}
+
+.bf-values-yellow-bkgnd {
+    background-color: var(--rgba-antique-white-60);
+}
+
+.bf-values-orange-bkgnd {
+    background-color: var(--rgba-orangy-30);
+}
+
 .bf-csv-records-container {
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
 }
-
 
 .bf-csv-bib-record {
     font-family: var(--bf-fontfamily-console);
@@ -279,6 +346,14 @@ h1 {
     color: var(--rgba-black);
     background: var(--rgba-orangy-30);
 }
+
+.bf-malformed-data {
+    font-weight: 600;
+    color: var(--rgba-black);
+    background: var(--rgba-orangy-30);
+    text-align: center;
+}
+
 /* end WL Message cards */
 
 .data-container-common {
