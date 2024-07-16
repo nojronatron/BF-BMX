@@ -17,7 +17,7 @@
         <article>
             <label for="queryBibId" class="cntr-data-heading">Enter a Bib ID for a Report</label>
             <input id="QueryBibId" type="text" class="bigfoot-text-input-cntr" @bind="QueryBibNum" />
-            <button class="bigfoot-button-blue" @onclick="HandleGetMessages">Get Bib Report</button>
+            <button class="bf-button-base bf-button-blue" @onclick="HandleGetMessages">Get Bib Report</button>
 
             @if (string.IsNullOrWhiteSpace(InputValidationMessage) == false)
             {
@@ -27,7 +27,7 @@
     }
     else
     {
-        <button class="bigfoot-button-blue" @onclick="HandleGetNewQuery">Click To Query A Different Bib</button>
+        <button class="bf-button-base bf-button-blue" @onclick="HandleGetNewQuery">Click To Query A Different Bib</button>
     }
 </section>
 
