@@ -5,7 +5,7 @@
 @using System.Diagnostics
 
 @inject IHttpClientFactory ClientFactory
-@inject HttpConfiguration HttpConfig
+@inject IHttpConfiguration HttpConfig
 
 <h1>Dropped Bibs Report</h1>
 
@@ -158,5 +158,6 @@ else
     override protected async Task OnInitializedAsync()
     {
         await GetMessages();
+        await base.OnInitializedAsync();
     }
 }
