@@ -21,7 +21,7 @@
         <article>
             <label for="queryAidStation" class="cntr-data-heading">Enter Aid Station Name or Abbreviation</label>
             <input id="queryAidStation" type="text" class="bigfoot-text-input-cntr" @bind="QueryAidStation" />
-            <button class="bigfoot-button-darkgreen" @onclick="HandleGetAidStationStats">Get Aid Station Report</button>
+            <button class="bf-button-base bf-button-darkgreen" @onclick="HandleTextInput">Get Aid Station Report</button>
 
             @if (string.IsNullOrWhiteSpace(InputValidationMessage) == false)
             {
@@ -30,16 +30,16 @@
 
         </article>
         <article class="as-list-container">
-            <div class="cntr-data-heading">Available Aid Stations</div>
+            <div class="cntr-data-heading">Or click an available Aid Station (below)</div>
             @foreach (string aidStation in AidStationsDict.GetAll())
             {
-                <div>@aidStation</div>
+                <div class="bf-clickable-text" @onclick="() => HandleSetQueryName(aidStation)">@aidStation</div>
             }
         </article>
     }
     else
     {
-        <button class="bigfoot-button-darkgreen" @onclick="HandleGetNewQuery">Click to query another Aid Station</button>
+        <button class="bf-button-base bf-button-darkgreen" @onclick="HandleGetNewQuery">Click to query another Aid Station</button>
     }
 </section>
 
@@ -47,7 +47,7 @@
     @if (IsResponseAnError)
     {
         <article>
-            <p class="text-danger">Unable to retrieve data. Check your search input and try again later.</p>
+            <p class="text-danger">Unable to retrieve data. Check your search input and try again.</p>
             <p>@ResponseErrorMessage</p>
         </article>
     }
@@ -219,6 +219,15 @@
         IsResponseAnError = false;
     }
 
+    public async Task HandleSetQueryName(string aidStation)
+    {
+        string[] aidStnComponents = aidStation.Split(":");
+        string shortName = aidStnComponents[0].Trim();
+        string longName = aidStnComponents[1].Trim();
+        QueryAidStation = shortName;
+        await HandleGetAidStationStats();
+    }
+
     public void HandleGetNewQuery()
     {
         ClearDataFields();
@@ -227,19 +236,39 @@
         CanDisplayAidStationStats = false;
     }
 
+    public void ConvertAidStationName(string queryInput)
+    {
+        string inputName = queryInput.Trim().ToLower();
+
+        if (inputName.Length > 2)
+        {
+            QueryAidStation = AidStationsDict.GetAidStationCode(inputName) ?? string.Empty;
+            return;
+        }
+
+        if (inputName.Length == 2)
+        {
+            QueryAidStation = AidStationsDict.GetAidStationName(inputName);
+            return;
+        }
+
+        if (inputName.Length < 2)
+        {
+            QueryAidStation = string.Empty;
+        }
+    }
+
+    public async Task HandleTextInput()
+    {
+        ConvertAidStationName(QueryAidStation);
+        await HandleGetAidStationStats();
+    }
+
     public async Task HandleGetAidStationStats()
     {
         try
         {
             InputValidationMessage = string.Empty;
-
-            if (QueryAidStation.Length < 2)
-            {
-                ClearDataFields();
-                InputValidationMessage = "Enter a valid Aid Station abbreviation";
-                return;
-            }
-
             string queryAidStationEndpoint = string.Concat(HttpConfig.AidStationEndpoint, "/", QueryAidStation);
             HttpRequestMessage request = new(HttpMethod.Get, queryAidStationEndpoint);
             request.Headers.Add("Accept", HttpConfig.AcceptHeader);
