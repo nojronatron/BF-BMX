@@ -28,6 +28,11 @@ namespace BFBMX.Service.Helpers
             _aidStations.Add("FN", "Finish (Bigfoot Base)");
         }
 
+        /// <summary>
+        /// Accepts Aid Station abbreviation and returns the long-form name.
+        /// </summary>
+        /// <param name="aidStationCode"></param>
+        /// <returns>Expanded Aid Station name, or "Unknown" if not in dictionary.</returns>
         public string GetAidStationName(string aidStationCode)
         {
             if (_aidStations.ContainsKey(aidStationCode))
@@ -40,11 +45,20 @@ namespace BFBMX.Service.Helpers
             }
         }
 
-        public string GetAidStationCode(string aidStationName)
+        /// <summary>
+        /// Accepts Aid Station long-form name and returns the abbreviation.
+        /// </summary>
+        /// <param name="aidStationName"></param>
+        /// <returns>Abbreviation for aidStationName, or null if not in dictionary.</returns>
+        public string? GetAidStationCode(string aidStationName)
         {
             return _aidStations.FirstOrDefault(x => x.Value == aidStationName).Key;
         }
 
+        /// <summary>
+        /// Returns all Aid Station names and abbreviations.
+        /// </summary>
+        /// <returns></returns>
         public List<string> GetAll()
         {
             List<string> result = new();
