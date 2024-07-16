@@ -13,7 +13,7 @@ namespace BFBMX.Service.Helpers
         {
             string? bfBmxServerName = Environment.GetEnvironmentVariable("BFBMX_SERVER_NAME");
             
-            if (bfBmxServerName is null || bfBmxServerName.IndexOf('.') > -1)
+            if (bfBmxServerName is null)
             {
                 return Dns.GetHostName();
             }
