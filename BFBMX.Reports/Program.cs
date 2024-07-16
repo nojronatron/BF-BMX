@@ -1,5 +1,6 @@
 using BFBMX.Reports.Components;
 using BFBMX.Reports.Helpers;
+using BFBMX.Service.Helpers;
 
 namespace BFBMX.Reports
 {
@@ -14,6 +15,7 @@ namespace BFBMX.Reports
                 .AddInteractiveServerComponents();
             builder.Services.AddHttpClient();
             builder.Services.AddSingleton<HttpConfiguration>();
+            builder.Services.AddSingleton<IAidStationsDict, AidStationsDict>();
 
             var app = builder.Build();
 
