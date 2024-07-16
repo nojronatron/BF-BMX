@@ -13,6 +13,11 @@
 {
     <p>Unable to get any data. Try again later.</p>
 }
+
+@if (Messages is null || Messages.Count() < 1)
+{
+    <p>No messages have been processed yet.</p>
+}
 else
 {
     <section class="bf-card-container-h">
