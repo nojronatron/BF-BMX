@@ -14,17 +14,20 @@
 <section class="input-form">
     @if(IsMessagesEmpty)
     {
-        <div>
-            <label for="bibnumquery">Enter a bib number to search for messages.</label>
-        </div>
-        <div>
-            <input id="bibnumquery" type="text" @bind="QueryBibNum" />
+        <article>
+            <label for="queryBibId" class="cntr-data-heading">Enter a Bib ID for a Report</label>
+            <input id="QueryBibId" type="text" class="bigfoot-text-input-cntr" @bind="QueryBibNum" />
             <button class="bigfoot-button-blue" @onclick="HandleGetMessages">Get Bib Report</button>
-        </div>    
+
+            @if (string.IsNullOrWhiteSpace(InputValidationMessage) == false)
+            {
+                <p class="text-danger text-lg-center">@InputValidationMessage</p>
+            }
+        </article>
     }
     else
     {
-        <button @onclick="HandleGetNewQuery">New Query</button>
+        <button class="bigfoot-button-blue" @onclick="HandleGetNewQuery">Click To Query A Different Bib</button>
     }
 </section>
 
@@ -35,11 +38,11 @@
     }
     @if(IsMessagesEmpty)
     {
-        <p>No messages found for the bib number entered.</p>
+        <p>No messages found containing that Bib ID.</p>
     }
     @if(CanDisplayMessages)
     {
-        @foreach (var message in Messages)
+        @foreach (var message in Messages!)
         {
             <article class="bf-wl-msg-card">
                 <div class="bf-wl-msg-card-heading">Winlink ID: @message.WinlinkMessageId</div>
@@ -78,13 +81,16 @@
 @code {
     public string? QueryBibNum {get;set;} = string.Empty;
     public string ResponseErrorMessage {get;set;} = string.Empty;
+    public string InputValidationMessage { get; set; } = string.Empty;
+
     public IEnumerable<WinlinkMessageModel>? Messages {get;set;}
+
     public bool IsRequestSent {get;set;} 
     public bool IsMessagesEmpty => Messages is null || Messages.Count() < 1;
     public bool IsMessagesError {get;set;}
     public bool CanDisplayMessages {get;set;} = false;
 
-    public async Task HandleGetNewQuery()
+    public void ClearDataFields()
     {
         QueryBibNum = string.Empty;
         ResponseErrorMessage = string.Empty;
@@ -94,10 +100,24 @@
         CanDisplayMessages = false;
     }
 
+    public async Task HandleGetNewQuery()
+    {
+        ClearDataFields();
+    }
+
     public async Task HandleGetMessages()
     {
         try
         {
+            InputValidationMessage = string.Empty;
+
+            if (QueryBibNum!.Length < 1)
+            {
+                ClearDataFields();
+                InputValidationMessage = "Enter a bib ID to query.";
+                return;
+            }
+
             string queryBibNumEndpoint = string.Concat(HttpConfig.BibNumberEndpoint, "/", QueryBibNum);
             HttpRequestMessage request = new(HttpMethod.Get, queryBibNumEndpoint);
             request.Headers.Add("Accept", HttpConfig.AcceptHeader);
