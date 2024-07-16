@@ -1,5 +1,6 @@
 ﻿@page "/bibstatistics"
 
+@using BFBMX.Service.Helpers
 @using BFBMX.Service.Models
 @using System.Text
 @using System.Text.Json
@@ -8,13 +9,17 @@
 
 @inject IHttpClientFactory ClientFactory
 @inject HttpConfiguration HttpConfig
+@inject IAidStationsDict AidStationsDict
 
 <h1>Bib Statistics</h1>
 <p class="bib-stat-byline">As Of @LastUpdated</p>
 
-@if (GetMessageError)
+@if (IsError)
 {
-    <p>Unable to retrieve data. Try again later.</p>
+    <article>
+        <p class="text-danger">Unable to retrieve data. Try again later.</p>
+        <p>@ErrorMessage</p>
+    </article>
 }
 else
 {
@@ -29,12 +34,17 @@ else
 
                 <div>
                     <span class="bf-wl-msg-card-key">BF200 Records Processed:</span>
-                    <span class="bf-wl-msg-card-value">@BigFootRecordsCount</span>
+                    <span class="bf-wl-msg-card-value">@BigFootBibsSeenCount</span>
                 </div>
 
                 <div>
-                    <span class="bf-wl-msg-card-key">20M and 40M Records Processed:</span>
-                    <span class="bf-wl-msg-card-value">@LittleFeetRecordsCount</span>
+                    <span class="bf-wl-msg-card-key">40M Records Processed:</span>
+                    <span class="bf-wl-msg-card-value">@LittleFootFortySeenCount</span>
+                </div>
+
+                <div>
+                    <span class="bf-wl-msg-card-key">20M Records Processed:</span>
+                    <span class="bf-wl-msg-card-value">@LittleFootTwentySeenCount</span>
                 </div>
 
                 <div>
@@ -45,11 +55,28 @@ else
         </article>
 
         <article class="bf-wl-msg-card">
-            <div class="bf-wl-msg-card-heading">Records To Research</div>
+            <div class="bf-wl-msg-card-heading">Reporting Aid Stations</div>
             <div class="bf-csv-records-container">
-                @foreach (var item in UnknownItems)
+                @foreach(string aidStationName in AidStationsReporting)
                 {
-                    <div class="bf-csv-bib-record bf-warning-record">@item</div>
+                    if (aidStationName.ToLower() == "unknown")
+                    {
+                        <div class="bf-csv-bib-record bf-warning-record">Unknown</div>
+                    }
+                    else
+                    {
+                        <div class="bf-csv-bib-record bf-nominal-record">@aidStationName</div>
+                    }
+                }
+            </div>
+        </article>
+
+        <article class="bf-wl-msg-card">
+            <div class="bf-wl-msg-card-heading">Bibs Out Of Range</div>
+            <div class="bf-csv-records-container">
+                @foreach (var item in UnknownBibRecords)
+                {
+                    <div class="bf-csv-bib-record bf-warning-record">@item.ToCommaSeparatedString()</div>
                 }
             </div>
         </article>
@@ -63,20 +90,33 @@ else
                 </div>
             </div>
             <div class="bf-csv-records-container">
-                <div class="bf-csv-bib-record bf-nominal-record">@BigFootBibsSeen</div>
+                <div class="bf-csv-bib-record bf-nominal-record">@BigFootBibsSeenString</div>
             </div>
         </article>
 
         <article class="bf-wl-msg-card">
-            <div class="bf-wl-msg-card-heading">20M and 40M Bibs</div>
+            <div class="bf-wl-msg-card-heading">40M Bibs</div>
             <div class="bf-wl-msg-props-container">
                 <div>
                     <span class="bf-wl-msg-card-key">Count:</span>
-                    <span class="br-wl-msg-card-value">@LittleFeetBibsSeenCount</span>
+                    <span class="br-wl-msg-card-value">@LittleFootFortySeenCount</span>
                 </div>
             </div>
             <div class="bf-csv-records-container">
-                <div class="bf-csv-bib-record bf-nominal-record">@LittleFeetBibsSeen</div>
+                <div class="bf-csv-bib-record bf-nominal-record"></div>
+            </div>
+        </article>
+
+        <article class="bf-wl-msg-card">
+            <div class="bf-wl-msg-card-heading">20M Bibs</div>
+            <div class="bf-wl-msg-props-container">
+                <div>
+                    <span class="bf-wl-msg-card-key">Count:</span>
+                    <span class="br-wl-msg-card-value">@LittleFootTwentySeenCount</span>
+                </div>
+            </div>
+            <div class="bf-csv-records-container">
+                <div class="bf-csv-bib-record bf-nominal-record"></div>
             </div>
         </article>
     </section>
@@ -95,102 +135,143 @@ else
 
 @code {
     public BibRecordsStatisticsModel? Statistics {get;set;}
-    public string LastUpdated {get;set;} = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-    public string TotalMessages {get;set;} = string.Empty;
-    public string BigFootRecordsCount {get;set;} = string.Empty;
-    public string LittleFeetRecordsCount {get;set;} = string.Empty;
-    public List<string> UnknownItems {get;set;} = new();
-    public string BigFootBibsSeen {get;set;} = string.Empty;
-    public string LittleFeetBibsSeen {get;set;} = string.Empty;
 
-    private bool GetMessageError;
     private bool PageShouldRender;
+    private bool IsError;
+    private bool IsRequestSent { get; set; }
 
-    public int BigFootBibsSeenCount => Statistics?.BigFootBibNumbersSeen.Count() ?? 0;
-    public int LittleFeetBibsSeenCount => Statistics?.LittleFeetBibNumbersSeen.Count() ?? 0;
-    public int TotalBibsSeenCount => Statistics?.BigFootBibNumbersSeen.Count() + Statistics?.LittleFeetBibNumbersSeen.Count() ?? 0;
+    private string ErrorMessage = string.Empty;
+    public string BigFootBibsSeenString = string.Empty;
+    public string LittleFootFortyBibsSeenString = string.Empty;
+    public string LittleFootTwentyBibsSeenString = string.Empty;
+
+    public int TotalMessages { get; set; } = 0;
+    public int TotalBibsSeenCount { get; set; } = 0;
+    public int BigFootBibsSeenCount { get; set; } = 0;
+    public int LittleFootFortySeenCount { get; set; } = 0;
+    public int LittleFootTwentySeenCount { get; set; } = 0;
+
+    private int[] BigFootRange = { 0, 299 };
+    private int[] LittleFootTwentyRange = { 300, 599 };
+    private int[] LittleFootFortyRange = { 600, 799 };
+
+    public string LastUpdated { get; set; } = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    SortedSet<int> BigFootBibsSeen = new();
+    SortedSet<int> LittleFortyBibsSeen = new();
+    SortedSet<int> LittleTwentyBibsSeen = new();
+
+    public string UnknownItems { get; set; } = string.Empty;
+
+    public HashSet<string> AidStationsReporting { get; set; } = new();
+    public HashSet<FlaggedBibRecordModel> UnknownBibRecords = new();
 
     protected override bool ShouldRender() => PageShouldRender;
 
-    private void FormatBibsSeen()
+    public void ClearDataFields()
     {
-        if (Statistics.BigFootBibNumbersSeen.Count() > 0)
-        {
-            List<int> sortedBibNumbers = Statistics.BigFootBibNumbersSeen.OrderBy(x => x).ToList();
-            StringBuilder sb = new();
+        Statistics = null;
+        AidStationsReporting.Clear();
+        UnknownBibRecords.Clear();
+        ErrorMessage = string.Empty;
+        IsError = false;
+    }
 
-            foreach (var bib in sortedBibNumbers)
+    public void LoadProps()
+    {
+        TotalMessages = Statistics!.TotalWinlinkMessagesProcessed;
+
+        foreach (WinlinkMessageModel winlinkMessage in Statistics.AllWinlinkMessages)
+        {
+
+            foreach (FlaggedBibRecordModel fbrm in winlinkMessage.BibRecords)
             {
-                sb.Append($"{bib}, ");
-            }
+                string aidStationShortName = string.IsNullOrWhiteSpace(fbrm.Location) ? "Unknown" : fbrm.Location.Trim().ToUpper();
+                string aidStationName = AidStationsDict.GetAidStationName(aidStationShortName);
 
-            sb.Remove(sb.Length - 2, 2);
-            BigFootBibsSeen = sb.ToString();
-        }
-        else
-        {
-            BigFootBibsSeen = $"None processed as of {LastUpdated}";
-        }
+                if (aidStationName != "Unknwon")
+                {
+                    AidStationsReporting.Add(aidStationName);
+                }
 
-        if (Statistics.LittleFeetBibNumbersSeen.Count() > 0)
-        {
-            List<int> sortedBibNumbers = Statistics.LittleFeetBibNumbersSeen.OrderBy(x => x).ToList();
-            StringBuilder sb = new();
-
-            foreach (var bib in sortedBibNumbers)
-            {
-                sb.Append($"{bib}, ");
-            }
-
-            sb.Remove(sb.Length - 2, 2);
-            LittleFeetBibsSeen = sb.ToString();
-        }
-        else
-        {
-            LittleFeetBibsSeen = $"None processed as of {LastUpdated}";
-        }
-    }
-
-    private void FormatLittleFeetRecordsCount()
-    {
-        LittleFeetRecordsCount = Statistics.LittleFootBibRecordsProcessed > 0
-            ? Statistics.LittleFootBibRecordsProcessed.ToString()
-            : "None";
-    }
-
-    private void FormatBigFootRecordsCount()
-    {
-        BigFootRecordsCount = Statistics.BigFootBibRecordsProcessed > 0
-            ? Statistics.BigFootBibRecordsProcessed.ToString()
-            : "None";
-    }
-
-    private void FormatTotalMessagesProcessed() 
-    {
-        TotalMessages = Statistics.TotalWinlinkMessagesProcessed > 0
-            ? Statistics.TotalWinlinkMessagesProcessed.ToString()
-            : "None";
-    }
-
-    private void FormatUnknownItems()
-    {
-        if (Statistics.UnknownBibDataItems.Count() > 0)
-        {
-            foreach(FlaggedBibRecordModel item in Statistics.UnknownBibDataItems)
-            {
-                UnknownItems.Add(item.ToCommaSeparatedString());
+                if (int.TryParse(fbrm.BibNumber, out int parsedNum))
+                {
+                    if (parsedNum >= BigFootRange[0] && parsedNum <= BigFootRange[1])
+                    {
+                        BigFootBibsSeen.Add(parsedNum);
+                        continue;
+                    }
+                    if (parsedNum >= LittleFootFortyRange[0] && parsedNum <= LittleFootFortyRange[1])
+                    {
+                        LittleFortyBibsSeen.Add(parsedNum);
+                        continue;
+                    }
+                    if (parsedNum >= LittleFootTwentyRange[0] && parsedNum <= LittleFootTwentyRange[1])
+                    {
+                        LittleTwentyBibsSeen.Add(parsedNum);
+                        continue;
+                    }
+                    if (parsedNum > BigFootRange[1] && parsedNum > LittleFootFortyRange[1] && parsedNum > LittleFootTwentyRange[1])
+                    {
+                        UnknownBibRecords.Add(fbrm);
+                    }
+                }
+                else
+                {
+                    UnknownBibRecords.Add(fbrm);
+                }
             }
         }
-        else
+
+        // set bib counts
+        BigFootBibsSeenCount = BigFootBibsSeen.Count;
+        LittleFootFortySeenCount = LittleFortyBibsSeen.Count;
+        LittleFootTwentySeenCount = LittleTwentyBibsSeen.Count;
+        TotalBibsSeenCount = BigFootBibsSeenCount + LittleFootFortySeenCount + LittleFootTwentySeenCount;
+
+        if (BigFootBibsSeenCount > 0)
         {
-            UnknownItems.Add($"None processed as of {LastUpdated}");
+            BigFootBibsSeenString = FormatBibsToBulkString(BigFootBibsSeen);
         }
+
+        if (LittleFootFortySeenCount > 0)
+        {
+            LittleFootFortyBibsSeenString = FormatBibsToBulkString(LittleFortyBibsSeen);
+        }
+
+        if (LittleFootTwentySeenCount > 0)
+        {
+            LittleFootTwentyBibsSeenString = FormatBibsToBulkString(LittleTwentyBibsSeen);
+        }
+    }
+
+    public string FormatBibsToBulkString(SortedSet<int> bibs)
+    {
+        StringBuilder sb = new();
+        int count = 0;
+        foreach(int bib in bibs)
+        {
+            if (count == bibs.Count() - 1)
+            {
+                sb.AppendLine(bib.ToString());
+            }
+            else
+            {
+                sb.AppendLine($"{bib}, ");
+            }
+
+            count++;
+        }
+
+        return sb.ToString();
     }
 
     public async Task GetStatistics()
     {
         try
         {
+            IsError = false;
+            ErrorMessage = string.Empty;
+
             HttpRequestMessage request = new(HttpMethod.Get, HttpConfig.StatisticsEndpoint);
             request.Headers.Add("Accept", HttpConfig.AcceptHeader);
             request.Headers.Add("User-Agent", HttpConfig.UserAgentHeader);
@@ -202,16 +283,16 @@ else
             {
                 using System.IO.Stream responseStream = await response.Content.ReadAsStreamAsync();
                 Statistics = await JsonSerializer.DeserializeAsync<BibRecordsStatisticsModel>(responseStream, HttpConfig.JsonOptions);
-                FormatTotalMessagesProcessed();
-                FormatBigFootRecordsCount();
-                FormatLittleFeetRecordsCount();
-                FormatUnknownItems();
-                FormatBibsSeen();
             }
             else
             {
-                GetMessageError = true;
+                IsError = true;
+                ErrorMessage = $"{(int)response.StatusCode} {response.ReasonPhrase}";
+                return;
             }
+
+            LoadProps();
+            PageShouldRender = true;
         }
         catch (Exception ex)
         {
@@ -227,12 +308,10 @@ else
              * These need to be logged
              */
 
-            Debug.WriteLine($"{ex.Message}\n{ex.StackTrace}");
-            GetMessageError = true;
+            ErrorMessage = $"{ex.Message}\n{ex.StackTrace}";
+            IsError = true;
             PageShouldRender = false;
         }
-
-        PageShouldRender = true;
     }
 
     override protected async Task OnInitializedAsync()
