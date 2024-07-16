@@ -77,6 +77,13 @@ else
 
     protected override bool ShouldRender() => shouldRender;
 
+    public void ClearDataFields()
+    {
+        Messages = null;
+        CommaSeparatedBibRecords.Clear();
+        DroppedBibsList.Clear();
+    }
+
     public async Task GetMessages()
     {
         try 
