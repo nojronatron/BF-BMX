@@ -77,23 +77,10 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
 
     public IEnumerable<WinlinkMessageModel> GetDroppedReports()
     {
-        var messagesWithDrops = this.Where(wlm => wlm.BibRecords.Any(bib => bib.@Action == "DROP"));
-        List<WinlinkMessageModel> resultCollection = new();
-
-        foreach(var message in messagesWithDrops)
-        {
-            List<FlaggedBibRecordModel> droppedBibsReports = message.BibRecords.Where(
-                bib => bib.@Action!.ToLower() != "in" && bib.@Action.ToLower() != "out").ToList();
-            WinlinkMessageModel wlm = WinlinkMessageModel.GetWinlinkMessageInstance(
-                message.WinlinkMessageId,
-                message.MessageDateStamp,
-                message.ClientHostname,
-                message.FileCreatedTimeStamp,
-                droppedBibsReports);
-            resultCollection.Add(wlm);
-        }
-
-        return resultCollection;
+        return this.Where(wlm => wlm.BibRecords
+                                    .Any(bib => bib.Action is not null 
+                                                && bib.@Action.ToLower().Trim() != "in" 
+                                                && bib.Action.ToLower().Trim() != "out"));
     }
 
     public IEnumerable<WinlinkMessageModel> GetAllEntities()
