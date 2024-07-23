@@ -15,7 +15,17 @@ Each BFBMX Desktop component discovers Bib Records received via Winlink Express 
 
 ## Project Status
 
-15-May-2024 Feature Update (target version 1.4.3):
+24-Jun-2024 Bugfix version 1.5.4:
+
+- Refined Http Client settings to timeout after 20 seconds (instead of 90).
+- Desktop Logging displays helpful WARNING log messages when Server is not reachable.
+
+21-Jun-2024 Feature Update (target version 1.5.3):
+
+- Highlight file records that have the 'Warning' flag set in the Desktop App UI.
+- Minor bug fixes.
+
+15-May-2024 version 1.4.3:
 
 - Updated UI with a responsive display, contrasting color scheme, and updated control and content styles.
 - Add updated images and facts to README and instructions.
@@ -259,10 +269,11 @@ Environment Variables:
 
 Detected Files:
 
-- A scrollable list of `*.mime` files detected by any active, STARTed Monitor.
-- The list will hold a maximum of 12 items, and will remove the oldest item from the bottom when a new one is added to the top.
+- A scrollable list of `*.mime` files detected by any active Monitor.
+- The list will hold a maximum of 12 items. New items are added to the top, and items are removed from the bottom (oldest).
+- Files that contain Bib Report data that has malformed data or format will be highlighted for informational purposes.
 
-![BFBMX Desktop App User Interface](./Docs/Desktop-App.png)
+![BFBMX Desktop App User Interface](./Docs/Desktop-App-with-markup.png)
 
 ### Set Up Desktop Monitor Paths
 
@@ -323,7 +334,17 @@ _Note_: The exact same log file format is used by the Server Service and the Des
 
 `INFO: ProcessBibs: Found {Number} strict and {Number} relaxed matches in Message ID {Winlink ID}. Returning {Number} items.`: Helps the Desktop Operator understand how many Bib Records were found in the Winlink Message.
 
-`INFO: PostWinlinkMessageAsync: Response was success status code.` and `INFO: Message ID: {ID} => Wrote to file? {boolean}. Posted to API? {boolean}. Items stored in memory: {number}.`: Describe how far the component proceeded through the steps of logging, storing, and sending data to the Server Service.
+`INFO: Sending {Winlink Message ID} Message to logfile and API.`: Indicates the Bib Records were written to the Captured Bib Records log file and also sent to the Server service.
+
+`INFO: Message ID {Winlink Message ID} => Wrote to file? {true or false}.`: Indicates if the Bib Records were written to the Captured Bib Records log file.
+
+`INFO: Sending message to server at {BFBMX server api address}. Will timeout in 00:00:00 (HH:MM:SS)`: A response from the server is expected within a default timeout period of 20 seconds.
+
+`WARN: Message ID {Winlink Message ID} was sent to server but there was no response or an error code was returned!`: No response from the server (there might be a problem if you launched a server locally or on another networked computer). This is set as a _WARN_ log message because a legitimate deployment scenario is to deploy BF-BMX Desktop only.
+
+`WARN: IF A SERVER IS DEPLOYED AND YOU SEE THIS MESSAGE: ...`: You will need to do some troubleshooting to determine why the Desktop App cannot reach the Server Service. Check that the server is running, there are no host or network firewalls blocking the server port, and that the server and desktop computers are on the same network. If you are using a Security Software Suite, you might have to add the BF-BMX Desktop and/or BF-BMX Server to its "Allow list".
+
+`INFO: Response from Server was a success status code.` and `Posted Message ID {Winlink Message ID} to API successfully`: The Winlink Message and its discovered Bib Records were successfully sent to the BF-BMX Server instance. These messages only appear if the prior _WARN_ messages are not present for the same Winlink Message ID. This is not necessarily a fatal error depending on your deployment scenario.
 
 There are plenty of other log entries, but these are likely the most helpful in terms of resolving unexpected issues. Get used to reviewing the log files so you gain familiarity with their content and "what is normal".
 
@@ -392,6 +413,8 @@ Server Activity Log:
 - `Wrote 1 Winlink Message payload to Access DB file {fullfilepath}`: A new file was created and the tab-delimited bib record data was written to it. There will be 1 file for each unique Winlink ID the Server Service receives.
 - `Logfiles are at {path}`: Reports the configured logfile location. Find the Bib Report output files here.
 - `Server name {hostname} at address(es) {IPv4 Addresses} listening on HTTP port {TCP Port}`: The server is listening on the specified IPv4 Address and Port. The Desktop Operator will want this information when they configure Environment Variables.
+
+If you see log entries that start with _WARN:_ you will want to interrogate the BF-BMX Server Activity logfile and the BF-BMX Desktop App Log file to diagnose if there is a problem.
 
 ## Notes and Limitations
 
