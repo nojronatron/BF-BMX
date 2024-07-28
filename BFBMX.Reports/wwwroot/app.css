@@ -206,7 +206,7 @@ h1 {
 /* end non-button clickables */
 
 /* text input field */
-.bigfoot-text-imput {
+.bigfoot-text-input {
     padding: 0.2em .8em;
     margin: 0.5em;
 }
@@ -313,6 +313,10 @@ h1 {
 
 .bf-values-orange-bkgnd {
     background-color: var(--rgba-orangy-30);
+}
+
+.bf-values-blue-bkgnd {
+    background-color: var(--rgba-darkblue-30);
 }
 
 .bf-csv-records-container {
