@@ -202,6 +202,13 @@ h1 {
     cursor: pointer;
     color: var(--rgba-blue);
 }
+.bf-clickable-text:hover, .bf-clickable-text:focus {
+    background-color: var(--rgba-light-gray-30);
+    outline-color: var(--rgba-orangy-60);
+    outline-style: solid;
+    outline-width: 2px;
+}
+
 
 /* end non-button clickables */
 
