@@ -56,7 +56,7 @@
 
 @if(CanDisplayAidStationStats)
 {
-    <p class="bib-stat-byline">@AidStationFullName as of @LastUpdated</p>
+    <p class="bib-stat-byline">@AidStationFullName as of @MostRecentReportTimestamp.ToString("yyyy-MM-dd HH:mm:ss") UTC</p>
 
     <section class="bf-card-container-h">
 
@@ -90,7 +90,6 @@
 }
 
 @code {
-    public string LastUpdated { get; set; } = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
     public string AidStationAbbreviation { get; set; } = "Not Set!";
     public string AidStationFullName => AidStationsDict.GetAidStationName(AidStationAbbreviation);
     public string QueryAidStation { get; set; } = string.Empty;
@@ -101,13 +100,17 @@
     public bool IsResponseAnError { get; set; }
     public bool CanDisplayAidStationStats { get; set; }
 
+    public DateTime MostRecentReportTimestamp { get; set; } = DateTime.MinValue;
+
     public AidStationStatisticsModel? AidStationResponse { get; set; }
+
     public SortedSet<int> UniqueBibsSeen { get; set; } = new(); // which unique bib numbers HAS this AS reported on?
     public SortedSet<int> BibsArrived { get; set; } = new(); // unique bib numbers with action: in
     public SortedSet<int> BibsExited { get; set; } = new(); // unique bib numbers with action: out
     public SortedSet<int> BibsDropped { get; set; } = new(); // unique bib numbers with action: drop
-    public List<FlaggedBibRecordModel> BibsOtherAction { get; set; } = new(); // bib records with action other than in, out, or drop
+
     public List<string> ValidActions = ["in", "out", "drop"];
+    public List<FlaggedBibRecordModel> BibsOtherAction { get; set; } = new(); // bib records with action other than in, out, or drop
     public List<WinlinkMessageModel> WinlinkMessagesReceived { get; set; } = new();
 
     public void ClearDataFields()
@@ -123,6 +126,7 @@
         QueryAidStation = string.Empty;
         ResponseErrorMessage = string.Empty;
         IsResponseAnError = false;
+        MostRecentReportTimestamp = DateTime.MinValue;
     }
 
     public async Task HandleSetQueryName(string aidStation)
@@ -234,6 +238,11 @@
     {
         foreach(WinlinkMessageModel winlinkMessage in AidStationResponse!.WinlinkMessages)
         {
+            if (winlinkMessage.FileCreatedTimeStamp > MostRecentReportTimestamp)
+            {
+                MostRecentReportTimestamp = winlinkMessage.FileCreatedTimeStamp;
+                 
+            }
             foreach(FlaggedBibRecordModel bibRecord in winlinkMessage.BibRecords)
             {
                 if (bibRecord.Location!.Trim().ToUpper() == AidStationAbbreviation.Trim().ToUpper())
@@ -250,17 +259,17 @@
         {
             UniqueBibsSeen.Add(bibnum);
 
-            if (bibRecord.Action!.Trim().ToUpper() == "IN")
+            if (bibRecord.Action!.Trim().ToLower() == "in")
             {
                 BibsArrived.Add(bibnum);
                 return;
             }
-            else if (bibRecord.Action.Trim().ToUpper() == "OUT")
+            else if (bibRecord.Action.Trim().ToLower() == "out")
             {
                 BibsExited.Add(bibnum);
                 return;
             }
-            else if (bibRecord.Action.Trim().ToUpper() == "DROP")
+            else if (bibRecord.Action.Trim().ToLower() == "drop")
             {
                 BibsDropped.Add(bibnum);
             }
