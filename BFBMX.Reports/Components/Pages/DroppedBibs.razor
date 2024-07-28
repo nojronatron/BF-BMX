@@ -34,6 +34,23 @@ else
             </div>
         </article>
 
+        <article class="bf-wl-msg-card">
+            <div class="bf-wl-msg-card-heading">Unprocessable Records</div>
+            <div class="bf-wl-msg-props-container">
+                @if (SortedDroppedUnparseables.Count() < 1)
+                {
+                    <div class="bf-wl-msg-card-value">None</div>
+                }
+                else
+                {
+                    @foreach (var record in SortedDroppedUnparseables)
+                    {
+                        <div class="bf-csv-bib-record bf-warning-record">@record.ToCommaSeparatedString()</div>
+                    }
+                }
+            </div>
+        </article>
+
         @foreach (var message in Messages)
         {
             <article class="bf-wl-msg-card">
@@ -52,21 +69,9 @@ else
                         <span class="bf-wl-msg-card-value">@message.FileCreatedTimeStamp</span>
                     </div>
                 </div>
-                <div class="bf-csv-records-container">
-                    @foreach(FlaggedBibRecordModel fbrm in message.BibRecords)
-                    {
-                        @if(fbrm.DataWarning)
-                        {
-                            <div class="bf-csv-bib-record bf-warning-record">@fbrm.ToCommaSeparatedString()</div>
-                        }
-                        else
-                        {
-                            <div class="bf-csv-bib-record bf-nominal-record">@fbrm.ToCommaSeparatedString()</div>
-                        }
-                    }
-                </div>
             </article>
         }
+
     </section>
 }
 
@@ -75,6 +80,8 @@ else
     public List<string> CommaSeparatedBibRecords { get; set; } = new();
     public List<int> DroppedBibsList { get; set; } = new();
     public SortedSet<int> SortedDroppedBibsSet { get; set; } = new();
+    public SortedSet<FlaggedBibRecordModel> SortedDroppedUnparseables { get; set; } = new();
+
     public string SortedDroppedBibs { get; set; } = string.Empty;
 
     private string ErrorMessage = string.Empty;
@@ -177,10 +184,20 @@ else
                 {
                     CommaSeparatedBibRecords.Add(flaggedBibRecord.ToCommaSeparatedString());
 
-                    if (int.TryParse(flaggedBibRecord.BibNumber, out int bibNum))
+                    // a drop record will have an action of "drop"
+                    if (flaggedBibRecord.Action!.Trim().ToLower() == "drop")
                     {
-                        DroppedBibsList.Add(bibNum);
-                        SortedDroppedBibsSet.Add(bibNum);
+
+                        // a well formed bib number is an integer
+                        if (int.TryParse(flaggedBibRecord.BibNumber, out int bibNum))
+                        {
+                            SortedDroppedBibsSet.Add(bibNum);
+                        }
+                        else
+                        {
+                            // unparesable bib number should be displayed in a separate list
+                            SortedDroppedUnparseables.Add(flaggedBibRecord);
+                        }
                     }
                 }
             }
