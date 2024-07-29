@@ -57,7 +57,9 @@ else
                 </div>
             </div>
         </article>
+    </section>
 
+    <section class="bf-card-container-h">
         <article class="bf-wl-msg-card">
             <div class="bf-wl-msg-card-heading">Reporting Aid Stations</div>
             <div class="bf-csv-records-container">
@@ -78,7 +80,7 @@ else
         <article class="bf-wl-msg-card">
             <div class="bf-wl-msg-card-heading">Data Warnings</div>
             <div class="bf-csv-records-container">
-                @foreach (var item in UnknownBibRecords)
+                @foreach (var item in WarningRecords)
                 {
                     <div class="bf-csv-bib-record bf-warning-record">@item.ToCommaSeparatedString()</div>
                 }
@@ -158,22 +160,21 @@ else
     private int[] LittleFootFortyRange = { 600, 799 };
 
     public DateTime LastUpdated { get; set; } = DateTime.MinValue;
-    SortedSet<int> BigFootBibsSeen = new();
-    SortedSet<int> LittleFortyBibsSeen = new();
-    SortedSet<int> LittleTwentyBibsSeen = new();
 
-    public string UnknownItems { get; set; } = string.Empty;
-
+    public SortedSet<int> BigFootBibsSeen = new();
+    public SortedSet<int> LittleFortyBibsSeen = new();
+    public SortedSet<int> LittleTwentyBibsSeen = new();
+    
     public HashSet<string> AidStationsReporting { get; set; } = new();
-    public HashSet<FlaggedBibRecordModel> UnknownBibRecords = new();
-
+    public HashSet<FlaggedBibRecordModel> WarningRecords = new();
+        
     protected override bool ShouldRender() => PageShouldRender;
 
     public void ClearDataFields()
     {
         Statistics = null;
         AidStationsReporting.Clear();
-        UnknownBibRecords.Clear();
+        WarningRecords.Clear();
         ErrorMessage = string.Empty;
         IsError = false;
     }
@@ -193,6 +194,11 @@ else
             {
                 string aidStationShortName = string.IsNullOrWhiteSpace(fbrm.Location) ? "Unknown" : fbrm.Location.Trim().ToUpper();
                 string aidStationName = AidStationsDict.GetAidStationName(aidStationShortName);
+
+                if (fbrm.DataWarning)
+                {
+                    WarningRecords.Add(fbrm);
+                }
 
                 if (aidStationName != "Unknown")
                 {
@@ -216,14 +222,6 @@ else
                         LittleTwentyBibsSeen.Add(parsedNum);
                         continue;
                     }
-                    if (parsedNum > BigFootRange[1] && parsedNum > LittleFootFortyRange[1] && parsedNum > LittleFootTwentyRange[1])
-                    {
-                        UnknownBibRecords.Add(fbrm);
-                    }
-                }
-                else
-                {
-                    UnknownBibRecords.Add(fbrm);
                 }
             }
         }
