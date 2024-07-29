@@ -56,7 +56,7 @@
 
 @if(CanDisplayAidStationStats)
 {
-    <p class="bib-stat-byline">@AidStationFullName as of @MostRecentReportTimestamp.ToString("yyyy-MM-dd HH:mm:ss") UTC</p>
+    <p class="bib-stat-byline">@AidStationFullName Last Report Received @MostRecentReportTimestamp.ToString("G") UTC</p>
 
     <section class="bf-card-container-h">
 
@@ -86,6 +86,24 @@
             </table>
         </article>
 
+        <article class="bf-wl-msg-card">
+            <div class="bf-wl-msg-card-heading">Unprocessable Records</div>
+            <div class="bf-wl-msg-props-container">
+                @if (WarningBibs.Count() < 1)
+                {
+                    <div class="bf-wl-msg-card-value">None</div>
+                }
+                else
+                {
+                    @foreach (var record in WarningBibs)
+                    {
+                        <div class="bf-csv-bib-record bf-warning-record">@record.ToCommaSeparatedString()</div>
+                    }
+                }
+            </div>
+        </article>
+
+
     </section>
 }
 
@@ -108,6 +126,7 @@
     public SortedSet<int> BibsArrived { get; set; } = new(); // unique bib numbers with action: in
     public SortedSet<int> BibsExited { get; set; } = new(); // unique bib numbers with action: out
     public SortedSet<int> BibsDropped { get; set; } = new(); // unique bib numbers with action: drop
+    public SortedSet<FlaggedBibRecordModel> WarningBibs { get; set; } = new(); // bib records with data warnings
 
     public List<string> ValidActions = ["in", "out", "drop"];
     public List<FlaggedBibRecordModel> BibsOtherAction { get; set; } = new(); // bib records with action other than in, out, or drop
@@ -127,6 +146,7 @@
         ResponseErrorMessage = string.Empty;
         IsResponseAnError = false;
         MostRecentReportTimestamp = DateTime.MinValue;
+        WarningBibs.Clear();
     }
 
     public async Task HandleSetQueryName(string aidStation)
@@ -241,7 +261,7 @@
             if (winlinkMessage.FileCreatedTimeStamp > MostRecentReportTimestamp)
             {
                 MostRecentReportTimestamp = winlinkMessage.FileCreatedTimeStamp;
-                 
+
             }
             foreach(FlaggedBibRecordModel bibRecord in winlinkMessage.BibRecords)
             {
@@ -273,6 +293,11 @@
             {
                 BibsDropped.Add(bibnum);
             }
+        }
+        else
+        {
+            // bib number could not be parsed is probably a warning record
+            WarningBibs.Add(bibRecord);
         }
 
         string bibRecordAction = bibRecord.Action!.Trim().ToLower();
