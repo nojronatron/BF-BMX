@@ -8,6 +8,7 @@
 @inject IHttpConfiguration HttpConfig
 
 <h1>All Recorded Bibs Report</h1>
+<p>Last Page Load @LastLoadedTimestamp UTC</p>
 
 @if (getMessagesError || Messages is null)
 {
@@ -59,6 +60,7 @@ else
 
 @code {
     public IEnumerable<WinlinkMessageModel>? Messages {get;set;}
+    public string LastLoadedTimestamp => DateTime.Now.ToString("G");
     private bool getMessagesError;
     private bool shouldRender;
 
