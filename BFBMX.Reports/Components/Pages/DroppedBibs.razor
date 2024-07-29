@@ -9,6 +9,7 @@
 @inject IHttpConfiguration HttpConfig
 
 <h1>Dropped Bibs Report</h1>
+<p>Last Page Load @LastLoadedTimestamp UTC</p>
 
 @if (IsError)
 {
@@ -82,9 +83,10 @@ else
     public SortedSet<int> SortedDroppedBibsSet { get; set; } = new();
     public SortedSet<FlaggedBibRecordModel> SortedDroppedUnparseables { get; set; } = new();
 
+    public string LastLoadedTimestamp => DateTime.UtcNow.ToString("G");
     public string SortedDroppedBibs { get; set; } = string.Empty;
-
     private string ErrorMessage = string.Empty;
+
     private bool IsError;
     private bool shouldRender;
 
