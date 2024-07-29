@@ -12,7 +12,6 @@
 @inject IAidStationsDict AidStationsDict
 
 <h1>Bib Statistics</h1>
-<p class="bib-stat-byline">As Of @LastUpdated</p>
 
 @if (IsError)
 {
@@ -30,6 +29,11 @@ else
                 <div>
                     <span class="bf-wl-msg-card-key">Aid Station Reports:</span>
                     <span class="bf-wl-msg-card-value">@TotalMessages</span>
+                </div>
+
+                <div>
+                    <span class="bf-wl-msg-card-key">Last Timestamp:</span>
+                    <span class="bf-wl-msg-card-value">@LastUpdated UTC</span>
                 </div>
 
                 <div>
@@ -72,7 +76,7 @@ else
         </article>
 
         <article class="bf-wl-msg-card">
-            <div class="bf-wl-msg-card-heading">Bibs Out Of Range</div>
+            <div class="bf-wl-msg-card-heading">Data Warnings</div>
             <div class="bf-csv-records-container">
                 @foreach (var item in UnknownBibRecords)
                 {
@@ -123,13 +127,11 @@ else
 
     <section class="def-container">
         <h3 class="def-heading">Definitions</h3>
-        <p class="def-item"><em>Messages From Aid Stations</em>: How many messages an Aid Station has sent via HAM that contain information about runners.</p>
-        <p class="def-item"><em>BF200 Records Processed</em>: The number of individual records of 200-mile runner actions such as IN, OUT, or DROP.</p>
-        <p class="def-item"><em>20M andn 40M Records Processed</em>: The sum of all 20-mile runner and 40-mile runner individual records of actions (IN, OUT, or DROP).</p>
-        <p class="def-item"><em>Total Unique Bibs Seen</em>: Represents the number if <em>unique individual runners</em> seen on-course.</p>
-        <p class="def-item"><em>Processed Bib Records to Research</em>: HAMs use this pst to uncover erroneous records and get them corrected. Common errors are mis-keyed data, or missing data components.</p>
-        <p class="def-item"><em>BF200 Bibs Seen</em>: A count of unique bib numbers seen by HAMs, and an ordered list of those bib numbers.</p>
-        <p class="def-item"><em>20M and 40M Bibs Seen</em>: A count of unique bib numbers seen by HAMs, and an ordered list of those bib numbers.</p>
+        <p class="def-item"><em>Overall Statistics</em>: Reports received from Aid Stations and cumulative breakdown of unique bib numbers within those reports.</p>
+        <p class="def-item"><em>Reporting Aid Stations</em>: List of Aid Stations from which at least 1 report has been received.</p>
+        <p class="def-item"><em>Data Warnings</em>: Bib report(s) with unexpected or out of range data. Additional research might be needed to determine if the report is valid or needs clarification or correction.</p>
+        <p class="def-item"><em>200M Bibs</em>: A summary count and listing of all 200 Mile event bibs reported on by at least 1 Aid Station.</p>
+        <p class="def-item"><em>40M Bibs and 20M Bibs</em>: Same as the 200M Bibs but for the 20M and 40M courses.</p>
     </section>
 }
 
@@ -155,7 +157,7 @@ else
     private int[] LittleFootTwentyRange = { 300, 599 };
     private int[] LittleFootFortyRange = { 600, 799 };
 
-    public string LastUpdated { get; set; } = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    public DateTime LastUpdated { get; set; } = DateTime.MinValue;
     SortedSet<int> BigFootBibsSeen = new();
     SortedSet<int> LittleFortyBibsSeen = new();
     SortedSet<int> LittleTwentyBibsSeen = new();
@@ -182,13 +184,17 @@ else
 
         foreach (WinlinkMessageModel winlinkMessage in Statistics.AllWinlinkMessages)
         {
+            if (winlinkMessage.MessageDateStamp > LastUpdated)
+            {
+                LastUpdated = winlinkMessage.MessageDateStamp;
+            }
 
             foreach (FlaggedBibRecordModel fbrm in winlinkMessage.BibRecords)
             {
                 string aidStationShortName = string.IsNullOrWhiteSpace(fbrm.Location) ? "Unknown" : fbrm.Location.Trim().ToUpper();
                 string aidStationName = AidStationsDict.GetAidStationName(aidStationShortName);
 
-                if (aidStationName != "Unknwon")
+                if (aidStationName != "Unknown")
                 {
                     AidStationsReporting.Add(aidStationName);
                 }
