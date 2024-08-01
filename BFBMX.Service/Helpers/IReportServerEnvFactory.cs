@@ -4,5 +4,8 @@
     {
         string GetApiServerHostname();
         string GetApiServerPort();
+        int[] GetBigfootBibRange();
+        int[] GetLittlefoot20BibRange();
+        int[] GetLittlefoot40BibRange();
     }
 }

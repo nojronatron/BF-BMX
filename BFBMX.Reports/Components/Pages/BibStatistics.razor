@@ -10,6 +10,7 @@
 @inject IHttpClientFactory ClientFactory
 @inject IHttpConfiguration HttpConfig
 @inject IAidStationsDict AidStationsDict
+@inject IReportServerEnvFactory ReportServerEnvFactory
 
 <h1>Bib Statistics</h1>
 
@@ -132,8 +133,8 @@ else
         <p class="def-item"><em>Overall Statistics</em>: Reports received from Aid Stations and cumulative breakdown of unique bib numbers within those reports.</p>
         <p class="def-item"><em>Reporting Aid Stations</em>: List of Aid Stations from which at least 1 report has been received.</p>
         <p class="def-item"><em>Data Warnings</em>: Bib report(s) with unexpected or out of range data. Additional research might be needed to determine if the report is valid or needs clarification or correction.</p>
-        <p class="def-item"><em>200M Bibs</em>: A summary count and listing of all 200 Mile event bibs reported on by at least 1 Aid Station.</p>
-        <p class="def-item"><em>40M Bibs and 20M Bibs</em>: Same as the 200M Bibs but for the 20M and 40M courses.</p>
+        <p class="def-item"><em>200M Bibs</em>: A summary count and listing of all 200 Mile event bibs reported on by at least 1 Aid Station (configurable via BFBMX_BIGFOOT_BIBRANGE).</p>
+        <p class="def-item"><em>40M Bibs and 20M Bibs</em>: Same as the 200M Bibs but for the 40M and 20M courses (configurable via BFBMX_40M_BIBRANGE and BFBMX_20M_BIBRANGE).</p>
     </section>
 }
 
@@ -155,19 +156,15 @@ else
     public int LittleFootFortySeenCount { get; set; } = 0;
     public int LittleFootTwentySeenCount { get; set; } = 0;
 
-    private int[] BigFootRange = { 0, 299 };
-    private int[] LittleFootTwentyRange = { 300, 599 };
-    private int[] LittleFootFortyRange = { 600, 799 };
-
     public DateTime LastUpdated { get; set; } = DateTime.MinValue;
 
     public SortedSet<int> BigFootBibsSeen = new();
     public SortedSet<int> LittleFortyBibsSeen = new();
     public SortedSet<int> LittleTwentyBibsSeen = new();
-    
+
     public HashSet<string> AidStationsReporting { get; set; } = new();
     public HashSet<FlaggedBibRecordModel> WarningRecords = new();
-        
+
     protected override bool ShouldRender() => PageShouldRender;
 
     public void ClearDataFields()
@@ -182,6 +179,9 @@ else
     public void LoadProps()
     {
         TotalMessages = Statistics!.TotalWinlinkMessagesProcessed;
+        int[] bigFootRange = ReportServerEnvFactory.GetBigfootBibRange();
+        int[] littleFootFortyRange = ReportServerEnvFactory.GetLittlefoot40BibRange();
+        int[] littleFootTwentyRange = ReportServerEnvFactory.GetLittlefoot20BibRange();
 
         foreach (WinlinkMessageModel winlinkMessage in Statistics.AllWinlinkMessages)
         {
@@ -207,17 +207,17 @@ else
 
                 if (int.TryParse(fbrm.BibNumber, out int parsedNum))
                 {
-                    if (parsedNum >= BigFootRange[0] && parsedNum <= BigFootRange[1])
+                    if (parsedNum >= bigFootRange[0] && parsedNum <= bigFootRange[1])
                     {
                         BigFootBibsSeen.Add(parsedNum);
                         continue;
                     }
-                    if (parsedNum >= LittleFootFortyRange[0] && parsedNum <= LittleFootFortyRange[1])
+                    if (parsedNum >= littleFootFortyRange[0] && parsedNum <= littleFootFortyRange[1])
                     {
                         LittleFortyBibsSeen.Add(parsedNum);
                         continue;
                     }
-                    if (parsedNum >= LittleFootTwentyRange[0] && parsedNum <= LittleFootTwentyRange[1])
+                    if (parsedNum >= littleFootTwentyRange[0] && parsedNum <= littleFootTwentyRange[1])
                     {
                         LittleTwentyBibsSeen.Add(parsedNum);
                         continue;
