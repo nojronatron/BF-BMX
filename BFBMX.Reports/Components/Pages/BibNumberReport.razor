@@ -1,0 +1,163 @@
+﻿@page "/bybibnumber"
+@using BFBMX.Service.Models
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using System.Diagnostics
+
+@inject IHttpClientFactory ClientFactory
+@inject IHttpConfiguration HttpConfig
+
+@rendermode InteractiveServer
+
+<h1>Bib Number Report</h1>
+
+<section class="input-form">
+    @if(IsMessagesEmpty)
+    {
+        <article>
+            <label for="queryBibId" class="cntr-data-heading">Enter a Bib ID for a Report</label>
+            <input id="QueryBibId" type="text" class="bigfoot-text-input-cntr" @bind="QueryBibNum" />
+            <button class="bf-button-base bf-button-blue" @onclick="HandleGetMessages">View Bib Reports</button>
+
+            @if (string.IsNullOrWhiteSpace(InputValidationMessage) == false)
+            {
+                <p class="text-danger text-lg-center">@InputValidationMessage</p>
+            }
+        </article>
+    }
+    else
+    {
+        <button class="bf-button-base bf-button-blue" @onclick="HandleGetNewQuery">Click To Query A Different Bib</button>
+    }
+</section>
+
+<section class="bf-card-container-h">
+    @if(IsMessagesError)
+    {
+        <p>@ResponseErrorMessage</p>
+    }
+    @if(IsMessagesEmpty)
+    {
+        <p>No messages found containing that Bib ID.</p>
+    }
+    @if(CanDisplayMessages)
+    {
+        @foreach (var message in Messages!)
+        {
+            <article class="bf-wl-msg-card">
+                <div class="bf-wl-msg-card-heading">Winlink ID: @message.WinlinkMessageId</div>
+                <div class="bf-wl-msg-props-container">
+                    <div>
+                        <span class="bf-wl-msg-card-key">Message Timestamp:</span>
+                        <span class="bf-wl-msg-card-value">@message.MessageDateStamp</span>
+                    </div>
+                    <div>
+                        <span class="bf-wl-msg-card-key">Computer:</span>
+                        <span class="bf-wl-msg-card-value">@message.ClientHostname</span>
+                    </div>
+                    <div>
+                        <span class="bf-wl-msg-card-key">File Created:</span>
+                        <span class="bf-wl-msg-card-value">@message.FileCreatedTimeStamp</span>
+                    </div>
+                </div>
+                <div class="bf-csv-records-container">
+                    @foreach (FlaggedBibRecordModel fbrm in message.BibRecords)
+                    {
+                        @if (fbrm.DataWarning)
+                        {
+                            <div class="bf-csv-bib-record bf-warning-record">@fbrm.ToCommaSeparatedString()</div>
+                        }
+                        else
+                        {
+                            <div class="bf-csv-bib-record bf-nominal-record">@fbrm.ToCommaSeparatedString()</div>
+                        }
+                    }
+                </div>
+            </article>
+        }
+    }
+</section>
+
+@code {
+    public string? QueryBibNum {get;set;} = string.Empty;
+    public string ResponseErrorMessage {get;set;} = string.Empty;
+    public string InputValidationMessage { get; set; } = string.Empty;
+
+    public IEnumerable<WinlinkMessageModel>? Messages {get;set;}
+
+    public bool IsRequestSent {get;set;} 
+    public bool IsMessagesEmpty => Messages is null || Messages.Count() < 1;
+    public bool IsMessagesError {get;set;}
+    public bool CanDisplayMessages {get;set;} = false;
+
+    public void ClearDataFields()
+    {
+        QueryBibNum = string.Empty;
+        ResponseErrorMessage = string.Empty;
+        Messages = null;
+        IsRequestSent = false;
+        IsMessagesError = false;
+        CanDisplayMessages = false;
+    }
+
+    public async Task HandleGetNewQuery()
+    {
+        ClearDataFields();
+    }
+
+    public async Task HandleGetMessages()
+    {
+        try
+        {
+            InputValidationMessage = string.Empty;
+
+            if (QueryBibNum!.Length < 1)
+            {
+                ClearDataFields();
+                InputValidationMessage = "Enter a bib ID to query.";
+                return;
+            }
+
+            string queryBibNumEndpoint = string.Concat(HttpConfig.BibNumberEndpoint, "/", QueryBibNum);
+            HttpRequestMessage request = new(HttpMethod.Get, queryBibNumEndpoint);
+            request.Headers.Add("Accept", HttpConfig.AcceptHeader);
+            request.Headers.Add("User-Agent", HttpConfig.UserAgentHeader);
+            HttpClient client = ClientFactory.CreateClient();
+            CancellationToken ct = HttpConfig.Cts.Token;
+            HttpResponseMessage response = await client.SendAsync(request, ct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                Messages = await JsonSerializer.DeserializeAsync<IEnumerable<WinlinkMessageModel>>(responseStream, HttpConfig.JsonOptions);
+                IsRequestSent = true;
+            }
+            else
+            {
+                ResponseErrorMessage = $"{(int)response.StatusCode}: {response.ReasonPhrase}";
+                IsMessagesError = true;
+            }
+
+            CanDisplayMessages = !IsMessagesEmpty && !IsMessagesError;
+        }
+        catch (Exception ex)
+        {
+            /* 
+             * Possible Exceptions from both HttpRequestMessage and HttpClient:
+             * 
+             * ArgumentNullException
+             * InvalidOperationException
+             * HttpRequestException
+             * TaskCanceledException
+             * OperationCanceledException
+             * 
+             * These need to be logged
+             */
+
+            Debug.WriteLine(ex.Message);
+            IsMessagesError = true;
+            ResponseErrorMessage = ex.Message;
+            CanDisplayMessages = !IsMessagesError;
+        }
+    }
+}
