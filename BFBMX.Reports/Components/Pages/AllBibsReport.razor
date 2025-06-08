@@ -1,0 +1,153 @@
+﻿@page "/allbibsreport"
+@using BFBMX.Service.Models
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using System.Diagnostics
+
+@inject IHttpClientFactory ClientFactory
+@inject IHttpConfiguration HttpConfig
+
+<h1>All Recorded Bibs Report</h1>
+<p>Last Page Load @LastLoadedTimestamp UTC</p>
+
+@if (getMessagesError || Messages is null)
+{
+    <p>Unable to get any data. Try again later.</p>
+}
+
+@if (Messages is null || Messages.Count() < 1)
+{
+    <p>No messages have been processed yet.</p>
+}
+else
+{
+    <section class="bf-card-container-h">
+        @foreach (var message in Messages)
+        {
+            <article class="bf-wl-msg-card">
+                <div class="bf-wl-msg-card-heading">Winlink ID: @message.WinlinkMessageId</div>
+                <div class="bf-wl-msg-props-container">
+                    <div>
+                        <span class="bf-wl-msg-card-key">Message Timestamp:</span>
+                        <span class="bf-wl-msg-card-value">@message.MessageDateStamp</span>
+                    </div>
+                    <div>
+                        <span class="bf-wl-msg-card-key">Computer:</span>
+                        <span class="bf-wl-msg-card-value">@message.ClientHostname</span>
+                    </div>
+                    <div>
+                        <span class="bf-wl-msg-card-key">File Created:</span>
+                        <span class="bf-wl-msg-card-value">@message.FileCreatedTimeStamp</span>
+                    </div>
+                </div>
+                <div class="bf-csv-records-container">
+                    @foreach (FlaggedBibRecordModel fbrm in message.BibRecords)
+                    {
+                        @if (fbrm.DataWarning)
+                        {
+                            <div class="bf-csv-bib-record bf-warning-record">@fbrm.ToCommaSeparatedString()</div>
+                        }
+                        else
+                        {
+                            <div class="bf-csv-bib-record bf-nominal-record">@fbrm.ToCommaSeparatedString()</div>
+                        }
+                    }
+                </div>
+            </article>
+        }
+    </section>
+}
+
+@code {
+    public IEnumerable<WinlinkMessageModel>? Messages {get;set;}
+    public string LastLoadedTimestamp => DateTime.Now.ToString("G");
+    private bool getMessagesError;
+    private bool shouldRender;
+
+    protected override bool ShouldRender() => shouldRender;
+
+    public async Task GetMessages()
+    {
+        try
+        {
+            HttpRequestMessage request = new(HttpMethod.Get, HttpConfig.AllRecordsEndpoint);
+            request.Headers.Add("Accept", HttpConfig.AcceptHeader);
+            request.Headers.Add("User-Agent", HttpConfig.UserAgentHeader);
+            HttpClient client = ClientFactory.CreateClient();
+            CancellationToken ct = HttpConfig.Cts.Token;
+            HttpResponseMessage response = await client.SendAsync(request, ct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                Messages = await JsonSerializer.DeserializeAsync<IEnumerable<WinlinkMessageModel>>(responseStream, HttpConfig.JsonOptions);
+            }
+            else
+            {
+                Debug.WriteLine($"{(int)response.StatusCode}: {response.ReasonPhrase}");
+                getMessagesError = true;
+            }
+
+            shouldRender = true;
+        }
+        catch (ArgumentNullException anex)
+        {
+            Debug.WriteLine(anex.Message);
+            getMessagesError = true;
+            shouldRender = false;
+
+        }
+        catch (InvalidOperationException ioex)
+        {
+            Debug.WriteLine(ioex.Message);
+            getMessagesError = true;
+            shouldRender = false;
+
+        }
+        catch (HttpRequestException hrex)
+        {
+            Debug.WriteLine(hrex.Message);
+            getMessagesError = true;
+            shouldRender = false;
+
+        }
+        catch (TaskCanceledException tcex)
+        {
+            Debug.WriteLine(tcex.Message);
+            getMessagesError = true;
+            shouldRender = false;
+
+        }
+        catch (OperationCanceledException ocex)
+        {
+            Debug.WriteLine(ocex.Message);
+            getMessagesError = true;
+            shouldRender = false;
+
+        }
+        catch (Exception ex)
+        {
+            /* 
+             * Possible Exceptions from both HttpRequestMessage and HttpClient:
+             * 
+             * ArgumentNullException
+             * InvalidOperationException
+             * HttpRequestException
+             * TaskCanceledException
+             * OperationCanceledException
+             * 
+             * These need to be logged
+             */
+
+            Debug.WriteLine($"Some other exception occurred.\n{ex.Message}\n {ex.StackTrace}");
+
+            getMessagesError = true;
+            shouldRender = false;
+        }
+    }
+
+    override protected async Task OnInitializedAsync()
+    {
+        await GetMessages();
+    }
+}

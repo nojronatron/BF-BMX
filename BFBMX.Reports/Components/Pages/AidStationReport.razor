@@ -1,0 +1,317 @@
+﻿@page "/byaidstation"
+
+@using BFBMX.Service.Helpers
+@using BFBMX.Service.Models
+@using System.Text
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using System.Diagnostics
+
+@inject IHttpClientFactory ClientFactory
+@inject IHttpConfiguration HttpConfig
+@inject IAidStationsDict AidStationsDict
+
+@rendermode InteractiveServer
+
+<h1>Aid Station Report</h1>
+
+<section class="input-form">
+    @if (!CanDisplayAidStationStats)
+    {
+        <article>
+            <label for="queryAidStation" class="cntr-data-heading">Enter Aid Station Name or Abbreviation</label>
+            <input id="queryAidStation" type="text" class="bigfoot-text-input-cntr" @bind="QueryAidStation" />
+            <button class="bf-button-base bf-button-darkgreen" @onclick="HandleTextInput">Get Aid Station Report</button>
+
+            @if (string.IsNullOrWhiteSpace(InputValidationMessage) == false)
+            {
+                <p class="text-danger text-lg-center">@InputValidationMessage</p>
+            }
+
+        </article>
+        <article class="as-list-container">
+            <div class="cntr-data-heading">Or click an available Aid Station (below)</div>
+            @foreach (string aidStation in AidStationsDict.GetAll())
+            {
+                <div class="bf-clickable-text" @onclick="() => HandleSetQueryName(aidStation)">@aidStation</div>
+            }
+        </article>
+    }
+    else
+    {
+        <button class="bf-button-base bf-button-darkgreen" @onclick="HandleGetNewQuery">Click to query another Aid Station</button>
+    }
+</section>
+
+<section class="bf-card-container-h">
+    @if (IsResponseAnError)
+    {
+        <article>
+            <p class="text-danger">Unable to retrieve data. Check your search input and try again.</p>
+            <p>@ResponseErrorMessage</p>
+        </article>
+    }
+</section>
+
+
+@if(CanDisplayAidStationStats)
+{
+    <p class="bib-stat-byline">@AidStationFullName Last Report Received @MostRecentReportTimestamp.ToString("G") UTC</p>
+
+    <section class="bf-card-container-h">
+
+        <article class="bf-wl-msg-card">
+            <table class="table-bordered">
+                <thead>
+                    <tr class=" bf-values-ltgreen-bkgnd">
+                        <td class="text-center p-2">BibNum (@UniqueBibsSeen.Count)</td>
+                        <td class="text-center p-2">IN (@BibsArrived.Count)</td>
+                        <td class="text-center p-2">OUT (@BibsExited.Count)</td>
+                        <td class="text-center p-2">DROP (@BibsDropped.Count)</td>
+                        <td class="text-center p-2">Other (@BibsOtherAction.Count)</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var bibrecord in UniqueBibsSeen)
+                    {
+                        <tr class="bf-values-yellow-bkgnd">
+                            <td class="text-center">@bibrecord</td>
+                            <td class="text-center">@(BibsArrived.Contains(bibrecord) ? "IN" : "")</td>
+                            <td class="text-center">@(BibsExited.Contains(bibrecord) ? "OUT" : "")</td>
+                            <td class="text-center">@(BibsDropped.Contains(bibrecord) ? "DROP" : "")</td>
+                            <td class="text-center">@(BibsOtherAction.Any(bib => bib.BibNumber == bibrecord.ToString()) ? "(Other)" : "")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </article>
+
+        <article class="bf-wl-msg-card">
+            <div class="bf-wl-msg-card-heading">Unprocessable Records</div>
+            <div class="bf-wl-msg-props-container">
+                @if (WarningBibs.Count() < 1)
+                {
+                    <div class="bf-wl-msg-card-value">None</div>
+                }
+                else
+                {
+                    @foreach (var record in WarningBibs)
+                    {
+                        <div class="bf-csv-bib-record bf-warning-record">@record.ToCommaSeparatedString()</div>
+                    }
+                }
+            </div>
+        </article>
+
+
+    </section>
+}
+
+@code {
+    public string AidStationAbbreviation { get; set; } = "Not Set!";
+    public string AidStationFullName => AidStationsDict.GetAidStationName(AidStationAbbreviation);
+    public string QueryAidStation { get; set; } = string.Empty;
+    public string ResponseErrorMessage { get; set; } = string.Empty;
+    public string InputValidationMessage { get; set; } = string.Empty;
+
+    public bool IsRequestSent { get; set; }
+    public bool IsResponseAnError { get; set; }
+    public bool CanDisplayAidStationStats { get; set; }
+
+    public DateTime MostRecentReportTimestamp { get; set; } = DateTime.MinValue;
+
+    public AidStationStatisticsModel? AidStationResponse { get; set; }
+
+    public SortedSet<int> UniqueBibsSeen { get; set; } = new(); // which unique bib numbers HAS this AS reported on?
+    public SortedSet<int> BibsArrived { get; set; } = new(); // unique bib numbers with action: in
+    public SortedSet<int> BibsExited { get; set; } = new(); // unique bib numbers with action: out
+    public SortedSet<int> BibsDropped { get; set; } = new(); // unique bib numbers with action: drop
+    public SortedSet<FlaggedBibRecordModel> WarningBibs { get; set; } = new(); // bib records with data warnings
+
+    public List<string> ValidActions = ["in", "out", "drop"];
+    public List<FlaggedBibRecordModel> BibsOtherAction { get; set; } = new(); // bib records with action other than in, out, or drop
+    public List<WinlinkMessageModel> WinlinkMessagesReceived { get; set; } = new();
+
+    public void ClearDataFields()
+    {
+        AidStationResponse = null;
+        UniqueBibsSeen.Clear();
+        BibsArrived.Clear();
+        BibsExited.Clear();
+        BibsDropped.Clear();
+        BibsOtherAction.Clear();
+        AidStationAbbreviation = string.Empty;
+        WinlinkMessagesReceived.Clear();
+        QueryAidStation = string.Empty;
+        ResponseErrorMessage = string.Empty;
+        IsResponseAnError = false;
+        MostRecentReportTimestamp = DateTime.MinValue;
+        WarningBibs.Clear();
+    }
+
+    public async Task HandleSetQueryName(string aidStation)
+    {
+        string[] aidStnComponents = aidStation.Split(":");
+        string shortName = aidStnComponents[0].Trim();
+        string longName = aidStnComponents[1].Trim();
+        QueryAidStation = shortName;
+        await HandleGetAidStationStats();
+    }
+
+    public void HandleGetNewQuery()
+    {
+        ClearDataFields();
+        IsRequestSent = false;
+        IsResponseAnError = false;
+        CanDisplayAidStationStats = false;
+    }
+
+    public void ConvertAidStationName(string queryInput)
+    {
+        string inputName = queryInput.Trim().ToLower();
+
+        if (inputName.Length > 2)
+        {
+            QueryAidStation = AidStationsDict.GetAidStationCode(inputName) ?? string.Empty;
+            return;
+        }
+
+        if (inputName.Length == 2)
+        {
+            QueryAidStation = AidStationsDict.GetAidStationName(inputName);
+            return;
+        }
+
+        if (inputName.Length < 2)
+        {
+            QueryAidStation = string.Empty;
+        }
+    }
+
+    public async Task HandleTextInput()
+    {
+        ConvertAidStationName(QueryAidStation);
+        await HandleGetAidStationStats();
+    }
+
+    public async Task HandleGetAidStationStats()
+    {
+        try
+        {
+            InputValidationMessage = string.Empty;
+            string queryAidStationEndpoint = string.Concat(HttpConfig.AidStationEndpoint, "/", QueryAidStation);
+            HttpRequestMessage request = new(HttpMethod.Get, queryAidStationEndpoint);
+            request.Headers.Add("Accept", HttpConfig.AcceptHeader);
+            request.Headers.Add("User-Agent", HttpConfig.UserAgentHeader);
+            HttpClient client = ClientFactory.CreateClient();
+            CancellationToken ct = HttpConfig.Cts.Token;
+            HttpResponseMessage response = await client.SendAsync(request, ct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                using System.IO.Stream responseStream = await response.Content.ReadAsStreamAsync();
+                AidStationResponse = await JsonSerializer.DeserializeAsync<AidStationStatisticsModel>(responseStream, HttpConfig.JsonOptions);
+                IsRequestSent = true;
+            }
+            else
+            {
+                ResponseErrorMessage = $"{(int)response.StatusCode} {response.ReasonPhrase}";
+                IsResponseAnError = true;
+            }
+
+            if (IsResponseAnError)
+            {
+                CanDisplayAidStationStats = false;
+            }
+            else
+            {
+                LoadWinlinkMessageMetaData();
+                AidStationAbbreviation = AidStationResponse!.AidStationName;
+                LoadBibsReportedOn();
+                CanDisplayAidStationStats = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            /*
+            * Possible Exceptions from both HttpRequestMessage and HttpClient:
+            *
+            * ArgumentNullException
+            * InvalidOperationException
+            * HttpRequestException
+            * TaskCanceledException
+            * OperationCanceledException
+            *
+            * These need to be logged
+            */
+
+            Debug.WriteLine($"{ex.Message}\n{ex.StackTrace}");
+            IsResponseAnError = true;
+            ResponseErrorMessage = ex.Message;
+            CanDisplayAidStationStats = !IsResponseAnError;
+            ClearDataFields();
+        }
+
+    }
+
+    public void LoadBibsReportedOn()
+    {
+        foreach(WinlinkMessageModel winlinkMessage in AidStationResponse!.WinlinkMessages)
+        {
+            if (winlinkMessage.FileCreatedTimeStamp > MostRecentReportTimestamp)
+            {
+                MostRecentReportTimestamp = winlinkMessage.FileCreatedTimeStamp;
+
+            }
+            foreach(FlaggedBibRecordModel bibRecord in winlinkMessage.BibRecords)
+            {
+                if (bibRecord.Location!.Trim().ToUpper() == AidStationAbbreviation.Trim().ToUpper())
+                {
+                    ProcessBibRecord(bibRecord);
+                }
+            }
+        }
+    }
+
+    public void ProcessBibRecord(FlaggedBibRecordModel bibRecord)
+    {
+        if (int.TryParse(bibRecord.BibNumber, out int bibnum))
+        {
+            UniqueBibsSeen.Add(bibnum);
+
+            if (bibRecord.Action!.Trim().ToLower() == "in")
+            {
+                BibsArrived.Add(bibnum);
+                return;
+            }
+            else if (bibRecord.Action.Trim().ToLower() == "out")
+            {
+                BibsExited.Add(bibnum);
+                return;
+            }
+            else if (bibRecord.Action.Trim().ToLower() == "drop")
+            {
+                BibsDropped.Add(bibnum);
+            }
+        }
+        else
+        {
+            // bib number could not be parsed is probably a warning record
+            WarningBibs.Add(bibRecord);
+        }
+
+        string bibRecordAction = bibRecord.Action!.Trim().ToLower();
+        if (false == ValidActions.Contains(bibRecordAction))
+        {
+            BibsOtherAction.Add(bibRecord);
+        }
+    }
+
+    public void LoadWinlinkMessageMetaData()
+    {
+        foreach(WinlinkMessageModel winlinkMessage in AidStationResponse!.WinlinkMessages)
+        {
+            WinlinkMessagesReceived.Add(winlinkMessage);
+        }
+    }
+}

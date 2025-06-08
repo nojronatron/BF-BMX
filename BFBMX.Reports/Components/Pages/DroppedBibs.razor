@@ -1,0 +1,214 @@
+﻿@page "/droppedbibs"
+@using BFBMX.Service.Models
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using System.Diagnostics
+@using System.Text
+
+@inject IHttpClientFactory ClientFactory
+@inject IHttpConfiguration HttpConfig
+
+<h1>Dropped Bibs Report</h1>
+<p>Last Page Load @LastLoadedTimestamp UTC</p>
+
+@if (IsError)
+{
+    <p>Error (under development)</p>
+}
+@if (Messages is null || Messages.Count() < 1)
+{
+    <p>No data to display. Try again later.</p>
+}
+else
+{
+    <section class="bf-card-container-h">
+        <article class="bf-wl-msg-card">
+            <div class="bf-wl-msg-card-heading">Dropped Bibs</div>
+            <div class="bf-wl-msg-props-container">
+                <div>
+                    <span class="bf-wl-msg-card-key">Count:</span>
+                    <span class="bf-wl-msg-card-value">@SortedDroppedBibsSet.Count()</span>
+                </div>
+            </div>
+            <div class="bf-csv-recrods-container">
+                <div class="bf-csv-bib-record bf-nominal-record">@SortedDroppedBibs</div>
+            </div>
+        </article>
+
+        <article class="bf-wl-msg-card">
+            <div class="bf-wl-msg-card-heading">Unprocessable Records</div>
+            <div class="bf-wl-msg-props-container">
+                @if (SortedDroppedUnparseables.Count() < 1)
+                {
+                    <div class="bf-wl-msg-card-value">None</div>
+                }
+                else
+                {
+                    @foreach (var record in SortedDroppedUnparseables)
+                    {
+                        <div class="bf-csv-bib-record bf-warning-record">@record.ToCommaSeparatedString()</div>
+                    }
+                }
+            </div>
+        </article>
+
+        @foreach (var message in Messages)
+        {
+            <article class="bf-wl-msg-card">
+                <div class="bf-wl-msg-card-heading">Winlink ID: @message.WinlinkMessageId</div>
+                <div class="bf-wl-msg-props-container">
+                    <div>
+                        <span class="bf-wl-msg-card-key">Message Timestamp:</span>
+                        <span class="bf-wl-msg-card-value">@message.MessageDateStamp</span>
+                    </div>
+                    <div>
+                        <span class="bf-wl-msg-card-key">Computer:</span>
+                        <span class="bf-wl-msg-card-value">@message.ClientHostname</span>
+                    </div>
+                    <div>
+                        <span class="bf-wl-msg-card-key">File Created:</span>
+                        <span class="bf-wl-msg-card-value">@message.FileCreatedTimeStamp</span>
+                    </div>
+                </div>
+            </article>
+        }
+
+    </section>
+}
+
+@code {
+    public IEnumerable<WinlinkMessageModel>? Messages {get;set;}
+    public List<string> CommaSeparatedBibRecords { get; set; } = new();
+    public List<int> DroppedBibsList { get; set; } = new();
+    public SortedSet<int> SortedDroppedBibsSet { get; set; } = new();
+    public SortedSet<FlaggedBibRecordModel> SortedDroppedUnparseables { get; set; } = new();
+
+    public string LastLoadedTimestamp => DateTime.UtcNow.ToString("G");
+    public string SortedDroppedBibs { get; set; } = string.Empty;
+    private string ErrorMessage = string.Empty;
+
+    private bool IsError;
+    private bool shouldRender;
+
+    protected override bool ShouldRender() => shouldRender;
+
+    public void ClearDataFields()
+    {
+        Messages = null;
+        CommaSeparatedBibRecords.Clear();
+        DroppedBibsList.Clear();
+        SortedDroppedBibsSet.Clear();
+        SortedDroppedBibs = string.Empty;
+    }
+
+    public async Task GetMessages()
+    {
+        try 
+        {
+            IsError = false;
+            ErrorMessage = string.Empty;
+
+            HttpRequestMessage request = new(HttpMethod.Get, HttpConfig.DropReportEndpoint);
+            request.Headers.Add("Accept", HttpConfig.AcceptHeader);
+            request.Headers.Add("User-Agent", HttpConfig.UserAgentHeader);
+            HttpClient client = ClientFactory.CreateClient();
+            CancellationToken ct = HttpConfig.Cts.Token;
+            HttpResponseMessage response = await client.SendAsync(request, ct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                using System.IO.Stream responseStream = await response.Content.ReadAsStreamAsync();
+                Messages = await JsonSerializer.DeserializeAsync<IEnumerable<WinlinkMessageModel>>(responseStream, HttpConfig.JsonOptions);
+            }
+            else
+            {
+                IsError = true;
+                ErrorMessage = $"{(int)response.StatusCode} {response.ReasonPhrase}";
+                return;
+            }
+
+            LoadBibRecords();
+            FormatSortedDroppedBibs();
+            shouldRender = true;
+        }
+        catch (Exception ex)
+        {
+            /* 
+            * Possible Exceptions from both HttpRequestMessage and HttpClient:
+            * 
+            * ArgumentNullException
+            * InvalidOperationException
+            * HttpRequestException
+            * TaskCanceledException
+            * OperationCanceledException
+            * 
+            * These need to be logged
+             */
+
+            ErrorMessage = $"{ex.Message}\n{ex.StackTrace}";
+            IsError = true;
+            shouldRender = false;
+        }
+    }
+
+    private void FormatSortedDroppedBibs()
+    {
+        StringBuilder sb = new();
+        int count = 0;
+
+        foreach(int bib in SortedDroppedBibsSet)
+        {
+            if (count == SortedDroppedBibsSet.Count() - 1)
+            {
+                sb.AppendLine(bib.ToString().Trim());
+            }
+            else
+            {
+                sb.AppendLine($"{bib}, ");
+            }
+
+            count++;
+        }
+
+        SortedDroppedBibs = sb.ToString();
+    }
+
+    private void LoadBibRecords()
+    {
+        CommaSeparatedBibRecords.Clear();
+        DroppedBibsList.Clear();
+
+        if (Messages is not null && Messages.Count() > 0)
+        {
+            foreach(WinlinkMessageModel message in Messages)
+            {
+                foreach (FlaggedBibRecordModel flaggedBibRecord in message.BibRecords)
+                {
+                    CommaSeparatedBibRecords.Add(flaggedBibRecord.ToCommaSeparatedString());
+
+                    // a drop record will have an action of "drop"
+                    if (flaggedBibRecord.Action!.Trim().ToLower() == "drop")
+                    {
+
+                        // a well formed bib number is an integer
+                        if (int.TryParse(flaggedBibRecord.BibNumber, out int bibNum))
+                        {
+                            SortedDroppedBibsSet.Add(bibNum);
+                        }
+                        else
+                        {
+                            // unparesable bib number should be displayed in a separate list
+                            SortedDroppedUnparseables.Add(flaggedBibRecord);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override protected async Task OnInitializedAsync()
+    {
+        await GetMessages();
+        await base.OnInitializedAsync();
+    }
+}

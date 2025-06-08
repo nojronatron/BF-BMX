@@ -1,0 +1,122 @@
+﻿@page "/"
+
+@using BFBMX.Service.Models
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using System.Diagnostics
+@using System.Net
+
+@inject IHttpClientFactory ClientFactory
+@inject IHttpConfiguration HttpConfig
+
+<h1>BF-BMX Reports Server Home</h1>
+
+<section>
+    <h3>What is this?</h3>
+    <article>
+        <p>This application provides access to reports available by a specially crafted version of the BF-BMX Tool.</p>
+        <p>Some reports require input, others simply display data related to the report name.</p>
+        <p>On occasion, depending on the report type and how much data is in the BF-BMX database, one or more reports might be empty. Simply try them again after more data has been loaded in.</p>
+        <p>To get statistics on all received records, open the <a href="bibstatistics">statistics</a> page.</p>
+        <p>To view all received Winlink Message headers and their included Bib Reports, open the <a href="allbibsreport">all bib records</a> page.</p>
+    </article>
+</section>
+
+<section>
+    <h3>How to use this site</h3>
+    <article>
+        <p>Use the Navigation Bar on the left to select a report type.</p>
+        <p>To open this page in the future, set a Favorite to this page.</p>
+        <p>The BFBMX.Reports service must be running for this page to appear.</p>
+        <p>If the BFBMX Web Server is not online, none of these reports will function.</p>
+        <p>Simply close this browser window when done viewing reports.</p>
+
+    </article>
+</section>
+
+<section>
+    <h3>Server Info</h3>
+    <p>Calling @HttpConfig.ServerInfoEndpoint</p>
+    <article>
+        @if (@ResponseError)
+        {
+            <p>Server returned @ServerResponse</p>
+        }
+
+        @if (@ErrorMessage.Length > 0)
+        {
+            <p>An error occurred: @ErrorMessage</p>
+            <p>Check server address and port configuration, and confirm it is accessible on the network, and then try again.</p>
+        }
+    </article>
+</section>
+
+@code {
+    public string? ServerResponse { get; set; }
+    public string ErrorMessage { get; set; } = string.Empty;
+
+    private bool ResponseError { get; set; } = false;
+    private bool shouldRender;
+
+    protected override bool ShouldRender() => shouldRender;
+
+    public async Task GetMessage()
+    {
+        try
+        {
+            HttpRequestMessage request = new(HttpMethod.Get, HttpConfig.ServerInfoEndpoint);
+            request.Headers.Add("Accept", HttpConfig.AcceptHeader);
+            request.Headers.Add("User-Agent", HttpConfig.UserAgentHeader);
+            HttpClient client = ClientFactory.CreateClient();
+            CancellationToken ct = HttpConfig.Cts.Token;
+            HttpResponseMessage response = await client.SendAsync(request, ct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                using System.IO.Stream responseStream = await response.Content.ReadAsStreamAsync();
+                ServerInfoObject serverInfo = await JsonSerializer.DeserializeAsync<ServerInfoObject>(responseStream, HttpConfig.JsonOptions);
+                ServerResponse = serverInfo.ToString();
+                ErrorMessage = string.Empty;
+            }
+            else
+            {
+                ServerResponse = $"{(int)response.StatusCode}: {response.ReasonPhrase}";
+                ResponseError = false;
+            }
+
+            shouldRender = true;
+            ResponseError = true;
+        }
+        catch (Exception ex)
+        {
+            /*
+            * Possible Exceptions from both HttpRequestMessage and HttpClient:
+            *
+            * ArgumentNullException
+            * InvalidOperationException
+            * HttpRequestException
+            * TaskCanceledException
+            * OperationCanceledException
+            *
+            * These need to be logged
+             */
+
+            Debug.WriteLine(ex.Message);
+            ErrorMessage = ex.Message;
+            ResponseError = false;
+            shouldRender = true;
+        }
+    }
+
+    override protected async Task OnInitializedAsync()
+    {
+        await GetMessage();
+        await base.OnInitializedAsync();
+    }
+
+    public struct ServerInfoObject
+    {
+        public string Version { get; set; }
+        public override string ToString() => $"Version: {Version}";
+    }
+}

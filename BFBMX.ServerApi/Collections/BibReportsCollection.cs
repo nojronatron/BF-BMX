@@ -24,6 +24,70 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
         _serverLogWriter = serverLogWriter;
     }
 
+    public AidStationStatisticsModel GetAidStationReport(string aidStationId)
+    {
+        AidStationStatisticsModel result = new();
+
+        if (string.IsNullOrWhiteSpace(aidStationId) == false)
+        {
+            string aidId = aidStationId.ToLower().Trim();
+
+            try
+            {
+                var messagesWithAidStation = this.Where(wlm => wlm.BibRecords.Any(bib => bib.Location!.ToLower() == aidId));
+                result.AidStationName = aidStationId;
+                result.WinlinkMessages = messagesWithAidStation.ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("GetAidStationReport: Error getting Aid Station Data: {ermsg}", ex.Message);
+            }
+        }
+
+        return result;
+    }
+
+    public BibRecordsStatisticsModel GetStatistics()
+    {
+        BibRecordsStatisticsModel result = new();
+        result.TotalWinlinkMessagesProcessed = this.Count();
+        result.AllWinlinkMessages = this.ToList();
+        return result;
+    }
+
+    public IEnumerable<WinlinkMessageModel> GetBibReport(string bibNumber)
+    {
+       var messagesWithBib = this.Where(wlm => wlm.BibRecords.Any(bib => bib.BibNumber == bibNumber));
+        List<WinlinkMessageModel> resultCollection = new();
+
+        foreach (var message in messagesWithBib)
+        {
+            List<FlaggedBibRecordModel> bibReports = message.BibRecords.Where(bib => bib.BibNumber == bibNumber).ToList();
+            WinlinkMessageModel wlm = WinlinkMessageModel.GetWinlinkMessageInstance(
+                message.WinlinkMessageId,
+                message.MessageDateStamp,
+                message.ClientHostname,
+                message.FileCreatedTimeStamp,
+                bibReports);
+            resultCollection.Add(wlm);
+        }
+
+        return resultCollection;
+    }
+
+    public IEnumerable<WinlinkMessageModel> GetDroppedReports()
+    {
+        return this.Where(wlm => wlm.BibRecords
+                                    .Any(bib => bib.Action is not null 
+                                                && bib.@Action.ToLower().Trim() != "in" 
+                                                && bib.Action.ToLower().Trim() != "out"));
+    }
+
+    public IEnumerable<WinlinkMessageModel> GetAllEntities()
+    {
+        return this.Select(wlm => wlm);
+    }
+
     public bool AddEntityToCollection(WinlinkMessageModel wlMessagePayload)
     {
         int savedEntityCount = 0;

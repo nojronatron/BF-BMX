@@ -13,7 +13,27 @@ Each BFBMX Desktop component discovers Bib Records received via Winlink Express 
 
 ![BF BMX WLE Desktop Server Basic Diagram](./Docs/bf-bmx-wle-desktop-server-basic-diagram.png)
 
+## NEW - Web Reports Feature
+
+A reporting service has been developed that acts as a front-end webpage for an operator to select a Bib Number, Aid Station, or other race criteria, and a report will be generated displaying data based on DB-stored data. Developed reports include:
+
+- Aid Station: What bibs have been reported IN, OUT, and DROP, and when Winlink reports were received.
+- All Bibs: Every bib entry as it was received via Winlink. Will include apparent duplicates due to same-bib numbers entering and leaving various aid stations, and dropping from the event.
+- Bib Number: Specify a bib number to see what Winlink reports contained that bib record including timestamps and bib activities.
+- Bib Statistics: An overall view of how many bib reports have been received, what bib numbers have been seen, etc.
+- Dropped Bibs: A listing of bib reports that appear to have 'DROP' in the action field.
+
 ## Project Status
+
+[Unreleased] Target Version 1.7.0:
+
+- Minor code improvements.
+
+July 2024 Dev Preview 1.6.0:
+
+- Update BFBMX Server Api to support RESTful report queries.
+- Implement Report Server service.
+- Tidy-up for deployment during August 2024 BigFoot event.
 
 24-Jun-2024 Bugfix version 1.5.4:
 
@@ -225,28 +245,28 @@ Environment Variables that apply to BOTH Desktop App and Server Service:
 How to Set Environment Variables so they survive logout/restart:
 
 1. Click `Start` and then `Settings` (or `CTRL + X` and then select `Settings`).
-2. Left Nav Bar: Click `System`.
-3. Right Content Listing: Click `About` (at the bottom of the list).
-4. Click `Advanced system settings` to bring up the `System Properties` window.
-5. Click `Advanced` tab.
-6. Click button `Environment Variables...` (near the bottom).
-7. There are two sections: User variables, and System variables.
-8. Under `System Variables` click button `New...` to bring up the New System Variable window.
-9. Type the Environment Variable `name` in the space to left of the equals sign.
-10. Excluding quotation marks, copy or type the Variable `value` to the right of the equals sign.
-11. Click `OK`.
-12. Repeat steps 8-11 until all environment variable names and values have been entered.
-13. `Close` the Environment Variables window and the System Properties window.
+1. Left Nav Bar: Click `System`.
+1. Right Content Listing: Click `About` (at the bottom of the list).
+1. Click `Advanced system settings` to bring up the `System Properties` window.
+1. Click `Advanced` tab.
+1. Click button `Environment Variables...` (near the bottom).
+1. There are two sections: User variables, and System variables.
+1. Under `System Variables` click button `New...` to bring up the New System Variable window.
+1. Type the Environment Variable `name` in the space to left of the equals sign.
+1. Excluding quotation marks, copy or type the Variable `value` to the right of the equals sign.
+1. Click `OK`.
+1. Repeat steps 8-11 until all environment variable names and values have been entered.
+1. `Close` the Environment Variables window and the System Properties window.
 
 The computer operator(s) can then start the BF-BMX Desktop application(s) and Server Service.
 
 ## Install Desktop App
 
 1. Locate and double-click "setup.exe" to start the installation process.
-1. Follow the Installation Wizard prompts to complete installation.
-2. The BF-BMX Desktop App will launch after installation.
+2. Follow the Installation Wizard prompts to complete installation.
+3. The BF-BMX Desktop App will launch after installation.
 
-1. You can find the app in the Windows Start Menu, named "BFBMX.Desktop".
+> You can then find the app in the Windows Start Menu, named "BFBMX.Desktop".
 
 ### Desktop App Overview
 
@@ -264,7 +284,7 @@ Monitors:
 
 Environment Variables:
 
-- Logfile Path: The location that will contain the log files for the Desktop App, as configured by [Environment Variables](#configure-environment-variables).
+- Logfile Path: The location that will contain the log files for the Desktop App, as configured by [Environment Variables](#configure-local-environment-variables).
 - Server, Port: The configured location of the remote server that will receive the discovered data, as configured by Environment Variables.
 
 Detected Files:
@@ -290,12 +310,12 @@ Once a Monitor Path has a valid path entered and the `Initialize` button has bee
 - Start Button: Clicking this button will start the Monitor, which will look for newly created files in that Monitor's Path.
 - Stop Button: Clicking this button will tell the Monitor to stop watching for newly created files in the Monitor Path. This is a courtesy feature to allow the Monitor to stop gracefully.
 - Reset Button: This is a "hard stop" button that will stop and reset the Monitor to an unconfigured state.
- 
+
 _Note_: The primary purpose of the `Reset` button is to clear all memory of the Monitor before shutting down the Desktop App, but it can also be used if the Monitor is not behaving as expected and needs to be reconfigured and restarted.
 
 ### Review Desktop Log Files
 
-The Desktop App displays the location of its log files as configured using [Environment Variables](#configure-environment-variables).
+The Desktop App displays the location of its log files as configured using [Environment Variables](#configure-local-environment-variables).
 
 Click on the location to open the directory in Windows Explorer, where you will see two logfiles appear as files are detected by the Desktop App:
 
