@@ -25,8 +25,11 @@ A reporting service has been developed that acts as a front-end webpage for an o
 
 ## Project Status
 
-[Unreleased] Target Version 1.7.0:
+[Unreleased] Target Version 2.x.y:
 
+- Upgrade Desktop and Server components to .NET 8.0
+- Update NuGet packages.
+- Add Quick Start Guide for operators as a separate document.
 - Minor code improvements.
 
 July 2024 Dev Preview 1.6.0:
