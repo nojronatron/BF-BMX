@@ -4,15 +4,32 @@ namespace BFBMX.Service.Helpers
 {
     public class ReportServerEnvFactory : IReportServerEnvFactory
     {
+        private readonly string _defaultServerApiPort = "5150";
+
+        private readonly string _serverApiPortEnvVar = "BFBMX_SERVER_PORT";
+        private readonly string _serverApiNameEnvVar = "BFBMX_SERVER_NAME";
+        private readonly string _bigfootBibRangeEnvVar = "BFBMX_BIGFOOT_BIBRANGE";
+        private readonly string _littlefoot40BibRangeEnvVar = "BFBMX_40M_BIBRANGE";
+        private readonly string _littlefoot20BibRangeEnvVar = "BFBMX_20M_BIBRANGE";
+
+        private readonly char _defaultDelimiterChar = ',';
+
+        private readonly int _bigfootDefaultLowest = 1;
+        private readonly int _bigfootDefaultHighest = 299;
+        private readonly int _littleFootDefaultMin = 300;
+        private readonly int _littleFootDefaultMax = 599;
+        private readonly int _littleFootSecondaryDefaultMin = 600;
+        private readonly int _littleFootSecondaryDefaultMax = 999;
+
         public string GetApiServerPort()
         {
-            return Environment.GetEnvironmentVariable("BFBMX_SERVER_PORT") ?? "5150";
+            return Environment.GetEnvironmentVariable(_serverApiPortEnvVar) ?? _defaultServerApiPort;
         }
 
         public string GetApiServerHostname()
         {
-            string? bfBmxServerName = Environment.GetEnvironmentVariable("BFBMX_SERVER_NAME");
-            
+            string? bfBmxServerName = Environment.GetEnvironmentVariable(_serverApiNameEnvVar);
+
             if (bfBmxServerName is null)
             {
                 return Dns.GetHostName();
@@ -23,34 +40,37 @@ namespace BFBMX.Service.Helpers
 
         public int[] GetBigfootBibRange()
         {
-            string? bfBmxBigfootBibRange = Environment.GetEnvironmentVariable("BFBMX_BIGFOOT_BIBRANGE");
-            int defaultLowest = 1;
-            int defaultHighest = 299;
+            string? bfBmxBigfootBibRange = Environment.GetEnvironmentVariable(_bigfootBibRangeEnvVar);
 
             if (string.IsNullOrWhiteSpace(bfBmxBigfootBibRange))
             {
-                bfBmxBigfootBibRange = $"{defaultLowest},{defaultHighest}";
+                bfBmxBigfootBibRange = $"{_bigfootDefaultLowest},{_bigfootDefaultHighest}";
             }
 
-            string[] strRange = bfBmxBigfootBibRange.Split(',');
+            string[] strRange = bfBmxBigfootBibRange.Split(_defaultDelimiterChar);
             int[] resultRange = new int[2];
 
             if (int.TryParse(strRange[0], out int firstNum))
             {
-                resultRange[0] = firstNum >= defaultLowest && firstNum < int.MaxValue
+                resultRange[0] 
+                    = firstNum >= _bigfootDefaultLowest 
+                        && firstNum < int.MaxValue
                     ? firstNum
-                    : defaultLowest;
+                    : _bigfootDefaultLowest;
             }
             else
             {
-                resultRange[0] = 1;
+                resultRange[0] = _bigfootDefaultLowest;
             }
 
             if (int.TryParse(strRange[1], out int secondNum))
             {
-                resultRange[1] = secondNum >= defaultLowest && secondNum > firstNum && secondNum < int.MaxValue
+                resultRange[1]
+                    = secondNum >= _bigfootDefaultLowest 
+                        && secondNum > firstNum 
+                        && secondNum < int.MaxValue
                     ? secondNum
-                    : defaultHighest;
+                    : _bigfootDefaultHighest;
             }
 
             return resultRange;
@@ -58,13 +78,11 @@ namespace BFBMX.Service.Helpers
 
         public int[] GetLittlefoot40BibRange()
         {
-            string? bfBmxBibRange = Environment.GetEnvironmentVariable("BFBMX_40M_BIBRANGE");
-            int defaultLowest = 300;
-            int defaultHighest = 599;
+            string? bfBmxBibRange = Environment.GetEnvironmentVariable(_littlefoot40BibRangeEnvVar);
 
             if (string.IsNullOrWhiteSpace(bfBmxBibRange))
             {
-                bfBmxBibRange = $"{defaultLowest},{defaultHighest}";
+                bfBmxBibRange = $"{_littleFootDefaultMin},{_littleFootDefaultMax}";
             }
 
             string[] strRange = bfBmxBibRange.Split(',');
@@ -74,18 +92,21 @@ namespace BFBMX.Service.Helpers
             {
                 resultRange[0] = firstNum >= 0 && firstNum < int.MaxValue
                     ? firstNum
-                    : defaultLowest;
+                    : _littleFootDefaultMin;
             }
             else
             {
-                resultRange[0] = defaultHighest;
+                resultRange[0] = _littleFootDefaultMax;
             }
 
             if (int.TryParse(strRange[1], out int secondNum))
             {
-                resultRange[1] = secondNum >= 0 && secondNum > firstNum && secondNum < int.MaxValue
+                resultRange[1] 
+                    = secondNum >= 0 
+                        && secondNum > firstNum 
+                        && secondNum < int.MaxValue
                     ? secondNum
-                    : defaultHighest;
+                    : _littleFootDefaultMax;
             }
 
             return resultRange;
@@ -93,34 +114,37 @@ namespace BFBMX.Service.Helpers
 
         public int[] GetLittlefoot20BibRange()
         {
-            string? bfBmxBibRange = Environment.GetEnvironmentVariable("BFBMX_20M_BIBRANGE");
-            int defaultLowest = 600;
-            int defaultHighest = 999;
+            string? bfBmxBibRange = Environment.GetEnvironmentVariable(_littlefoot20BibRangeEnvVar);
 
             if (string.IsNullOrWhiteSpace(bfBmxBibRange))
             {
-                bfBmxBibRange = $"{defaultLowest},{defaultHighest}";
+                bfBmxBibRange = $"{_littleFootSecondaryDefaultMin},{_littleFootSecondaryDefaultMax}";
             }
 
-            string[] strRange = bfBmxBibRange.Split(',');
+            string[] strRange = bfBmxBibRange.Split(_defaultDelimiterChar);
             int[] resultRange = new int[2];
 
             if (int.TryParse(strRange[0], out int firstNum))
             {
-                resultRange[0] = firstNum >= 0 && firstNum < int.MaxValue
+                resultRange[0] 
+                    = firstNum >= 0 
+                        && firstNum < int.MaxValue
                     ? firstNum
-                    : defaultLowest;
+                    : _littleFootSecondaryDefaultMin;
             }
             else
             {
-                resultRange[0] = defaultHighest;
+                resultRange[0] = _littleFootSecondaryDefaultMax;
             }
 
             if (int.TryParse(strRange[1], out int secondNum))
             {
-                resultRange[1] = secondNum >= 0 && secondNum > firstNum && secondNum < int.MaxValue
+                resultRange[1] 
+                    = secondNum >= 0 
+                        && secondNum > firstNum 
+                        && secondNum < int.MaxValue
                     ? secondNum
-                    : defaultHighest;
+                    : _littleFootSecondaryDefaultMax;
             }
 
             return resultRange;
