@@ -98,8 +98,21 @@ namespace BFBMX.Service.Test.Helpers
         [Fact]
         public void GetServerLogPath_ContainsDefaultKeyword()
         {
-            var result = _serverEnvFactory.GetServerLogPath();
-            Assert.Contains("Documents", result);
+            // Get current Env Var that might not exist or could be empty
+            string? tempLogDir = Environment.GetEnvironmentVariable("BFBMX_SERVER_LOG_DIR");
+
+            if (string.IsNullOrWhiteSpace(tempLogDir))
+            {
+                // EnvVar NOT SET: Will contain default keyword
+                var result = _serverEnvFactory.GetServerLogPath();
+                Assert.Contains("Documents", result);
+            }
+            else
+            {
+                // EnvVar IS SET: Will not be empty and might not contain keyword
+                var result = _serverEnvFactory.GetServerLogPath();
+                Assert.NotEmpty(result);
+            }
         }
     }
 }
