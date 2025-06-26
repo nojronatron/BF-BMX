@@ -45,6 +45,8 @@ Only set variable names and settings when necessary:
 - BFBMX_SERVER_NAME: The Hostname or IPv4 address of the **ServerApi** computer. Default: `localhost`.
 - BFBMX_SERVER_PORT: The TCP Port used to connect the ServerApi. Default: 5150.
 
+There are also some Environment Variables that manage Report Server display behavior. See [README-Reports.md](./README-Reports.md) for more information.
+
 Stand-Alone Example:
 
 1. All components are installed on a single PC and communicate over localhost.
@@ -95,6 +97,7 @@ Run:
 
 1. Extract the downloaded ZIP file to a new directory.
 1. Double-click the file "BFBMX.ServerApi.exe" to run the server service.
+1. If prompted to allow a port through the Windows Firewall, click "Allow access" to enable Server Api access.
 
 A console window will open, and the ServerApi will start running. The console window will display log messages and status updates on a semi-regular basis, and when important events occur.
 
@@ -137,6 +140,7 @@ Install:
 1. Extract the downloaded ZIP file to a new directory.
 1. Open the extracted ZIP directory and dobule-click "setup.exe". **Do not run Setup.exe without extracting the ZIP file first.**
 1. Follow the Installation Wizard prompts to complete the installation.
+1. The installer will complain the Publisher is not verified. This is expected because a short-expiration Developer Certificate is in use.
 1. The BF-BMX Desktop App will launch automatically.
 
 The Desktop App will also install a shortcut to the Start Menu, named "BFBMX.Desktop".
@@ -166,7 +170,7 @@ Log Files:
 
 ## Reports Server
 
-The Reports server provide a web interface for displaying data from the BF-BMX ServerApi. It is not installed like an application because it too is a web server like ServerAPI. It allows users to view reports, generated from data provided by the BF-BMX Desktop application, using a common web browser.
+The Reports server provide a web interface for displaying data from the BF-BMX ServerApi. It is not installed like an application because it is a stand-alone web server. It allows users to view reports, generated from data provided by the BF-BMX Desktop application, using a common web browser.
 
 ### Reports Configure and Run
 
@@ -197,24 +201,6 @@ Example: ServerApi is running on the same computer as Reports server:
 - No need to change any environment variables.
 
 ### Using Reports Server
-
-Launch a web browser and point it to the Reports server address:
-
-- On same computer as ServerApi: `http://localhost:5000`
-- On another computer on the same network: `http://{ReportsServerIpAddress}:5000`
-
-The Reports server home page has helpful startup information:
-
-- How To Use This Site: Very succinct description of how to use the website.
-- Server Info: Displays the server address and port and version number if available, otherwise reports an error.
-
-Canned reports include:
-
-- Statistics: General statistics on reports from Aid Stations, processed records, total bibs seen, and more.
-- Bib ID: Search any reported details on a specific Bib Number.
-- Aid Station: Display Bib IDs and counts for a specific Aid Station.
-- Dropped Bibs: List of all Bib IDs marked as DNF.
-- All Bibs: List of all Bib IDs reported, with counts and details.
 
 See [README-Reports.md](./README-Reports.md) for more information on using the Reports server.
 
