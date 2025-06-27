@@ -30,6 +30,9 @@ builder.Services.AddDbContextFactory<BibMessageContext>(options =>
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddLogging();
+builder.Services.AddHttpLogging(config =>
+    config.CombineLogs = true
+    );
 
 // define scoped collections, helpers, etc
 builder.Services.AddSingleton<IServerEnvFactory, ServerEnvFactory>();
@@ -110,7 +113,7 @@ app.MapGet("/api/v1/ServerInfo", () =>
 
   try
   {
-    var apiServiceInfo = new ApiServiceInfo("v1.6.0 Dev Preview");
+    var apiServiceInfo = new ApiServiceInfo("v2.0.0 Dev Preview");
     return Results.Json(apiServiceInfo);
   }
   catch (Exception ex)

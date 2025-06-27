@@ -5,11 +5,11 @@ namespace BFBMX.Service.Test.Models;
 
 public class WinlinkMessageModelTests
 {
-    public string NoDataWarningText => "NOMINAL";
-    public string DataWarningText => "ALERT";
-    public static DateTime JanuarySecond => new DateTime(2024,01,02,03,04,05);
-    public static DateTime FebruaryThird => new DateTime(2024,02,03,04,05,06);
-    public static DateTime MarchFourth => new DateTime(2024, 03, 04, 05, 06, 07);
+    public static string NoDataWarningText => "NOMINAL";
+    public static string DataWarningText => "ALERT";
+    public static DateTime JanuarySecond => new(2024, 01, 02, 03, 04, 05);
+    public static DateTime FebruaryThird => new(2024, 02, 03, 04, 05, 06);
+    public static DateTime MarchFourth => new(2024, 03, 04, 05, 06, 07);
 
     [Fact]
     public void InstantiateAllFields()
@@ -20,18 +20,17 @@ public class WinlinkMessageModelTests
             MessageDateStamp = new DateTime(2024, 01, 02, 12, 11, 10),
             ClientHostname = "test-hostname",
             FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
-            BibRecords = new List<FlaggedBibRecordModel>
-      {
-          new FlaggedBibRecordModel
-          {
-          BibNumber = "1",
-          @Action = "IN",
-          BibTimeOfDay = "1314",
-          DayOfMonth = "2",
-          Location = "test-location",
-          DataWarning = false,
-          }
-      }
+            BibRecords = [
+                new FlaggedBibRecordModel
+                {
+                    BibNumber = "1",
+                    @Action = "IN",
+                    BibTimeOfDay = "1314",
+                    DayOfMonth = "2",
+                    Location = "test-location",
+                    DataWarning = false,
+                }
+            ]
         };
 
         Assert.NotNull(sut);
@@ -60,10 +59,9 @@ public class WinlinkMessageModelTests
             MessageDateStamp = new DateTime(),
             ClientHostname = null,
             FileCreatedTimeStamp = new DateTime(),
-            BibRecords = new List<FlaggedBibRecordModel>
-            {
+            BibRecords = [
                 new FlaggedBibRecordModel()
-            }
+            ]
         };
 
         // test nullable fields
@@ -90,18 +88,18 @@ public class WinlinkMessageModelTests
             MessageDateStamp = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
             FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
-            BibRecords = new List<FlaggedBibRecordModel>
-      {
-            new FlaggedBibRecordModel
-            {
-            BibNumber = "1",
-            @Action = "IN",
-            BibTimeOfDay = "1314",
-            DayOfMonth = "2",
-            Location = "test-location",
-            DataWarning = false,
-            }
-            }
+            BibRecords = 
+            [
+                new FlaggedBibRecordModel
+                {
+                    BibNumber = "1",
+                    @Action = "IN",
+                    BibTimeOfDay = "1314",
+                    DayOfMonth = "2",
+                    Location = "test-location",
+                    DataWarning = false,
+                }
+            ]
         };
 
         var expected = "ABCDEFGHIJKL.txt";
@@ -118,8 +116,8 @@ public class WinlinkMessageModelTests
             MessageDateStamp = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
             FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
-            BibRecords = new List<FlaggedBibRecordModel>
-            {
+            BibRecords = 
+            [
                 new FlaggedBibRecordModel
                 {
                     BibNumber = "1",
@@ -129,7 +127,7 @@ public class WinlinkMessageModelTests
                     Location = "test-location",
                     DataWarning = false,
                 }
-            }
+            ]
         };
 
         var singleBibExpected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateStamp\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"FileCreatedTimeStamp\":\"2023-08-13T23:22:21\"," +
@@ -172,8 +170,8 @@ public class WinlinkMessageModelTests
             MessageDateStamp = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
             FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
-            BibRecords = new List<FlaggedBibRecordModel>
-            {
+            BibRecords =
+            [
                 new FlaggedBibRecordModel
                 {
                     BibNumber = "1",
@@ -183,7 +181,7 @@ public class WinlinkMessageModelTests
                     Location = "test-location",
                     DataWarning = true,
                 }
-            }
+            ]
         };
 
         var expected = "{\"WinlinkMessageId\":\"ABCDEFGHIJKL\",\"MessageDateStamp\":\"2024-01-02T13:12:11\",\"ClientHostname\":\"test-hostname\",\"FileCreatedTimeStamp\":\"2023-08-13T23:22:21\"," +
@@ -201,8 +199,8 @@ public class WinlinkMessageModelTests
             MessageDateStamp = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
             FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
-            BibRecords = new List<FlaggedBibRecordModel>
-            {
+            BibRecords =
+            [
                 new FlaggedBibRecordModel
                 {
                     BibNumber = "1",
@@ -212,7 +210,7 @@ public class WinlinkMessageModelTests
                     Location = "test-location",
                     DataWarning = false,
                 }
-            }
+            ]
         };
 
         var expected = $"{NoDataWarningText}\t1\tIN\t1314\t2\ttest-location";
@@ -239,10 +237,10 @@ public class WinlinkMessageModelTests
             MessageDateStamp = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
             FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
-            BibRecords = new List<FlaggedBibRecordModel>
-            {
+            BibRecords =
+            [
                 bibEntry
-            }
+            ]
         };
 
         var oneLineExpected = $"ABCDEFGHIJKL\t2024-01-02T13-12-11\t{NoDataWarningText}\t1\tIN\t1314\t2\ttest-location\r\n";
@@ -292,10 +290,10 @@ public class WinlinkMessageModelTests
             MessageDateStamp = new DateTime(2024, 01, 02, 13, 12, 11),
             ClientHostname = "test-hostname",
             FileCreatedTimeStamp = new DateTime(2023, 08, 13, 23, 22, 21),
-            BibRecords = new List<FlaggedBibRecordModel>
-            {
+            BibRecords =
+            [
                 bibRecord
-            }
+            ]
         };
 
         Assert.Equal(expectedPrintableText, sut.ToAccessDatabaseTabbedString());
@@ -310,7 +308,7 @@ public class WinlinkMessageModelTests
             MessageDateStamp = MarchFourth,
             ClientHostname = "localhost",
             FileCreatedTimeStamp = MarchFourth.AddDays(1),
-            BibRecords = new List<FlaggedBibRecordModel>()
+            BibRecords = []
         };
 
         var winlinkMessage2 = new WinlinkMessageModel
@@ -319,7 +317,7 @@ public class WinlinkMessageModelTests
             MessageDateStamp = MarchFourth.AddDays(1),
             ClientHostname = "localhost",
             FileCreatedTimeStamp = MarchFourth.AddDays(1),
-            BibRecords = new List<FlaggedBibRecordModel>()
+            BibRecords = []
         };
 
         var hashCode1 = winlinkMessage1.GetHashCode();
@@ -337,7 +335,7 @@ public class WinlinkMessageModelTests
             MessageDateStamp = MarchFourth.AddDays(-1),
             ClientHostname = "localhost",
             FileCreatedTimeStamp = MarchFourth,
-            BibRecords = new List<FlaggedBibRecordModel>()
+            BibRecords = []
         };
 
         var winlinkMessage2 = new WinlinkMessageModel
@@ -346,7 +344,7 @@ public class WinlinkMessageModelTests
             MessageDateStamp = MarchFourth.AddDays(-1),
             ClientHostname = "localhost",
             FileCreatedTimeStamp = MarchFourth,
-            BibRecords = new List<FlaggedBibRecordModel>()
+            BibRecords = []
         };
 
         Assert.True(winlinkMessage1.Equals(winlinkMessage2));
@@ -361,7 +359,7 @@ public class WinlinkMessageModelTests
             MessageDateStamp = JanuarySecond,
             ClientHostname = "localhost",
             FileCreatedTimeStamp = FebruaryThird,
-            BibRecords = new List<FlaggedBibRecordModel>()
+            BibRecords = []
         };
 
         var winlinkMessage2 = new WinlinkMessageModel
@@ -370,7 +368,7 @@ public class WinlinkMessageModelTests
             MessageDateStamp = MarchFourth,
             ClientHostname = "localhost",
             FileCreatedTimeStamp = JanuarySecond,
-            BibRecords = new List<FlaggedBibRecordModel>()
+            BibRecords = []
         };
 
         Assert.False(winlinkMessage1.Equals(winlinkMessage2));
@@ -387,7 +385,7 @@ public class WinlinkMessageModelTests
         DateTime inputDateTime = new(year, month, day, hour, minute, second);
         string actualResult = WinlinkMessageModel.FormatDateTimeForAccessDb(inputDateTime);
         Debug.WriteLine($"Input: {JanuarySecond}; Expected: {expectedResult}; Actual: {actualResult}");
-        Assert.True(expectedResult.Equals(actualResult));
+        Assert.Equal(expectedResult, actualResult);
     }
 
     [Fact]
@@ -413,10 +411,10 @@ public class WinlinkMessageModelTests
             DataWarning = true,
         };
 
-        List<FlaggedBibRecordModel> bibs = new()
-        {
+        List<FlaggedBibRecordModel> bibs =
+        [
             alpha, bravo
-        };
+        ];
 
         WinlinkMessageModel sut = new()
         {
@@ -437,8 +435,8 @@ public class WinlinkMessageModelTests
         DateTime messageDateTime = MarchFourth;
         string clientHostname = "localhost";
         DateTime fileCreatedDateTime = JanuarySecond;
-        List<FlaggedBibRecordModel> bibRecords = new()
-        {
+        List<FlaggedBibRecordModel> bibRecords =
+        [
             new FlaggedBibRecordModel
             {
                 BibNumber = "1",
@@ -448,7 +446,7 @@ public class WinlinkMessageModelTests
                 Location = "test-location",
                 DataWarning = false,
             }
-        };
+        ];
 
         WinlinkMessageModel sut = WinlinkMessageModel.GetWinlinkMessageInstance(winlinkMessageId, messageDateTime, clientHostname, fileCreatedDateTime, bibRecords);
 

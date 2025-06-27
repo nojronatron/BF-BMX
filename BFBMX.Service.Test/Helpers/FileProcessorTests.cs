@@ -13,10 +13,10 @@ public class FileProcessorTests
 
     public static string GenericWinlinkId => "ABC123DEF456";
     public static string? GetTempDirectory => Environment.GetEnvironmentVariable("TEMP");
-    public string sample_RepliedToWinlinkMessageNoBibData => SampleMessages.RepliedToWinlinkMessageNoBibData;
-    public string sample_NonconformingBibReportMessage => SampleMessages.NonconformingBibReportMessage;
-    public string sample_ValidMessageWithBibDataInReplyMessage => SampleMessages.ValidMessageWithBibDataInReplyMessage;
-    public string sample_MessageWith26ValidBibs => SampleMessages.MessageWith26ValidBibs;
+    public static string Sample_RepliedToWinlinkMessageNoBibData => SampleMessages.RepliedToWinlinkMessageNoBibData;
+    public static string Sample_NonconformingBibReportMessage => SampleMessages.NonconformingBibReportMessage;
+    public static string Sample_ValidMessageWithBibDataInReplyMessage => SampleMessages.ValidMessageWithBibDataInReplyMessage;
+    public static string Sample_MessageWith26ValidBibs => SampleMessages.MessageWith26ValidBibs;
 
     public FileProcessorTests()
     {
@@ -108,7 +108,7 @@ public class FileProcessorTests
         }
         else
         {
-            Assert.True(false, "Environment variable TEMP not found.");
+            Assert.Fail("Environment variable TEMP not found.");
         }
     }
 
@@ -201,7 +201,6 @@ public class FileProcessorTests
     {
         // Arrange
         int expectedCount = 5;
-        List<FlaggedBibRecordModel> bibRecords = new();
         string messageId = "ABC123DEF456";
 
         var lines = new string[] {
@@ -218,7 +217,7 @@ public class FileProcessorTests
         };
 
         // Act
-        bibRecords = _fileProcessor.ProcessBibs(lines, messageId);
+        List<FlaggedBibRecordModel> bibRecords = _fileProcessor.ProcessBibs(lines, messageId);
 
         // Assert
         Assert.NotEmpty(bibRecords);
@@ -262,28 +261,28 @@ public class FileProcessorTests
         int expectedCountCharlie = 7;
         int expectedCountDelta = 26;
 
-        string[] alphaLines = sample_RepliedToWinlinkMessageNoBibData.Split('\n');
+        string[] alphaLines = Sample_RepliedToWinlinkMessageNoBibData.Split('\n');
         List< FlaggedBibRecordModel> actualStrictResultListAlpha = _fileProcessor.GetStrictMatches(alphaLines).ToList();
         List<FlaggedBibRecordModel> actualSloppyResultListAlpha = _fileProcessor.GetSloppyMatches(alphaLines).ToList();
 
         Assert.Equal(expectedCountAlpha, actualStrictResultListAlpha.Count);
         Assert.Equal(expectedCountAlpha, actualSloppyResultListAlpha.Count);
 
-        string[] bravoLines = sample_NonconformingBibReportMessage.Split('\n');
+        string[] bravoLines = Sample_NonconformingBibReportMessage.Split('\n');
         List<FlaggedBibRecordModel> actualStrictResultListBravo = _fileProcessor.GetStrictMatches(bravoLines).ToList();
         List<FlaggedBibRecordModel> actualSloppyResultListBravo = _fileProcessor.GetSloppyMatches(bravoLines).ToList();
 
         Assert.Equal(expectedCountBravo, actualStrictResultListBravo.Count);
         Assert.Equal(expectedCountBravo, actualSloppyResultListBravo.Count);
 
-        string[] charlieLines = sample_ValidMessageWithBibDataInReplyMessage.Split('\n');
+        string[] charlieLines = Sample_ValidMessageWithBibDataInReplyMessage.Split('\n');
         List<FlaggedBibRecordModel> actualStrictResultListCharlie = _fileProcessor.GetStrictMatches(charlieLines).ToList();
         List<FlaggedBibRecordModel> actualSloppyResultListCharlie = _fileProcessor.GetSloppyMatches(charlieLines).ToList();
 
         Assert.Equal(expectedCountCharlie, actualStrictResultListCharlie.Count);
         Assert.Equal(expectedCountCharlie, actualSloppyResultListCharlie.Count);
 
-        string[] deltaLines = sample_MessageWith26ValidBibs.Split('\n');
+        string[] deltaLines = Sample_MessageWith26ValidBibs.Split('\n');
         List<FlaggedBibRecordModel> actualStrictResultListDelta = _fileProcessor.GetStrictMatches(deltaLines).ToList();
         List<FlaggedBibRecordModel> actualSloppyResultListDelta = _fileProcessor.GetSloppyMatches(deltaLines).ToList();
 
@@ -459,10 +458,10 @@ public class FileProcessorTests
         string messageId = "ABC123DEF456";
 
         string[] lines =
-        {
+        [
             "\r\n", "\r\n", "306\r\n", "317\r\n", "318\r\n", "322\r\n", "339\r\n", "343\r\n", "348\r\n", "351\r\n", "357\r\n", "359\r\n", "366\r\n", "372\r\n", "374\r\n",
             "396\r\n", "402\r\n", "403\r\n", "404\r\n", "\r\n\r\nJ"
-        };
+        ];
 
         List<FlaggedBibRecordModel> actualResult = _fileProcessor.ProcessBibs(lines, messageId);
 
