@@ -13,7 +13,32 @@ Each BFBMX Desktop component discovers Bib Records received via Winlink Express 
 
 ![BF BMX WLE Desktop Server Basic Diagram](./Docs/bf-bmx-wle-desktop-server-basic-diagram.png)
 
+## NEW - Web Reports Feature
+
+A reporting service has been developed that acts as a front-end webpage for an operator to select a Bib Number, Aid Station, or other race criteria, and a report will be generated displaying data based on DB-stored data. Developed reports include:
+
+- Aid Station: What bibs have been reported IN, OUT, and DROP, and when Winlink reports were received.
+- All Bibs: Every bib entry as it was received via Winlink. Will include apparent duplicates due to same-bib numbers entering and leaving various aid stations, and dropping from the event.
+- Bib Number: Specify a bib number to see what Winlink reports contained that bib record including timestamps and bib activities.
+- Bib Statistics: An overall view of how many bib reports have been received, what bib numbers have been seen, etc.
+- Dropped Bibs: A listing of bib reports that appear to have 'DROP' in the action field.
+
 ## Project Status
+
+[Unreleased] Target Version 2.0.0:
+
+- Upgrade Desktop and Server components to .NET 8.0
+- Update NuGet packages.
+- Add Reports server component.
+- Add Quick Start Guide README.
+- Break-out README into component-level READMEs.
+- Minor code improvements.
+
+July 2024 Dev Preview 1.6.0:
+
+- Update BFBMX Server Api to support RESTful report queries.
+- Implement Report Server service.
+- Tidy-up for deployment during August 2024 BigFoot event.
 
 24-Jun-2024 Bugfix version 1.5.4:
 
@@ -134,10 +159,20 @@ Client App:
 - Minimal UI, minimal necessary configuration needed.
 - List discovered files so computer operator can easily keep tabs on current status.
 
-Server Service:
+See [BFBMX Desktop README](./README-DesktopApp.md) for more details.
+
+Server API:
 
 - Listen for data from Client App(s) and process all incoming requests and payloads.
 - Log all "Bigfoot Bib Data" and note any possible data issues with an additional "flag" bit.
+
+See [BFBMX ServerApi](./README-ServerAPI.md) for more details.
+
+Reports Server:
+
+- Provide a web UI for quick and simple display of process Winlink reports.
+
+See [BFBMX Reports](./README-Reports.md) for more details.
 
 ## Target Environment And Dependencies
 
@@ -200,222 +235,6 @@ Usage instructions for BF-BMX Desktop App and Server Service.
 1. _Leave the console window open_ so the server service continues to run.
 1. Configure the Desktop App to monitor up to three directories where Winlink Express messages are stored, and `Start` the monitors.
 
-## Configure Local Environment Variables
-
-BFBMX will create a folder for its logfiles in the Documents folder of USERPROFILE with either Server or Desktop appended to the name, like:
-
-- Desktop: `C:\Users\{username}\Documents\BFBMX_Desktop_Logs`
-- Server: `C:\Users\{username}\Documents\BFBMX_Server_Logs`
-
-BFBMX will also assume the Desktop and Server are running on the same machine on port `5150` unless you set Enivornment Variables.
-
-Environment Variables that apply only to the Desktop App:
-
-- `BFBMX_DESKTOP_LOG_DIR_`: Name of the folder where the Desktop App will store its log files. Recommend a name like "BFBMX_Desktop_Logs".
-
-Environment Variables that apply only to the Server Service:
-
-- `BFBMX_SERVER_LOG_DIR`: Name of the folder where the server will store log files. Recommend a name like "BFBMX_Server_Logs".
-
-Environment Variables that apply to BOTH Desktop App and Server Service:
-
-- `BFBMX_SERVER_NAME`: Name or IP address of server hosting the BF-BMX API. Use the server IPv4 address or `localhost` unless you know for certain a reliable name resolution service is available on your network.
-- `BFBMX_SERVER_PORT`: The port that the BF-BMX API host is listening to. The default port is `5150` but the Server Operator might select another so check with them to verify before continuing.
-
-How to Set Environment Variables so they survive logout/restart:
-
-1. Click `Start` and then `Settings` (or `CTRL + X` and then select `Settings`).
-2. Left Nav Bar: Click `System`.
-3. Right Content Listing: Click `About` (at the bottom of the list).
-4. Click `Advanced system settings` to bring up the `System Properties` window.
-5. Click `Advanced` tab.
-6. Click button `Environment Variables...` (near the bottom).
-7. There are two sections: User variables, and System variables.
-8. Under `System Variables` click button `New...` to bring up the New System Variable window.
-9. Type the Environment Variable `name` in the space to left of the equals sign.
-10. Excluding quotation marks, copy or type the Variable `value` to the right of the equals sign.
-11. Click `OK`.
-12. Repeat steps 8-11 until all environment variable names and values have been entered.
-13. `Close` the Environment Variables window and the System Properties window.
-
-The computer operator(s) can then start the BF-BMX Desktop application(s) and Server Service.
-
-## Install Desktop App
-
-1. Locate and double-click "setup.exe" to start the installation process.
-1. Follow the Installation Wizard prompts to complete installation.
-2. The BF-BMX Desktop App will launch after installation.
-
-1. You can find the app in the Windows Start Menu, named "BFBMX.Desktop".
-
-### Desktop App Overview
-
-The App is broken up into three main section: Monitors, Environment Variables, and Detected Files.
-
-Monitors:
-
-- Up to three directory monitors can be configured and used.
-- Each monitor can be set to watch an valid Windows Directory, however you should point them to the "Messages" folder within Winlink Express installation directories.
-- Monitors have buttons to `Initialize`, `Start`, and `Stop` monitoring.
-- If necessary, the `Reset` button can be used to force an existing Monitor to stop and reset so it can be reconfigured.
-- Monitor buttons are aware of Path Validity, and Monitor State, and they will automatically enable or disable as necessary.
-
-![Desktop Status Monitor "Initialized"](./Docs/desktop-monitor-status-message-initialized.png)
-
-Environment Variables:
-
-- Logfile Path: The location that will contain the log files for the Desktop App, as configured by [Environment Variables](#configure-environment-variables).
-- Server, Port: The configured location of the remote server that will receive the discovered data, as configured by Environment Variables.
-
-Detected Files:
-
-- A scrollable list of `*.mime` files detected by any active Monitor.
-- The list will hold a maximum of 12 items. New items are added to the top, and items are removed from the bottom (oldest).
-- Files that contain Bib Report data that has malformed data or format will be highlighted for informational purposes.
-
-![BFBMX Desktop App User Interface](./Docs/Desktop-App-with-markup.png)
-
-### Set Up Desktop Monitor Paths
-
-1. For each Winlink Express instance that you want to monitor, find the location of the `messages` folder. It is usually `c:\Winlink Express\<your_callsign>\Messages`.
-1. Copy or type-in the path in the `Monitor 1 Path` textbox.
-1. Press the `Tab` key to tell the app you are done entering the path.
-1. If the path cannot be found, a warning will appear and none of that Monitor's buttons will be enabled.
-1. Fix any errors in the path and click `Tab` again and the `Initialize` button should now be enabled.
-
-### Start And Stop Desktop Monitors
-
-Once a Monitor Path has a valid path entered and the `Initialize` button has been pressed, the `Start` and `Reset` buttons should become active.
-
-- Start Button: Clicking this button will start the Monitor, which will look for newly created files in that Monitor's Path.
-- Stop Button: Clicking this button will tell the Monitor to stop watching for newly created files in the Monitor Path. This is a courtesy feature to allow the Monitor to stop gracefully.
-- Reset Button: This is a "hard stop" button that will stop and reset the Monitor to an unconfigured state.
- 
-_Note_: The primary purpose of the `Reset` button is to clear all memory of the Monitor before shutting down the Desktop App, but it can also be used if the Monitor is not behaving as expected and needs to be reconfigured and restarted.
-
-### Review Desktop Log Files
-
-The Desktop App displays the location of its log files as configured using [Environment Variables](#configure-environment-variables).
-
-Click on the location to open the directory in Windows Explorer, where you will see two logfiles appear as files are detected by the Desktop App:
-
-- BFBMX Desktop App Log.
-- Captured Bib Records log.
-
-BFBMX Desktop App Log:
-
-- The activities log are stored in a file named `bfbmx-desktop-app-log.txt`.
-- Button clicks, discovered files, and discovered data events are all recorded in this log.
-- A plain text file and can be opened with any text editor.
-- The data format is: `yyyy-MMM-dd HH:mm:ss [INFO|WARN|ERROR]: {Module Member Name}: (a plain english explanation of Desktop Action or state information).`.
-
-Captured Bib Records:
-
-- The file is named `bfbmx-captured-bib-records.txt`.
-- Discovered Bib Records are recorded here in a tab-delimited format, compatible with what the Server Service logs.
-- The data format is: `[Winlink Message ID] [Message DateTime] [Data Warning Flag] [Bib Number] [Bib Action] [Bib Time] [Day Of Month] [Location Acronym]`.
-
-![Desktop Logfile Nominal and Alert Entries Example](./Docs/Server-Logfile-Nominal-And-Alert-Entries.png)
-
-The above example shows a Winlink Payload log entry: message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2023 at 11:31:00 AM (Local PDT) followed by Bib Record data (also in tabular format).
-
-- The top Bib Record Data was parseable without issues so the Data Warning Flag was set to `NOMINAL`.
-- The second Bib Record Data was _not_ directly parsable because the Bib Number was unexpectedly large. The App applied the Data Warning Flag of `ALERT` so the problem could be investigated and corrected by the computer operators.
-
-_Note_: The exact same log file format is used by the Server Service and the Desktop App, with the exception that the Desktop App logs all Bib Records to a single file whereas the Server logs Bib Data in individual files, one file per Winlink Message ID.
-
-### Desktop Log Entry Details
-
-`INFO:` ...about Monitors Alpha, Bravo, and Charlie: These log entries can usually be ignored unless there is a problem with initializing, starting, or stopping a Monitor. Logged information will be adjusted in a future release to be less noisy and more helpful.
-
-`INFO: Discovered file path {fullfilename} creation stamp {datetime} for processing.` and `INFO: Path {path} sent to screen for display`: When a file create event is detected the file information sent to the Desktop App UI.
-
-`INFO: Sending file {fullfilename} created at {datetime} to file processor`: When a file create event is detected, the file contents are sent to the Matchers for processing.
-
-`INFO: ProcessBibs: Found {Number} strict and {Number} relaxed matches in Message ID {Winlink ID}. Returning {Number} items.`: Helps the Desktop Operator understand how many Bib Records were found in the Winlink Message.
-
-`INFO: Sending {Winlink Message ID} Message to logfile and API.`: Indicates the Bib Records were written to the Captured Bib Records log file and also sent to the Server service.
-
-`INFO: Message ID {Winlink Message ID} => Wrote to file? {true or false}.`: Indicates if the Bib Records were written to the Captured Bib Records log file.
-
-`INFO: Sending message to server at {BFBMX server api address}. Will timeout in 00:00:00 (HH:MM:SS)`: A response from the server is expected within a default timeout period of 20 seconds.
-
-`WARN: Message ID {Winlink Message ID} was sent to server but there was no response or an error code was returned!`: No response from the server (there might be a problem if you launched a server locally or on another networked computer). This is set as a _WARN_ log message because a legitimate deployment scenario is to deploy BF-BMX Desktop only.
-
-`WARN: IF A SERVER IS DEPLOYED AND YOU SEE THIS MESSAGE: ...`: You will need to do some troubleshooting to determine why the Desktop App cannot reach the Server Service. Check that the server is running, there are no host or network firewalls blocking the server port, and that the server and desktop computers are on the same network. If you are using a Security Software Suite, you might have to add the BF-BMX Desktop and/or BF-BMX Server to its "Allow list".
-
-`INFO: Response from Server was a success status code.` and `Posted Message ID {Winlink Message ID} to API successfully`: The Winlink Message and its discovered Bib Records were successfully sent to the BF-BMX Server instance. These messages only appear if the prior _WARN_ messages are not present for the same Winlink Message ID. This is not necessarily a fatal error depending on your deployment scenario.
-
-There are plenty of other log entries, but these are likely the most helpful in terms of resolving unexpected issues. Get used to reviewing the log files so you gain familiarity with their content and "what is normal".
-
-## Use the Server Service
-
-The Server Service is a background service based on fully-fledge web components from Microsoft's `ASP.NET Core`:
-
-- Only the necessary sub-components of ASP.NET Core are used to keep the service lightweight.
-- Listens for JSON-formatted POST data via HTTP and processes data as it is received.
-- Activities are logged to the console window that is opened when the service is started, and to a file stored in the `BFBMX_SERVER_LOG_DIR` folder.
-- Bib Data received from the BFBMX Desktop Client(s) are logged to multiple tab-delimited files for reporting or other purposes.
-
-### Run the Server Service
-
-1. Download the latest ZIP file from the [Repository Releases Page](https://github.com/nojronatron/BF-BMX/releases) and extract the contents to a folder on the Windows computer (for example the `Documents` folder or your `Desktop`).
-1. Double-click `BFBMX.ServerApi.exe` to launch the server service.
-1. If an alert prompt appears from `Windows Firewall` or `Windows Security` click 'Allow Access' to enable the server to listen for incoming data from the Desktop App(s).
-1. The console window will open and display the server's status and activities.
-
-_Note_: To restart the service, simply double-click `BFBMX.ServerApi.exe` again.
-
-### Server Service Overview
-
-The Console Window:
-
-- Use `CTRL` + `C` to _stop the server_. The BFBMX Server Service _will no longer listen for incoming data_ until it is restarted (this is a good reason to stop the Desktop Monitor(s) and probably Winlink Express, too).
-- Use the scroll bar or a mouse wheel to scroll up and down the console window to review historical log detail.
-- The console window can be changed in size to fit your needs without interrupting the server service in any way.
-- Occasional log entries will display the server Hostname, IP Address(es), and HTTP Port.
-- If the Console Window ever "disappears" that means the server service is no longer running and you will want to [restart it](#run-the-server-service).
-
-![Web Server Console Screenshot](./Docs/web-server-console.png)
-
-_Note 1_: When first launched, the Server Service console might display one or more `warn` messages related to 'Microsoft.AspNetCore.Server.Kestrel[0]'. This is transitory and will not impact system operation or data processing.
-
-_Note 2_: One of the goals of this software is to handle most issues without human intervention but it is not possible to anticipate every possibly error condition. Therefore, the Desktop App and Server operator(s) should be prepared to review log files and become adept at reviewing Log Files and using Winlink Express to help investigate and resolve issues.
-
-The Log Files:
-
-- A Winlink Message Logfile is created 1:1 for each Winlink Message payload the service receives.
-- Each payload contains a Winlink Message ID, a Winlink Message DateTime stamp, and the Bib Data including the Warning Flag (all tab-delimited).
-- Each file is named after the Winlink Message ID and is stored in the configured folder accorrding to [Environment Variables](#configure-local-environment-variables).
-- The data format is: `[Winlink Message ID] [Message DateTime] [Data Warning Flag] [Bib Number] [Bib Action] [Bib Time] [Day Of Month] [Location Abbreviation]`.
-
-![Server Logfile Nominal and Alert Entries Example](./Docs/Server-Logfile-Nominal-And-Alert-Entries.png)
-
-The above example shows a Winlink Payload log entry: message ID H2Y96AT5T592 with a date-time stamp of 14-Aug-2023 at 11:31:00 AM (Local PDT) followed by Bib Record data (also in tabular format).
-
-- The top Bib Record Data was parseable without issues so the Data Warning Flag was set to `NOMINAL`.
-- The second Bib Record Data was _not_ directly parsable because the Bib Number was unexpectedly large. The App applied the Data Warning Flag of `ALERT` so the problem could be investigated and corrected by the computer operators.
-
-_Note_: The exact same log file format is used by the Server Service and the Desktop App, with the exception that the Desktop App logs all Bib Records to a single file whereas the Server logs Bib Data in individual files, one file per Winlink Message ID.
-
-Server Activity Log:
-
-- Writes activities to a file named `server_activity.txt`.
-- Contains the same information that is displayed in the console window.
-- Use this to review historical events of the Server, especially after an unexpected event like a crash or incorrect data processing.
-
-### Server Service Log Entry Details
-
-- Most information written to the console window will be informational and prefixed with `info`.
-- `warn` and `error` messages will be colored yellow or red, respectively. Pay attention to these and prepare to review the log files and originating Winlink Messages for possible issues.
-- `info: Saved Winlink Message ID {ID} and its Bib Records to memory` and `info: Saved {number} entities to in-memory store.`: The server service received a valid Winlink Message "payload" and stored the data into memory.
-- `Stored Winlink Message ID {ID} with {number} bib records to server DB.`: A built-in SQL database stores the information for quick retreival (and a future feature: querying).
-- `Wrote 1 Winlink Message payload to Access DB file {fullfilepath}`: A new file was created and the tab-delimited bib record data was written to it. There will be 1 file for each unique Winlink ID the Server Service receives.
-- `Logfiles are at {path}`: Reports the configured logfile location. Find the Bib Report output files here.
-- `Server name {hostname} at address(es) {IPv4 Addresses} listening on HTTP port {TCP Port}`: The server is listening on the specified IPv4 Address and Port. The Desktop Operator will want this information when they configure Environment Variables.
-
-If you see log entries that start with _WARN:_ you will want to interrogate the BF-BMX Server Activity logfile and the BF-BMX Desktop App Log file to diagnose if there is a problem.
-
 ## Notes and Limitations
 
 - Data that _looks like a Bib Record_ according to the matching rules will be discovered, other data will not. It is not possible for this software to know if the data is correct or not, therefore it is up to the Desktop and Server operators to verify questionable data from the source.
@@ -424,6 +243,7 @@ If you see log entries that start with _WARN:_ you will want to interrogate the 
 
 ## Timeline
 
+- July 2025: Release version 2.0.0 with Reports server component, minor enhancements, and revamped documentation.
 - May 1st, 2024: Beta version will be made available to the Bigfoot Hams Coordinator for initial evaluation.
 - May 2024: Beta version testing using 1 or more computers (no radios) begins in earnest and bugfixes or feature tweaks are applied when necessary.
 - June 2024: Full end-to-end deployment that will test the software in a multi-computer, multi-Winlink Express deployment where all computers are connected via WiFi/wired LAN.

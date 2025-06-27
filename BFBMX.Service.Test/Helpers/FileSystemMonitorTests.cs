@@ -9,7 +9,7 @@ namespace BFBMX.Service.Test.Helpers
         private readonly string tempFilename;
         private readonly string AlphaMonitorName = "AlphaMonitor";
         private readonly string BravoMonitorName = "BravoMonitor";
-        private readonly string CharlieMonitorName = "CharlieMonitor";
+        //private readonly string CharlieMonitorName = "CharlieMonitor";
 
         private string? FwmTempfileFound { get; set; }
         private string? FwmErrorCallbackMessage { get; set; }
@@ -50,7 +50,7 @@ namespace BFBMX.Service.Test.Helpers
         }
 
         [Fact]
-        public void StartStopDestroyFileSystemWatcher()
+        public async Task StartStopDestroyFileSystemWatcher()
         {
             Debug.WriteLine($"Temp file found? {FwmTempfileFound}");
             Debug.WriteLine($"Error reported? {FwmErrorCallbackMessage}");
@@ -83,14 +83,12 @@ namespace BFBMX.Service.Test.Helpers
 
             var swTask = Task.Run(() =>
             {
-                using (StreamWriter sw = File.CreateText(testFile))
-                {
-                    sw.WriteLine(fileContent);
-                    Console.WriteLine("Writing file...");
-                }
+                using StreamWriter sw = File.CreateText(testFile);
+                sw.WriteLine(fileContent);
+                Console.WriteLine("Writing file...");
             }, cancelToken);
             var delayTask = Task.Delay(250, cancelToken);
-            Task.WaitAll(swTask, delayTask);
+            await Task.WhenAll(swTask, delayTask);
 
             Debug.WriteLine($"Temp file found? {FwmTempfileFound}");
             Debug.WriteLine($"Error reported? {FwmErrorCallbackMessage}");

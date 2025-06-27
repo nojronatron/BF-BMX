@@ -13,23 +13,26 @@ _ = int.TryParse(serverPort, out int srvrPort);
 // Add services to the container.
 builder.WebHost.ConfigureKestrel((context, serverOptions) =>
 {
-    serverOptions.Listen(IPAddress.Any, srvrPort, listenOptions =>
-    {
-        listenOptions.UseConnectionLogging();
-    });
+  serverOptions.Listen(IPAddress.Any, srvrPort, listenOptions =>
+  {
+    listenOptions.UseConnectionLogging();
+  });
 });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
 // entity framework must be configured and added as TRANSIENT in ASP.NET IoC
-builder.Services.AddDbContextFactory <BibMessageContext> (options =>
+builder.Services.AddDbContextFactory<BibMessageContext>(options =>
 {
-    options.UseInMemoryDatabase($"BFBMX-{Guid.NewGuid()}");
+  options.UseInMemoryDatabase($"BFBMX-{Guid.NewGuid()}");
 });
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddLogging();
+builder.Services.AddHttpLogging(config =>
+    config.CombineLogs = true
+    );
 
 // define scoped collections, helpers, etc
 builder.Services.AddSingleton<IServerEnvFactory, ServerEnvFactory>();
@@ -54,8 +57,8 @@ var serverLogWriter = scope.ServiceProvider.GetRequiredService<IServerLogWriter>
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+  app.UseSwagger();
+  app.UseSwaggerUI();
 }
 
 // supports logging HTTP Requests and Responses
@@ -64,7 +67,7 @@ app.UseHttpLogging();
 // create bibrecordlogger folder path if not already exists
 if (!Directory.Exists(serverEnvVars.GetServerLogPath()))
 {
-    Directory.CreateDirectory(serverEnvVars.GetServerLogPath());
+  Directory.CreateDirectory(serverEnvVars.GetServerLogPath());
 }
 
 // log server info to the console at startup
@@ -74,64 +77,96 @@ serverInfo.StartHostInfo();
 // init server activity logfile
 await serverLogWriter.WriteActivityToLogAsync("Initialized server activity logger.");
 
-app.MapGet("/serverInfo", () =>
+app.MapGet("/api/v1/AidStationReport/{aidStationId}", (string aidStationId) =>
 {
-    if (serverInfo.CanStart())
-    {
-        serverInfo.StartHostInfo();
-        serverInfo.StartLogfileInfo();
-    }
+  return bibReportPayloadsCollection.GetAidStationReport(aidStationId);
+}).Produces(200).ProducesProblem(500);
+
+app.MapGet("/api/v1/BibNumberReport/{bibNumber}", (string bibNumber) =>
+{
+  return bibReportPayloadsCollection.GetBibReport(bibNumber);
+}).Produces(200).ProducesProblem(500);
+
+app.MapGet("/api/v1/DropReport", () =>
+{
+  return bibReportPayloadsCollection.GetDroppedReports();
+}).Produces(200).ProducesProblem(500);
+
+app.MapGet("/api/v1/AllRecords", () =>
+{
+  // create a JSON file with all records from bibReportPayloadsCollection
+  return bibReportPayloadsCollection.GetAllEntities();
+}).Produces(200).ProducesProblem(500);
+
+app.MapGet("/api/v1/Statistics", () =>
+{
+  return bibReportPayloadsCollection.GetStatistics();
+}).Produces(200).ProducesProblem(500);
+
+app.MapGet("/api/v1/ServerInfo", () =>
+{
+  if (serverInfo.CanStart())
+  {
+    serverInfo.StartHostInfo();
+    serverInfo.StartLogfileInfo();
+  }
+
+  try
+  {
+    var apiServiceInfo = new ApiServiceInfo("v2.0.0 Dev Preview");
+    return Results.Json(apiServiceInfo);
+  }
+  catch (Exception ex)
+  {
+    app.Logger.LogError("Exception caught in /api/v1/ServerInfo: {exceptionMessage}\n{exceptionTrace}", ex.Message, ex.StackTrace);
+    return Results.Problem("An error occurred while processing your request.");
+  }
 }).Produces(200).ProducesProblem(500);
 
 app.MapPost("/WinlinkMessage", (WinlinkMessageModel request) =>
 {
-    bool addedRecordsToCollection = false;
-    try
-    {
-        addedRecordsToCollection = bibReportPayloadsCollection.AddEntityToCollection(request);
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogWarning("MapPost Exception caught at AddEntityToCollection(request) call! {exceptionMessage}\n{exceptionTrace}", ex.Message, ex.StackTrace);
-    }
+  bool addedRecordsToCollection = false;
+  try
+  {
+    addedRecordsToCollection = bibReportPayloadsCollection.AddEntityToCollection(request);
+  }
+  catch (Exception ex)
+  {
+    app.Logger.LogWarning("MapPost Exception caught at AddEntityToCollection(request) call! {exceptionMessage}\n{exceptionTrace}", ex.Message, ex.StackTrace);
+  }
 
-    bool loggedInTabDelimitedFormat = false;
-    try
-    {
-        loggedInTabDelimitedFormat = bibRecordLogger.LogWinlinkMessagePayloadToTabDelimitedFile(request);
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogWarning("MapPost Exception caught at LogFlaggedRecordsTabDelimited(request) call! {exceptionMessage}\n{exceptionTrace}", ex.Message, ex.StackTrace);
-    }
+  bool loggedInTabDelimitedFormat = false;
+  try
+  {
+    loggedInTabDelimitedFormat = bibRecordLogger.LogWinlinkMessagePayloadToTabDelimitedFile(request);
+  }
+  catch (Exception ex)
+  {
+    app.Logger.LogWarning("MapPost Exception caught at LogFlaggedRecordsTabDelimited(request) call! {exceptionMessage}\n{exceptionTrace}", ex.Message, ex.StackTrace);
+  }
 
-    if (serverInfo.CanStart())
-    {
-        serverInfo.StartLogfileInfo();
-        serverInfo.StartHostInfo();
-    }
+  if (serverInfo.CanStart())
+  {
+    serverInfo.StartLogfileInfo();
+    serverInfo.StartHostInfo();
+  }
 
-    // return 200 OK or 400 Bad Request
-    if (addedRecordsToCollection && loggedInTabDelimitedFormat)
-    {
-        Results.Ok();
-        serverLogWriter.WriteActivityToLogAsync("WinlinkMessage POST request processed successfully.");
-    }
-    else if (!addedRecordsToCollection)
-    {
-        Results.Problem();
-        serverLogWriter.WriteActivityToLogAsync("WinlinkMessage POST request failed to add records to collection.");
-    }
-    else if (!loggedInTabDelimitedFormat)
-    {
-        Results.Problem();
-        serverLogWriter.WriteActivityToLogAsync("WinlinkMessage POST request failed to log records to tab-delimited file.");
-    }
-    else
-    {
-        Results.Problem();
-        serverLogWriter.WriteActivityToLogAsync("WinlinkMessage POST request failed to process.");
-    }
+  // return 200 OK or 400 Bad Request
+  if (addedRecordsToCollection && loggedInTabDelimitedFormat)
+  {
+    serverLogWriter.WriteActivityToLogAsync("WinlinkMessage POST request processed successfully.");
+    return Results.Ok();
+  }
+  else if (!addedRecordsToCollection)
+  {
+    serverLogWriter.WriteActivityToLogAsync("WinlinkMessage POST request failed to add records to collection.");
+    return Results.Problem();
+  }
+  else // if (!loggedInTabDelimitedFormat)
+  {
+    serverLogWriter.WriteActivityToLogAsync("WinlinkMessage POST request failed to log records to tab-delimited file.");
+    return Results.Problem();
+  }
 })
 .Produces(StatusCodes.Status200OK)
 .ProducesProblem(StatusCodes.Status400BadRequest);

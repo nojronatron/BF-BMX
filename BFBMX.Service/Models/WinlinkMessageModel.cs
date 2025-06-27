@@ -76,7 +76,6 @@ public class WinlinkMessageModel
         return JsonSerializer.Serialize<WinlinkMessageModel>(this);
     }
 
-
     /// <summary>
     /// Generate a plain text, tab delimited representation of Bib Records within this Winlink Message entity for consumption by MS Access project.
     /// </summary>
