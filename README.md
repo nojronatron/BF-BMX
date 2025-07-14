@@ -248,7 +248,7 @@ Usage instructions for BF-BMX Desktop App and Server Service.
 
 ## Timeline
 
-- July 2025: Release version 2.0.0 with Reports server component, minor enhancements, and revamped documentation.
+- July 2025: Release version 2.0 and 2.1 with Reports server component, revamped documentation, Sqlite DB, and updated documentation.
 - May 1st, 2024: Beta version will be made available to the Bigfoot Hams Coordinator for initial evaluation.
 - May 2024: Beta version testing using 1 or more computers (no radios) begins in earnest and bugfixes or feature tweaks are applied when necessary.
 - June 2024: Full end-to-end deployment that will test the software in a multi-computer, multi-Winlink Express deployment where all computers are connected via WiFi/wired LAN.
@@ -267,7 +267,7 @@ This software is licensed under the MIT License. See the [LICENSE](./LICENSE) fi
 
 This README, the LICENSE file, and the following information _must be kept with this codebase:_
 
-- Author: Nojronatron, copyright :copyright: Jon Rumsey, 2024.
+- Author: Nojronatron, copyright :copyright: Jon Rumsey, 2025.
 - GitHub: [nojronatron](https://github.com/nojronatron).
 - Repo: [BF-BMX on GitHub](https://github.com/nojronatron/BF-BMX).
 
