@@ -22,10 +22,17 @@ builder.WebHost.ConfigureKestrel((context, serverOptions) =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
-// entity framework must be configured and added as TRANSIENT in ASP.NET IoC
+//  AddDbContext
 builder.Services.AddDbContextFactory<BibMessageContext>(options =>
 {
-  options.UseInMemoryDatabase($"BFBMX-{Guid.NewGuid()}");
+    var folder = Environment.SpecialFolder.LocalApplicationData;
+    var path = Environment.GetFolderPath(folder);
+    var dbFolder = Path.Combine(path, "BFBMX");
+    if (!Directory.Exists(dbFolder))
+    {
+        Directory.CreateDirectory(dbFolder);
+    }
+    options.UseSqlite($"Data Source={Path.Combine(path, "BFBMX", "BFBMX-Messages.db")}");
 });
 
 builder.Services.AddSwaggerGen();
