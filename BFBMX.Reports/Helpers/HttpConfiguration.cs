@@ -19,11 +19,11 @@ namespace BFBMX.Reports.Helpers
         public string BibNumberEndpoint => string.Concat(BaseAddress, "BibNumberReport");
         public string AidStationEndpoint => string.Concat(BaseAddress, "AidStationReport");
         public string StatisticsEndpoint => string.Concat(BaseAddress, "Statistics");
-        public string UserAgentHeader => "BFBMX.Reports/v1.6.0alpha";
+        public string UserAgentHeader => "BFBMX.Reports/v2.0.1";
         public string AcceptHeader => "application/json";
         public TimeSpan Timeout = new(0, 0, 10);
 
-        public CancellationTokenSource Cts => new CancellationTokenSource(Timeout);
+        public CancellationTokenSource Cts => new(Timeout);
 
         public JsonSerializerOptions JsonOptions => new()
         {
