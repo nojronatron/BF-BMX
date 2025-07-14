@@ -25,7 +25,12 @@ A reporting service has been developed that acts as a front-end webpage for an o
 
 ## Project Status
 
-[Unreleased] Target Version 2.0.0:
+14-Jul-2025 Version 2.1.0:
+
+- Add SQLite database support to Server API component.
+- DB full path `{LocalAppData}\BFBMX\BFBMX-Messages.db` auto-recreates if deleted.
+
+26-Jun-2025 Version 2.0.0 Stable
 
 - Upgrade Desktop and Server components to .NET 8.0
 - Update NuGet packages.
