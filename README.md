@@ -23,6 +23,14 @@ A reporting service has been developed that acts as a front-end webpage for an o
 - Bib Statistics: An overall view of how many bib reports have been received, what bib numbers have been seen, etc.
 - Dropped Bibs: A listing of bib reports that appear to have 'DROP' in the action field.
 
+Review [BFBMX Reports README](./README-Reports.md) for more details on how to use the reporting service.
+
+## NEW - SQLite Database Support
+
+The BFBMX Server API now supports SQLite database storage of Bib Records. This allows for more robust data management and querying capabilities, enabling the generation of reports and statistics based on the collected Bib data.
+
+Review [BFBMX ServerApi README](./README-ServerAPI.md) for more details on Server API and SQLite database support.
+
 ## Project Status
 
 14-Jul-2025 Version 2.1.0:
@@ -30,7 +38,7 @@ A reporting service has been developed that acts as a front-end webpage for an o
 - Add SQLite database support to Server API component.
 - DB full path `{LocalAppData}\BFBMX\BFBMX-Messages.db` auto-recreates if deleted.
 
-26-Jun-2025 Version 2.0.0 Stable
+26-Jun-2025 Version 2.0.0 Stable:
 
 - Upgrade Desktop and Server components to .NET 8.0
 - Update NuGet packages.
