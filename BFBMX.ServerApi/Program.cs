@@ -50,6 +50,13 @@ builder.Services.AddSingleton<IServerLogWriter, ServerLogWriter>();
 
 var app = builder.Build();
 
+// automate EF Core migrations on startup
+using (var efScope = app.Services.CreateScope())
+{
+    var dbContext = efScope.ServiceProvider.GetRequiredService<BibMessageContext>();
+    dbContext.Database.Migrate();
+}
+
 // log server startup
 app.Logger.LogInformation("API Server starting up.");
 
