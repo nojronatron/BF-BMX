@@ -40,7 +40,7 @@ Review [BFBMX ServerApi README](./README-ServerAPI.md) for more details on Serve
 
 26-Jun-2025 Version 2.0.0 Stable:
 
-- Upgrade Desktop and Server components to .NET 8.0
+- Upgrade Desktop and Server components to .NET 8.0 (see [Desktop README](./README-DesktopApp.md) for important details)
 - Update NuGet packages.
 - Add Reports server component.
 - Add Quick Start Guide README.
