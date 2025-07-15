@@ -120,7 +120,7 @@ app.MapGet("/api/v1/ServerInfo", () =>
 
   try
   {
-    var apiServiceInfo = new ApiServiceInfo("v2.0.1");
+    var apiServiceInfo = new ApiServiceInfo("v2.1.1");
     return Results.Json(apiServiceInfo);
   }
   catch (Exception ex)
