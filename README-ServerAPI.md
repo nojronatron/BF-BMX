@@ -9,14 +9,17 @@ The Server Service is a background service based on fully-fledge web components 
 - Activities are logged to the console window that is opened when the service is started, and to a file stored in the `BFBMX_SERVER_LOG_DIR` folder.
 - Bib Data received from the BFBMX Desktop Client(s) are logged to multiple tab-delimited files for reporting or other purposes.
 
+_Note_: Version 2.1.1 includes a built-in SQLite DB storage mechanism.
+
 ## Run the Server Service
 
-1. Download the latest ZIP file from the [Repository Releases Page](https://github.com/nojronatron/BF-BMX/releases) and extract the contents to a folder on the Windows computer (for example the `Documents` folder or your `Desktop`).
-1. Double-click `BFBMX.ServerApi.exe` to launch the server service.
+1. Download the latest ZIP file from the [Repository Releases Page](https://github.com/nojronatron/BF-BMX/releases)
+1. Extract the contents to a folder on the Windows computer (for example the `Documents` folder or your `Desktop`).
+1. Double-click `BFBMX.ServerApi.exe` to launch the service.
 1. If an alert prompt appears from `Windows Firewall` or `Windows Security` click 'Allow Access' to enable the server to listen for incoming data from the Desktop App(s).
-1. The console window will open and display the server's status and activities.
+1. The console window will open and display the server's status, and activities.
 
-_Note_: To restart the service, simply double-click `BFBMX.ServerApi.exe` again.
+_Note_: If the console window closes, simply double-click `BFBMX.ServerApi.exe` again to restart it.
 
 ## Server Service Overview
 
@@ -55,6 +58,7 @@ Server Activity Log:
 - Writes activities to a file named `server_activity.txt`.
 - Contains the same information that is displayed in the console window.
 - Use this to review historical events of the Server, especially after an unexpected event like a crash or incorrect data processing.
+- Displays the server's Hostname, HTTP Port, SQL DB activity, and Logfile location.
 
 ## Server Service Log Entry Details
 
@@ -67,3 +71,25 @@ Server Activity Log:
 - `Server name {hostname} at address(es) {IPv4 Addresses} listening on HTTP port {TCP Port}`: The server is listening on the specified IPv4 Address and Port. The Desktop Operator will want this information when they configure Environment Variables.
 
 If you see log entries that start with _WARN:_ you will want to interrogate the BF-BMX Server Activity logfile and the BF-BMX Desktop App Log file to diagnose if there is a problem.
+
+## Server Service Database
+
+- The database filename is set to `BFBMX-Messages.db`.
+- DB data and transaction logfiles are stored in the local user's APPDATA dir: `$ENV:LOCALAPPDATA\BFBMX`
+
+Use PowerShell to find the location of the database:
+
+```powershell
+ls $ENV:LOCALAPPDATA\BFBMX
+```
+
+Current Features:
+
+- DB automatically initializes when DB file doesn't exist at start-up.
+- Previously stored DB data can be cleared by simply removing the DB file when the Server Services _is not running_.
+- To archive the DB, simply _move_ the `BFBMX-Messages.db` file to a different location.
+
+Future features:
+
+- Queryable Sqlite DB access from other clients.
+- Set environment variable to change the DB file location.

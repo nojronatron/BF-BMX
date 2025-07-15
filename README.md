@@ -23,11 +23,24 @@ A reporting service has been developed that acts as a front-end webpage for an o
 - Bib Statistics: An overall view of how many bib reports have been received, what bib numbers have been seen, etc.
 - Dropped Bibs: A listing of bib reports that appear to have 'DROP' in the action field.
 
+Review [BFBMX Reports README](./README-Reports.md) for more details on how to use the reporting service.
+
+## NEW - SQLite Database Support
+
+The BFBMX Server API now supports SQLite database storage of Bib Records. This allows for more robust data management and querying capabilities, enabling the generation of reports and statistics based on the collected Bib data.
+
+Review [BFBMX ServerApi README](./README-ServerAPI.md) for more details on Server API and SQLite database support.
+
 ## Project Status
 
-[Unreleased] Target Version 2.0.0:
+14-Jul-2025 Version 2.1.0:
 
-- Upgrade Desktop and Server components to .NET 8.0
+- Add SQLite database support to Server API component.
+- DB full path `{LocalAppData}\BFBMX\BFBMX-Messages.db` auto-recreates if deleted.
+
+26-Jun-2025 Version 2.0.0 Stable:
+
+- Upgrade Desktop and Server components to .NET 8.0 (see [Desktop README](./README-DesktopApp.md) for important details)
 - Update NuGet packages.
 - Add Reports server component.
 - Add Quick Start Guide README.
@@ -243,7 +256,7 @@ Usage instructions for BF-BMX Desktop App and Server Service.
 
 ## Timeline
 
-- July 2025: Release version 2.0.0 with Reports server component, minor enhancements, and revamped documentation.
+- July 2025: Release version 2.0 and 2.1 with Reports server component, revamped documentation, Sqlite DB, and updated documentation.
 - May 1st, 2024: Beta version will be made available to the Bigfoot Hams Coordinator for initial evaluation.
 - May 2024: Beta version testing using 1 or more computers (no radios) begins in earnest and bugfixes or feature tweaks are applied when necessary.
 - June 2024: Full end-to-end deployment that will test the software in a multi-computer, multi-Winlink Express deployment where all computers are connected via WiFi/wired LAN.
@@ -262,7 +275,7 @@ This software is licensed under the MIT License. See the [LICENSE](./LICENSE) fi
 
 This README, the LICENSE file, and the following information _must be kept with this codebase:_
 
-- Author: Nojronatron, copyright :copyright: Jon Rumsey, 2024.
+- Author: Nojronatron, copyright :copyright: Jon Rumsey, 2025.
 - GitHub: [nojronatron](https://github.com/nojronatron).
 - Repo: [BF-BMX on GitHub](https://github.com/nojronatron/BF-BMX).
 
