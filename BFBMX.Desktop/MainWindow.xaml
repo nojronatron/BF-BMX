@@ -6,7 +6,7 @@
         xmlns:helpers="clr-namespace:BFBMX.Desktop.Helpers"
         mc:Ignorable="d"
         SizeToContent="WidthAndHeight"
-        Title="BF-BMX Desktop version 1.5.3">
+        Title="BF-BMX Desktop version 2.1.1">
 
     <Window.Resources>
         <ResourceDictionary>
