@@ -22,10 +22,17 @@ builder.WebHost.ConfigureKestrel((context, serverOptions) =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
-// entity framework must be configured and added as TRANSIENT in ASP.NET IoC
+//  AddDbContext
 builder.Services.AddDbContextFactory<BibMessageContext>(options =>
 {
-  options.UseInMemoryDatabase($"BFBMX-{Guid.NewGuid()}");
+    var folder = Environment.SpecialFolder.LocalApplicationData;
+    var path = Environment.GetFolderPath(folder);
+    var dbFolder = Path.Combine(path, "BFBMX");
+    if (!Directory.Exists(dbFolder))
+    {
+        Directory.CreateDirectory(dbFolder);
+    }
+    options.UseSqlite($"Data Source={Path.Combine(path, "BFBMX", "BFBMX-Messages.db")}");
 });
 
 builder.Services.AddSwaggerGen();
@@ -42,6 +49,13 @@ builder.Services.AddSingleton<IServerInfo, ServerInfo>();
 builder.Services.AddSingleton<IServerLogWriter, ServerLogWriter>();
 
 var app = builder.Build();
+
+// automate EF Core migrations on startup
+using (var efScope = app.Services.CreateScope())
+{
+    var dbContext = efScope.ServiceProvider.GetRequiredService<BibMessageContext>();
+    dbContext.Database.Migrate();
+}
 
 // log server startup
 app.Logger.LogInformation("API Server starting up.");
@@ -113,7 +127,7 @@ app.MapGet("/api/v1/ServerInfo", () =>
 
   try
   {
-    var apiServiceInfo = new ApiServiceInfo("v2.0.0 Dev Preview");
+    var apiServiceInfo = new ApiServiceInfo("v2.1.1");
     return Results.Json(apiServiceInfo);
   }
   catch (Exception ex)

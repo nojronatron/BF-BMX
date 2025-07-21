@@ -2,6 +2,11 @@
 
 ## Install Desktop App
 
+_Important!_ It is necessary to download and install [Windows Desktop Runtime 8.0.16 win x64](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) when you have internet access and before installing the BF-BMX Desktop App. The Runtime is quick to download and install and can be removed at a later time by using the Windows "Add or Remove Programs" feature in Settings. This _only_ applies to the Desktop App.
+
+Steps:
+
+1. Download and install `Windows Desktop Runtime 8.0.16`
 1. Locate and double-click "setup.exe" to start the installation process.
 2. Follow the Installation Wizard prompts to complete installation.
 3. The BF-BMX Desktop App will launch after installation.

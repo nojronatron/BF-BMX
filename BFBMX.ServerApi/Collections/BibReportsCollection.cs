@@ -22,6 +22,39 @@ public class BibReportsCollection : ObservableCollection<WinlinkMessageModel>, I
         _dbContextFactory = dbContextFactory;
         _logger = logger;
         _serverLogWriter = serverLogWriter;
+
+        LoadFromDatabase();
+    }
+
+    /// <summary>
+    /// Loads Winlink message models from the database and adds them to the current collection.
+    /// </summary>
+    /// <remarks>This method retrieves all Winlink message models, including their associated 
+    /// BibRecords, from the database and adds them to the current collection. If an error occurs
+    /// during the loading process, a warning is logged, and the service continues running.</remarks>
+    private void LoadFromDatabase()
+    {
+        try
+        {
+            using var context = _dbContextFactory.CreateDbContext();
+
+            // Eagerly load BibRecords related to each WinlinkMessageModel
+            var messages = context.WinlinkMessageModels
+                                  .Include(wlm => wlm.BibRecords)
+                                  .ToList();
+
+            foreach (var message in messages)
+            {
+                this.Add(message);
+            }
+
+            _logger.LogInformation("Loaded {count} reports from the database.", this.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("Error loading reports from DB. Exception: {exmsg}", ex.Message);
+            _logger.LogWarning("Will attempt to continue running the service.");
+        }
     }
 
     public AidStationStatisticsModel GetAidStationReport(string aidStationId)
